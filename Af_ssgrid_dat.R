@@ -13,8 +13,8 @@ require(raster)
 
 # Data downloads ----------------------------------------------------------
 
-# AfSIS sentinel site locations
-download("https://www.dropbox.com/s/r5badwr6tdfymg2/AFSIS_profile_locs.csv?dl=0", "AfSIS_profile_locs.csv", mode="wb")
+# AfSIS sentinel site GPS locations
+download("https://www.dropbox.com/s/ptw7sv2s7oxpm9x/AfSIS_GPS.csv?dl=0", "AfSIS_profile_locs.csv", mode="wb")
 geos <- read.table("AfSIS_profile_locs.csv", header=T, sep=",")
 
 # Africa PC grids (~325 Mb)
@@ -51,4 +51,4 @@ for (i in 1:length(grid.list)){
     y = geos.gid,
     method = "simple")
 }
-Af_ssgrid_dat <- as.data.frame(geos.gid)
+ssgrid <- as.data.frame(geos.gid)
