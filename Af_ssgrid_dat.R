@@ -14,10 +14,10 @@ require(raster)
 # Data downloads ----------------------------------------------------------
 
 # AfSIS sentinel site GPS locations
-download("https://www.dropbox.com/s/ptw7sv2s7oxpm9x/AfSIS_GPS.csv?dl=0", "AfSIS_profile_locs.csv", mode="wb")
-geos <- read.table("AfSIS_profile_locs.csv", header=T, sep=",")
+download("https://www.dropbox.com/s/ptw7sv2s7oxpm9x/AfSIS_GPS.csv?dl=0", "AfSIS_GPS.csv", mode="wb")
+geos <- read.table("AfSIS_GPS.csv", header=T, sep=",")
 
-# Africa PC grids (~325 Mb)
+# Africa PC grid download (~325 Mb)
 download("https://www.dropbox.com/s/jhzqx0a4f90owfq/Af_PC_1k.zip?dl=0", "Af_PC_1k.zip", mode="wb")
 unzip("Af_PC_1k.zip", overwrite=T)
 
