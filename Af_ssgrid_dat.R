@@ -1,4 +1,4 @@
-# AfSIS sentinel site remote sensing data
+# AfSIS sentinel site remote sensing data summaries
 # M. Walsh, October 2014
 
 # Set local working directory e.g.
@@ -52,3 +52,10 @@ for (i in 1:length(grid.list)){
     method = "simple")
 }
 ssgrid <- as.data.frame(geos.gid)
+
+# Sentinel site-level summaries -------------------------------------------
+
+vars <- c("PC1","PC2","PC3")
+spcs <- aggregate(ssgrid[vars], by=list(Site=ssgrid$Site), mean)
+plot(PC2~PC1, type="n", spcs)
+text(spcs$PC1, spcs$PC2, labels=spcs$Site, cex=0.7)
