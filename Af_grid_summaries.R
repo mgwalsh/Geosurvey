@@ -45,17 +45,17 @@ grid.list <- c("PC1.tif","PC2.tif","PC3.tif")
 
 for (i in 1:length(grid.list)){
   print(paste("extracting", grid.list[i]))
-  grid.cov <- raster(grid.list[i]) 
+  grids <- raster(grid.list[i])
   geos.gid@data[strsplit(grid.list[i], split=".tif")[[1]]] <- extract(
-    x = grid.cov, 
+    x = grids, 
     y = geos.gid,
     method = "simple")
 }
-ssgrid <- as.data.frame(geos.gid)
+sgrid <- as.data.frame(geos.gid)
 
 # Sentinel site-level summaries -------------------------------------------
 
 vars <- c("PC1","PC2","PC3")
-spcs <- aggregate(ssgrid[vars], by=list(Site=ssgrid$Site), mean)
+spcs <- aggregate(sgrid[vars], by=list(Site=sgrid$Site), mean)
 plot(PC2~PC1, type="n", spcs)
 text(spcs$PC1, spcs$PC2, labels=spcs$Site, cex=0.7)
