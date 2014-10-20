@@ -41,8 +41,7 @@ proj4string(geos.gid) = CRS("+proj=laea +datum=WGS84 +ellps=WGS84 +lat_0=5 +lon_
 
 # Grid overlay ------------------------------------------------------------
 
-grid.list <- c("PC1.tif","PC2.tif","PC3.tif")
-
+grid.list <- c("PC1.tif","PC2.tif","PC3.tif","PC4.tif")
 for (i in 1:length(grid.list)){
   print(paste("extracting", grid.list[i]))
   grids <- raster(grid.list[i])
@@ -52,10 +51,15 @@ for (i in 1:length(grid.list)){
     method = "simple")
 }
 sgrid <- as.data.frame(geos.gid)
+grids <- stack(grid.list)
+plot(grids)
 
 # Sentinel site-level summaries -------------------------------------------
 
-vars <- c("PC1","PC2","PC3")
+vars <- c("PC1","PC2","PC3","PC4")
 spcs <- aggregate(sgrid[vars], by=list(Site=sgrid$Site), mean)
 plot(PC2~PC1, type="n", spcs)
 text(spcs$PC1, spcs$PC2, labels=spcs$Site, cex=0.7)
+
+gpcs <- aggregate(sgrid[vars], by=list(GID=sgrid$GID), mean)
+plot(PC2~PC1, type="n", gpcs)
