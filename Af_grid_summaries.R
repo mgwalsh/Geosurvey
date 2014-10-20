@@ -59,7 +59,7 @@ plot(grids)
 vars <- c("PC1","PC2","PC3","PC4")
 spcs <- aggregate(sgrid[vars], by=list(Site=sgrid$Site), mean)
 plot(PC2~PC1, type="n", spcs)
-text(spcs$PC1, spcs$PC2, labels=spcs$Site, cex=0.7)
+text(spcs$PC1, spcs$PC2, labels=spcs$Site, cex=0.8)
 
 gpcs <- aggregate(sgrid[vars], by=list(GID=sgrid$GID), mean)
 plot(PC2~PC1, type="n", gpcs)
