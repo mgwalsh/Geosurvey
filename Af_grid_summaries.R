@@ -17,7 +17,7 @@ require(raster)
 download("https://www.dropbox.com/s/ptw7sv2s7oxpm9x/AfSIS_GPS.csv?dl=0", "AfSIS_GPS.csv", mode="wb")
 geos <- read.table("AfSIS_GPS.csv", header=T, sep=",")
 
-# Africa PC grid download (~325 Mb)
+# Africa PC grid download (~295 Mb)
 download("https://www.dropbox.com/s/jhzqx0a4f90owfq/Af_PC_1k.zip?dl=0", "Af_PC_1k.zip", mode="wb")
 unzip("Af_PC_1k.zip", overwrite=T)
 
@@ -60,6 +60,3 @@ vars <- c("PC1","PC2","PC3","PC4")
 spcs <- aggregate(sgrid[vars], by=list(Site=sgrid$Site), mean)
 plot(PC2~PC1, type="n", spcs)
 text(spcs$PC1, spcs$PC2, labels=spcs$Site, cex=0.8)
-
-gpcs <- aggregate(sgrid[vars], by=list(GID=sgrid$GID), mean)
-plot(PC2~PC1, type="n", gpcs)
