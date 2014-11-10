@@ -1,3 +1,6 @@
+# Generate GeoSurvey sampling points in Africa on a 1 km grid
+# J. Chen, W. Wu & M. Walsh, November, 2014
+
 require(downloader)
 require(rgdal)
 
