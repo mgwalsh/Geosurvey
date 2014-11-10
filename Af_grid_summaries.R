@@ -12,7 +12,6 @@ require(proj4)
 require(raster)
 
 # Data downloads ----------------------------------------------------------
-
 # AfSIS sentinel site GPS locations
 download("https://www.dropbox.com/s/ptw7sv2s7oxpm9x/AfSIS_GPS.csv?dl=0", "AfSIS_GPS.csv", mode="wb")
 geos <- read.table("AfSIS_GPS.csv", header=T, sep=",")
@@ -55,8 +54,3 @@ vars <- c("PC1","PC2","PC3","PC4")
 spcs <- aggregate(sgrid[vars], by=list(Site=sgrid$Site), mean)
 plot(PC2~PC1, type="n", spcs)
 text(spcs$PC1, spcs$PC2, labels=spcs$Site, cex=0.8)
-
-
-
-
-
