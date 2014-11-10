@@ -22,7 +22,6 @@ download("https://www.dropbox.com/s/jhzqx0a4f90owfq/Af_PC_1k.zip?dl=0", "Af_PC_1
 unzip("Af_PC_1k.zip", overwrite=T)
 
 # LAEA CRS & grid ID's ----------------------------------------------------
-
 # Project to Africa LAEA from LonLat
 geos.laea <- as.data.frame(project(cbind(geos$Lon, geos$Lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
 colnames(geos.laea) <- c("x","y")
@@ -40,7 +39,6 @@ coordinates(geos.gid) = ~x+y
 proj4string(geos.gid) = CRS("+proj=laea +datum=WGS84 +ellps=WGS84 +lat_0=5 +lon_0=20 +no_defs")
 
 # Grid overlay ------------------------------------------------------------
-
 grid.list <- c("PC1.tif","PC2.tif","PC3.tif","PC4.tif")
 for (i in 1:length(grid.list)){
   print(paste("extracting", grid.list[i]))
@@ -51,12 +49,14 @@ for (i in 1:length(grid.list)){
     method = "simple")
 }
 sgrid <- as.data.frame(geos.gid)
-grids <- stack(grid.list)
-plot(grids)
 
 # Sentinel site-level summaries -------------------------------------------
-
 vars <- c("PC1","PC2","PC3","PC4")
 spcs <- aggregate(sgrid[vars], by=list(Site=sgrid$Site), mean)
 plot(PC2~PC1, type="n", spcs)
 text(spcs$PC1, spcs$PC2, labels=spcs$Site, cex=0.8)
+
+
+
+
+
