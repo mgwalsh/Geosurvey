@@ -18,8 +18,8 @@ coord_mask_v <- sample(1:n, v)
 coord_mask_v <- coord_mask_n[coord_mask_v, ]
 
 # Write csv's -------------------------------------------------------------
-write.csv(data.frame(Lon=coord_mask_n[, 1], Lat=coord_mask_n[,2]), "AF_GS_sample.csv", row.names=FALSE, quote=FALSE)
-write.csv(data.frame(Lon=coord_mask_v[, 1], Lat=coord_mask_v[,2]), "AF_GS_valpts.csv", row.names=FALSE, quote=FALSE)
+write.csv(data.frame(Lon=coord_mask_n[,1], Lat=coord_mask_n[,2]), "AF_GS_sample.csv", row.names=FALSE, quote=FALSE)
+write.csv(data.frame(Lon=coord_mask_v[,1], Lat=coord_mask_v[,2]), "AF_GS_valpts.csv", row.names=FALSE, quote=FALSE)
 
 
 
