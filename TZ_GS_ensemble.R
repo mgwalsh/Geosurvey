@@ -17,11 +17,11 @@ require(randomForest)
 dir.create("Data", showWarnings=F)
 dat_dir <- "./Data"
 
-# GeoSurvey data
+# download GeoSurvey data
 download("https://www.dropbox.com/s/8dgzphvwn0ls4sq/TZ_geos_0914.csv?dl=0", "./Data/TZ_geos_0914.csv", mode="wb")
 geos <- read.table(paste(dat_dir, "/TZ_geos_0914.csv", sep=""), header=T, sep=",")
 
-# Tanzania Gtifs (~37.3 Mb)
+# download Tanzania Gtifs (~37.3 Mb) and stack in raster
 download("https://www.dropbox.com/s/otiqe78s0kf1z1s/TZ_grids.zip?dl=0", "./Data/TZ_grids.zip", mode="wb")
 unzip("./Data/TZ_grids.zip", exdir="./Data", overwrite=T)
 glist <- list.files(path="./Data", pattern="tif", full.names=T)
@@ -39,17 +39,17 @@ projection(geos) <- projection(grid)
 geosgrid <- extract(grid, geos)
 
 # Assemble dataframes
-# presence/absence of Cropland (CRP, present = 1, absent = 0)
-CRP <- geos$Crop
+# presence/absence of Cropland (CRP, present = 1, absent = 0) dataframe
+CRP <- geos$CRP
 crpdat <- data.frame(cbind(CRP, geosgrid))
 crpdat <- na.omit(crpdat)
 
 # presence/absence of Woody Vegetation Cover of >60% (WCP, present = 1, absent = 0)
-WCP <- geos$WCS
+WCP <- geos$WCP
 wcpdat <- data.frame(cbind(WCP, geosgrid))
 wcpdat <- na.omit(wcpdat)
 
 # presence/absence of buildings/Human Settlements (HSP, present = 1, absent = 0)
-HSP <- geos$Settle
+HSP <- geos$HSP
 hspdat <- data.frame(cbind(HSP, geosgrid))
 hspdat <- na.omit(hspdat)
