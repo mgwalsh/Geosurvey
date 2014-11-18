@@ -1,4 +1,4 @@
-# Ensemble spatial predictions of Tanzania GeoSurvey cropland, woody vegetation cover
+# Ensemble predictions of Tanzania GeoSurvey cropland, woody vegetation cover
 # and human settlement data. 
 # M. Walsh, November 2014
 
@@ -21,7 +21,7 @@ dat_dir <- "./Data"
 download("https://www.dropbox.com/s/8dgzphvwn0ls4sq/TZ_geos_0914.csv?dl=0", "./Data/TZ_geos_0914.csv", mode="wb")
 geos <- read.table(paste(dat_dir, "/TZ_geos_0914.csv", sep=""), header=T, sep=",")
 
-# download Tanzania Gtifs (~37.3 Mb) and stack in raster
+# download Tanzania Gtifs (~27.2 Mb) and stack in raster
 download("https://www.dropbox.com/s/otiqe78s0kf1z1s/TZ_grids.zip?dl=0", "./Data/TZ_grids.zip", mode="wb")
 unzip("./Data/TZ_grids.zip", exdir="./Data", overwrite=T)
 glist <- list.files(path="./Data", pattern="tif", full.names=T)
@@ -35,11 +35,11 @@ geos <- cbind(geos, geos.proj)
 coordinates(geos) <- ~x+y
 projection(geos) <- projection(grid)
 
-# Extract gridded variables at GeoSurvey locations
+# Extract gridded variables at GeoSurvey locations with <raster>
 geosgrid <- extract(grid, geos)
 
 # Assemble dataframes
-# presence/absence of Cropland (CRP, present = 1, absent = 0) dataframe
+# presence/absence of Cropland (CRP, present = 1, absent = 0)
 CRP <- geos$CRP
 crpdat <- data.frame(cbind(CRP, geosgrid))
 crpdat <- na.omit(crpdat)
@@ -53,3 +53,6 @@ wcpdat <- na.omit(wcpdat)
 HSP <- geos$HSP
 hspdat <- data.frame(cbind(HSP, geosgrid))
 hspdat <- na.omit(hspdat)
+
+# Split data into train and test sets (with <caret>) ----------------------
+
