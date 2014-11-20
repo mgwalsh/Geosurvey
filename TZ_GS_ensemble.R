@@ -1,5 +1,5 @@
 # Ensemble predictions of Tanzania GeoSurvey cropland, woody vegetation cover
-# and human settlement data. 
+# and human settlement observations. 
 # M. Walsh, November 2014
 
 # Required packages
@@ -35,7 +35,7 @@ geos <- cbind(geos, geos.proj)
 coordinates(geos) <- ~x+y
 projection(geos) <- projection(grid)
 
-# Extract gridded variables at GeoSurvey locations with <raster>
+# Extract gridded variables at GeoSurvey locations
 geosgrid <- extract(grid, geos)
 
 # Assemble dataframes
@@ -49,10 +49,26 @@ WCP <- geos$WCP
 wcpdat <- data.frame(cbind(WCP, geosgrid))
 wcpdat <- na.omit(wcpdat)
 
-# presence/absence of buildings/Human Settlements (HSP, present = 1, absent = 0)
+# presence/absence of Buildings (HSP, present = 1, absent = 0)
 HSP <- geos$HSP
 hspdat <- data.frame(cbind(HSP, geosgrid))
 hspdat <- na.omit(hspdat)
 
-# Split data into train and test sets (with <caret>) ----------------------
+# Split data into train and test sets ------------------------------------
+set.seed(1385321)
+
+# Cropland data split
+crpIndex <- createDataPartition(crpdat$CRP, p = 0.75, list = FALSE, times = 1)
+crpTrain <- crpdat[ crpIndex,]
+crpTest  <- crpdat[-crpIndex,]
+
+# Woody cover data split
+wcpIndex <- createDataPartition(wcpdat$WCP, p = 0.75, list = FALSE, times = 1)
+wcpTrain <- wcpdat[ wcpIndex,]
+wcpTest  <- wcpdat[-wcpIndex,]
+
+# Settlement data split
+hspIndex <- createDataPartition(hspdat$HSP, p = 0.75, list = FALSE, times = 1)
+hspTrain <- hspdat[ hspIndex,]
+hspTest  <- hspdat[-hspIndex,]
 
