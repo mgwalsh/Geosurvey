@@ -22,7 +22,7 @@ download("https://www.dropbox.com/s/03l4m4zjdi5mhyu/TZ_geos_1114.csv?dl=0", "./D
 geos <- read.table(paste(dat_dir, "/TZ_geos_1114.csv", sep=""), header=T, sep=",")
 geos <- na.omit(geos)
 
-# download Tanzania Gtifs (~27.2 Mb) and stack in raster
+# download Tanzania Gtifs (~27 Mb) and stack in raster
 download("https://www.dropbox.com/s/otiqe78s0kf1z1s/TZ_grids.zip?dl=0", "./Data/TZ_grids.zip", mode="wb")
 unzip("./Data/TZ_grids.zip", exdir="./Data", overwrite=T)
 glist <- list.files(path="./Data", pattern="tif", full.names=T)
@@ -50,7 +50,8 @@ WCP <- geos$WCP
 wcpdat <- cbind.data.frame(WCP, geosgrid)
 wcpdat <- na.omit(wcpdat)
 
-# presence/absence of Buildings/Human Settlements (HSP, present = P, absent = A)
+# presence/absence of (rural) Buildings/Human Settlements (HSP, present = P, absent = A)
+# note that this does not include urban areas, where MODIS fPAR = 0
 HSP <- geos$HSP
 hspdat <- cbind.data.frame(HSP, geosgrid)
 hspdat <- na.omit(hspdat)
@@ -97,7 +98,7 @@ confusionMatrix(wcpglm.test, wcpTest$WCP) ## print validation summaries
 wcpglm.pred <- predict(grid, WCP.glm, type = "prob") ## spatial predictions
 plot(1-wcpglm.pred) ## map presence
 
-# presence/absence of Buildings/Human Settlements (HSP, present = P, absent = A)
+# presence/absence of (rural) Buildings/Human Settlements (HSP, present = P, absent = A)
 HSP.glm <- train(HSP ~ ., data = hspTrain,
                  family=binomial, 
                  method = "glmStepAIC",
@@ -129,7 +130,7 @@ confusionMatrix(wcprf.test, wcpTest$WCP) ## print validation summaries
 wcprf.pred <- predict(grid, WCP.rf, type = "prob") ## spatial predictions
 plot(1-wcprf.pred) ## map presence
 
-# presence/absence of Buildings/Human Settlements (HSP, present = P, absent = A)
+# presence/absence of (rural) Buildings/Human Settlements (HSP, present = P, absent = A)
 HSP.rf <- train(HSP ~ ., data = hspTrain,
                 method = "rf",
                 trControl = oob)
@@ -160,7 +161,7 @@ confusionMatrix(wcpgbm.test, wcpTest$WCP) ## print validation summaries
 wcpgbm.pred <- predict(grid, WCP.gbm, type = "prob") ## spatial predictions
 plot(1-wcpgbm.pred) ## map presence
 
-# presence/absence of Buildings/Human Settlements (HSP, present = P, absent = A)
+# presence/absence of (rural) Buildings/Human Settlements (HSP, present = P, absent = A)
 HSP.gbm <- train(HSP ~ ., data = hspTrain,
                  method = "gbm",
                  trControl = gbm)
