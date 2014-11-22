@@ -1,4 +1,4 @@
-# Ensemble machine learning (ML) predictions of Tanzania GeoSurvey cropland,
+# Ensemble machine learning predictions of Tanzania GeoSurvey cropland,
 # woody vegetation cover and human settlement observations. 
 # M. Walsh, November 2014
 
@@ -94,8 +94,8 @@ WCP.glm <- train(WCP ~ ., data = wcpTrain,
                  trControl = step)
 wcpglm.test <- predict(WCP.glm, wcpTest) ## predict test-set
 confusionMatrix(wcpglm.test, wcpTest$WCP) ## print validation summaries
-crpglm.pred <- predict(grid, CRP.glm, type = "prob") ## spatial predictions
-plot(1-crpglm.pred) ## map presence
+wcpglm.pred <- predict(grid, WCP.glm, type = "prob") ## spatial predictions
+plot(1-wcpglm.pred) ## map presence
 
 # presence/absence of Buildings/Human Settlements (HSP, present = P, absent = A)
 HSP.glm <- train(HSP ~ ., data = hspTrain,
@@ -138,7 +138,7 @@ confusionMatrix(hsprf.test, hspTest$HSP) ## print validation summaries
 hsprf.pred <- predict(grid, HSP.rf, type = "prob") ## spatial predictions
 plot(1-hsprf.pred) ## map presence
 
-# Generalized boosting <gbm> ----------------------------------------------
+# Boosted regression trees <gbm> ------------------------------------------
 # CV for training gbm's
 gbm <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
 
@@ -168,3 +168,7 @@ hspgbm.test <- predict(HSP.gbm, hspTest) ## predict test-set
 confusionMatrix(hspgbm.test, hspTest$HSP) ## print validation summaries
 hspgbm.pred <- predict(grid, HSP.gbm, type = "prob") ## spatial predictions
 plot(1-hspgbm.pred) ## map presence
+
+# Ensemble predictions ----------------------------------------------------
+
+
