@@ -9,7 +9,6 @@ require(raster)
 require(caret)
 require(rgdal)
 require(MASS)
-require(rpart)
 require(randomForest)
 
 # Data downloads ----------------------------------------------------------
@@ -73,33 +72,67 @@ hspIndex <- createDataPartition(hspdat$HSP, p = 0.75, list = FALSE, times = 1)
 hspTrain <- hspdat[ hspIndex,]
 hspTest  <- hspdat[-hspIndex,]
 
-# Cross-validation setup --------------------------------------------------
-# 10-fold
+# Stepwise main effects GLM's ---------------------------------------------
+# 10-fold CV for GLM training
 cv10 <- trainControl(method = "cv", number = 10)
 
-# Classification models ---------------------------------------------------
-# Stepwise main effects GLM's
+# presence/absence of Cropland (CRP, present = P, absent = A)
 CRP.glm <- train(CRP ~ ., data = crpTrain,
                  family = binomial, 
                  method = "glmStepAIC",
                  trControl = cv10)
-crpglm.test <- predict(CRP.glm, crpTest, type = "prob")
-crpglm.pred <- predict(grid, CRP.glm, type = "prob")
-plot(1-crpglm.pred)
+crpglm.test <- predict(CRP.glm, crpTest) ## predict test-set
+confusionMatrix(crpglm.test, crpTest$CRP) ## print validation summaries
+crpglm.pred <- predict(grid, CRP.glm, type = "prob") ## spatial predictions
+plot(1-crpglm.pred) ## map presence
 
+# presence/absence of Woody Vegetation Cover of >60% (WCP, present = P, absent = A)
 WCP.glm <- train(WCP ~ ., data = wcpTrain,
                  family=binomial, 
                  method = "glmStepAIC",
                  trControl = cv10)
-wcpglm.test <- predict(WCP.glm, wcpTest, type = "prob")
-wcpglm.pred <- predict(grid, WCP.glm, type = "prob")
-plot(1-wcpglm.pred)
+wcpglm.test <- predict(WCP.glm, wcpTest) ## predict test-set
+confusionMatrix(wcpglm.test, wcpTest$WCP) ## print validation summaries
+crpglm.pred <- predict(grid, CRP.glm, type = "prob") ## spatial predictions
+plot(1-crpglm.pred) ## map presence
 
+# presence/absence of Buildings/Human Settlements (HSP, present = P, absent = A)
 HSP.glm <- train(HSP ~ ., data = hspTrain,
                  family=binomial, 
                  method = "glmStepAIC",
                  trControl = cv10)
-hspglm.test <- predict(HSP.glm, hspTest, type = "prob")
-hspglm.pred <- predict(grid, HSP.glm, type = "prob")
-plot(1-hspglm.pred)
+hspglm.test <- predict(HSP.glm, hspTest) ## predict test-set
+confusionMatrix(hspglm.test, hspTest$HSP) ## print validation summaries
+hspglm.pred <- predict(grid, HSP.glm, type = "prob") ## spatial predictions
+plot(1-hspglm.pred) ## map presence
 
+# Random forests ----------------------------------------------------------
+# out-of-bag  for training RF's
+oob <- trainControl(method = "oob")
+
+# presence/absence of Cropland (CRP, present = P, absent = A)
+CRP.rf <- train(CRP ~ ., data = crpTrain,
+                method = "rf",
+                trControl = oob)
+crprf.test <- predict(CRP.rf, crpTest) ## predict test-set
+confusionMatrix(crprf.test, crpTest$CRP) ## print validation summaries
+crprf.pred <- predict(grid, CRP.rf, type = "prob") ## spatial predictions
+plot(1-crprf.pred) ## map presence
+
+# presence/absence of Woody Vegetation Cover of >60% (WCP, present = P, absent = A)
+WCP.rf <- train(WCP ~ ., data = wcpTrain,
+                method = "rf",
+                trControl = oob)
+wcprf.test <- predict(WCP.rf, wcpTest) ## predict test-set
+confusionMatrix(wcprf.test, wcpTest$WCP) ## print validation summaries
+wcprf.pred <- predict(grid, WCP.rf, type = "prob") ## spatial predictions
+plot(1-wcprf.pred) ## map presence
+
+# presence/absence of Buildings/Human Settlements (HSP, present = P, absent = A)
+HSP.rf <- train(HSP ~ ., data = hspTrain,
+                method = "rf",
+                trControl = oob)
+hsprf.test <- predict(HSP.rf, hspTest) ## predict test-set
+confusionMatrix(hsprf.test, hspTest$HSP) ## print validation summaries
+hsprf.pred <- predict(grid, HSP.rf, type = "prob") ## spatial predictions
+plot(1-hsprf.pred) ## map presence
