@@ -1,5 +1,5 @@
-# Ensemble predictions of Tanzania GeoSurvey cropland, woody vegetation cover
-# and human settlement observations. 
+# Ensemble machine learning (ML) predictions of Tanzania GeoSurvey cropland,
+# woody vegetation cover and human settlement observations. 
 # M. Walsh, November 2014
 
 # Required packages
@@ -10,6 +10,7 @@ require(caret)
 require(rgdal)
 require(MASS)
 require(randomForest)
+require(gbm)
 
 # Data downloads ----------------------------------------------------------
 # Create a "Data" folder in your current working directory
@@ -72,15 +73,15 @@ hspIndex <- createDataPartition(hspdat$HSP, p = 0.75, list = FALSE, times = 1)
 hspTrain <- hspdat[ hspIndex,]
 hspTest  <- hspdat[-hspIndex,]
 
-# Stepwise main effects GLM's ---------------------------------------------
-# 10-fold CV for GLM training
-cv10 <- trainControl(method = "cv", number = 10)
+# Stepwise main effects GLM's <MASS> --------------------------------------
+# 10-fold CV
+step <- trainControl(method = "cv", number = 10)
 
 # presence/absence of Cropland (CRP, present = P, absent = A)
 CRP.glm <- train(CRP ~ ., data = crpTrain,
                  family = binomial, 
                  method = "glmStepAIC",
-                 trControl = cv10)
+                 trControl = step)
 crpglm.test <- predict(CRP.glm, crpTest) ## predict test-set
 confusionMatrix(crpglm.test, crpTest$CRP) ## print validation summaries
 crpglm.pred <- predict(grid, CRP.glm, type = "prob") ## spatial predictions
@@ -90,7 +91,7 @@ plot(1-crpglm.pred) ## map presence
 WCP.glm <- train(WCP ~ ., data = wcpTrain,
                  family=binomial, 
                  method = "glmStepAIC",
-                 trControl = cv10)
+                 trControl = step)
 wcpglm.test <- predict(WCP.glm, wcpTest) ## predict test-set
 confusionMatrix(wcpglm.test, wcpTest$WCP) ## print validation summaries
 crpglm.pred <- predict(grid, CRP.glm, type = "prob") ## spatial predictions
@@ -100,14 +101,14 @@ plot(1-crpglm.pred) ## map presence
 HSP.glm <- train(HSP ~ ., data = hspTrain,
                  family=binomial, 
                  method = "glmStepAIC",
-                 trControl = cv10)
+                 trControl = step)
 hspglm.test <- predict(HSP.glm, hspTest) ## predict test-set
 confusionMatrix(hspglm.test, hspTest$HSP) ## print validation summaries
 hspglm.pred <- predict(grid, HSP.glm, type = "prob") ## spatial predictions
 plot(1-hspglm.pred) ## map presence
 
-# Random forests ----------------------------------------------------------
-# out-of-bag  for training RF's
+# Random forests <randomForest> -------------------------------------------
+# out-of-bag CV
 oob <- trainControl(method = "oob")
 
 # presence/absence of Cropland (CRP, present = P, absent = A)
@@ -136,3 +137,34 @@ hsprf.test <- predict(HSP.rf, hspTest) ## predict test-set
 confusionMatrix(hsprf.test, hspTest$HSP) ## print validation summaries
 hsprf.pred <- predict(grid, HSP.rf, type = "prob") ## spatial predictions
 plot(1-hsprf.pred) ## map presence
+
+# Generalized boosting <gbm> ----------------------------------------------
+# CV for training gbm's
+gbm <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
+
+# presence/absence of Cropland (CRP, present = P, absent = A)
+CRP.gbm <- train(CRP ~ ., data = crpTrain,
+                 method = "gbm",
+                 trControl = gbm)
+crpgbm.test <- predict(CRP.gbm, crpTest) ## predict test-set
+confusionMatrix(crpgbm.test, crpTest$CRP) ## print validation summaries
+crpgbm.pred <- predict(grid, CRP.gbm, type = "prob") ## spatial predictions
+plot(1-crpgbm.pred) ## map presence
+
+# presence/absence of Woody Vegetation Cover of >60% (WCP, present = P, absent = A)
+WCP.gbm <- train(WCP ~ ., data = wcpTrain,
+                 method = "gbm",
+                 trControl = gbm)
+wcpgbm.test <- predict(WCP.gbm, wcpTest) ## predict test-set
+confusionMatrix(wcpgbm.test, wcpTest$WCP) ## print validation summaries
+wcpgbm.pred <- predict(grid, WCP.gbm, type = "prob") ## spatial predictions
+plot(1-wcpgbm.pred) ## map presence
+
+# presence/absence of Buildings/Human Settlements (HSP, present = P, absent = A)
+HSP.gbm <- train(HSP ~ ., data = hspTrain,
+                 method = "gbm",
+                 trControl = gbm)
+hspgbm.test <- predict(HSP.gbm, hspTest) ## predict test-set
+confusionMatrix(hspgbm.test, hspTest$HSP) ## print validation summaries
+hspgbm.pred <- predict(grid, HSP.gbm, type = "prob") ## spatial predictions
+plot(1-hspgbm.pred) ## map presence
