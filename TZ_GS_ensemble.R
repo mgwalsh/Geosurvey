@@ -50,14 +50,14 @@ WCP <- geos$WCP
 wcpdat <- cbind.data.frame(WCP, geosgrid)
 wcpdat <- na.omit(wcpdat)
 
-# presence/absence of (rural) Buildings/Human Settlements (HSP, present = P, absent = A)
-# note that this does not include urban areas, where MODIS fPAR = 0
+# presence/absence of Buildings/Human Settlements (HSP, present = P, absent = A)
+# note that this excludes urban areas where MODIS fPAR = 0
 HSP <- geos$HSP
 hspdat <- cbind.data.frame(HSP, geosgrid)
 hspdat <- na.omit(hspdat)
 
 # Split data into train and test sets ------------------------------------
-set.seed(1385321)
+set.seed(1385321) ## very important to set this as it will affect all subsequent calc's !!!
 
 # Cropland train/test split
 crpIndex <- createDataPartition(crpdat$CRP, p = 0.75, list = FALSE, times = 1)
@@ -139,7 +139,7 @@ confusionMatrix(hsprf.test, hspTest$HSP) ## print validation summaries
 hsprf.pred <- predict(grid, HSP.rf, type = "prob") ## spatial predictions
 plot(1-hsprf.pred) ## map presence
 
-# Boosted regression trees <gbm> ------------------------------------------
+# Generalized boosted regression <gbm> ------------------------------------
 # CV for training gbm's
 gbm <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
 
@@ -170,6 +170,40 @@ confusionMatrix(hspgbm.test, hspTest$HSP) ## print validation summaries
 hspgbm.pred <- predict(grid, HSP.gbm, type = "prob") ## spatial predictions
 plot(1-hspgbm.pred) ## map presence
 
-# Ensemble predictions ----------------------------------------------------
+# Ensemble predictions <glm>, <rf>, <gbm> ---------------------------------
+# Ensemble set up
+preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred,
+               1-wcpglm.pred, 1-wcprf.pred, 1-wcpgbm.pred,
+               1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred)
+names(preds) <- c("CRPglm","CRPrf","CRPgbm","WCPglm","WCPrf","WCPgbm","HSPglm","HSPrf","HSPgbm")
+plot(preds)
+expreds <- extract(preds, geos)
+ensdat <- data.frame(geos[,4:6], expreds)
+ensIndex <- createDataPartition(ensdat$HSP, p = 0.75, list = FALSE, times = 1)
+ensTest  <- ensdat[-ensIndex,] ## previous set.seed important here to replicate test set
 
+# GLM based weighting on test set & spatial predictions
+# presence/absence of Cropland (CRP, present = P, absent = A)
+CRP.ens <- glm(CRP~CRPglm+CRPrf+CRPgbm, family=binomial(link="logit"), data=ensTest)
+crpens.pred <- predict(preds, CRP.ens, type="response")
+plot(crpens.pred)
 
+# presence/absence of Woody Vegetation Cover of >60% (WCP, present = P, absent = A)
+WCP.ens <- glm(WCP~WCPglm+WCPrf+WCPgbm, family=binomial(link="logit"), data=ensTest)
+wcpens.pred <- predict(preds, WCP.ens, type="response")
+plot(wcpens.pred)
+
+# presence/absence of (rural) Buildings/Human Settlements (HSP, present = P, absent = A)
+HSP.ens <- glm(HSP~HSPglm+HSPrf+HSPgbm, family=binomial(link="logit"), data=ensTest)
+hspens.pred <- predict(preds, HSP.ens, type="response")
+plot(hspens.pred)
+
+# Write spatial predictions -----------------------------------------------
+# Create a "Results" folder in your current working directory
+dir.create("Results", showWarnings=F)
+
+# Export Gtif's to "./Results"
+writeRaster(preds, filename="./Results/TZ_gspreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+enspred <- stack(crpens.pred, wcpens.pred, hspens.pred)
+names(enspred) <- c("CRPens", "WCPens", "HSPens")
+writeRaster(enspred, filename="./Results/TZ_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
