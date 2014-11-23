@@ -198,12 +198,15 @@ HSP.ens <- glm(HSP~HSPglm+HSPrf+HSPgbm, family=binomial(link="logit"), data=ensT
 hspens.pred <- predict(preds, HSP.ens, type="response")
 plot(hspens.pred)
 
+# Plot predictions
+enspred <- stack(crpens.pred, wcpens.pred, hspens.pred)
+names(enspred) <- c("CRP", "WCP", "HSP")
+plot(enspred)
+
 # Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in your current working directory
 dir.create("Results", showWarnings=F)
 
 # Export Gtif's to "./Results"
 writeRaster(preds, filename="./Results/TZ_gspreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-enspred <- stack(crpens.pred, wcpens.pred, hspens.pred)
-names(enspred) <- c("CRPens", "WCPens", "HSPens")
 writeRaster(enspred, filename="./Results/TZ_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
