@@ -3,11 +3,11 @@
 # M. Walsh, November 2014
 
 # Required packages
-# install.packages(c("downloader","raster","rgdal","caret","MASS","rpart","randomForest")), dependencies=TRUE)
+# install.packages(c("downloader","raster","rgdal","caret","MASS",randomForest","gbm")), dependencies=TRUE)
 require(downloader)
 require(raster)
-require(caret)
 require(rgdal)
+require(caret)
 require(MASS)
 require(randomForest)
 require(gbm)
