@@ -176,7 +176,7 @@ preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred,
                1-wcpglm.pred, 1-wcprf.pred, 1-wcpgbm.pred,
                1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred)
 names(preds) <- c("CRPglm","CRPrf","CRPgbm","WCPglm","WCPrf","WCPgbm","HSPglm","HSPrf","HSPgbm")
-plot(preds)
+plot(preds, axes = F)
 expreds <- extract(preds, geos)
 ensdat <- data.frame(geos[,4:6], expreds)
 ensIndex <- createDataPartition(ensdat$HSP, p = 0.75, list = FALSE, times = 1)
@@ -198,10 +198,10 @@ HSP.ens <- glm(HSP~HSPglm+HSPrf+HSPgbm, family=binomial(link="logit"), data=ensT
 hspens.pred <- predict(preds, HSP.ens, type="response")
 plot(hspens.pred)
 
-# Plot predictions
+# Plot ensemble predictions
 enspred <- stack(crpens.pred, wcpens.pred, hspens.pred)
 names(enspred) <- c("CRP", "WCP", "HSP")
-plot(enspred)
+plot(enspred, axes = F)
 
 # Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in your current working directory
