@@ -228,16 +228,19 @@ ensTest  <- ensdat[-ensIndex,] ## previous set.seed important here to replicate 
 # GLM based weighting on test set & spatial predictions
 # presence/absence of Cropland (CRP, present = P, absent = A)
 CRP.ens <- glm(CRP~CRPglm+CRPrf+CRPgbm+CRPnn, family=binomial(link="logit"), data=ensTest)
+summary(CRP.ens)
 crpens.pred <- predict(preds, CRP.ens, type="response")
 plot(crpens.pred, axes = F)
 
 # presence/absence of Woody Vegetation Cover of >60% (WCP, present = P, absent = A)
 WCP.ens <- glm(WCP~WCPglm+WCPrf+WCPgbm+WCPnn, family=binomial(link="logit"), data=ensTest)
+summary(WCP.ens)
 wcpens.pred <- predict(preds, WCP.ens, type="response")
 plot(wcpens.pred, axes = F)
 
 # presence/absence of (rural) Buildings/Human Settlements (HSP, present = P, absent = A)
 HSP.ens <- glm(HSP~HSPglm+HSPrf+HSPgbm+HSPnn, family=binomial(link="logit"), data=ensTest)
+summary(HSP.ens)
 hspens.pred <- predict(preds, HSP.ens, type="response")
 plot(hspens.pred, axes = F)
 
