@@ -41,17 +41,17 @@ projection(geos) <- projection(grid)
 geosgrid <- extract(grid, geos)
 
 # Assemble dataframes
-# presence/absence of Cropland (CRP, present = P, absent = A)
+# presence/absence of Cropland (CRP, present = Yes, absent = No)
 CRP <- geos$CRP
 crpdat <- cbind.data.frame(CRP, geosgrid)
 crpdat <- na.omit(crpdat)
 
-# presence/absence of Woody Vegetation Cover of >60% (WCP, present = P, absent = A)
+# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Yes, absent = No)
 WCP <- geos$WCP
 wcpdat <- cbind.data.frame(WCP, geosgrid)
 wcpdat <- na.omit(wcpdat)
 
-# presence/absence of Buildings/Human Settlements (HSP, present = P, absent = A)
+# presence/absence of Buildings/Human Settlements (HSP, present = Yes, absent = No)
 # note that this excludes large urban areas where MODIS fPAR = 0
 HSP <- geos$HSP
 hspdat <- cbind.data.frame(HSP, geosgrid)
@@ -79,7 +79,7 @@ hspTest  <- hspdat[-hspIndex,]
 # 10-fold CV
 step <- trainControl(method = "cv", number = 10)
 
-# presence/absence of Cropland (CRP, present = P, absent = A)
+# presence/absence of Cropland (CRP, present = Yes, absent = No)
 CRP.glm <- train(CRP ~ ., data = crpTrain,
                  family = binomial, 
                  method = "glmStepAIC",
@@ -88,7 +88,7 @@ crpglm.test <- predict(CRP.glm, crpTest) ## predict test-set
 confusionMatrix(crpglm.test, crpTest$CRP) ## print validation summaries
 crpglm.pred <- predict(grid, CRP.glm, type = "prob") ## spatial predictions
 
-# presence/absence of Woody Vegetation Cover of >60% (WCP, present = P, absent = A)
+# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Yes, absent = No)
 WCP.glm <- train(WCP ~ ., data = wcpTrain,
                  family=binomial, 
                  method = "glmStepAIC",
@@ -97,7 +97,7 @@ wcpglm.test <- predict(WCP.glm, wcpTest) ## predict test-set
 confusionMatrix(wcpglm.test, wcpTest$WCP) ## print validation summaries
 wcpglm.pred <- predict(grid, WCP.glm, type = "prob") ## spatial predictions
 
-# presence/absence of (rural) Buildings/Human Settlements (HSP, present = P, absent = A)
+# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Yes, absent = No)
 HSP.glm <- train(HSP ~ ., data = hspTrain,
                  family=binomial, 
                  method = "glmStepAIC",
@@ -112,10 +112,10 @@ names(glmpreds) <- c("CRPglm", "WCPglm", "HSPglm")
 plot(glmpreds, axes = F)
 
 # Random forests <randomForest> -------------------------------------------
-# out-of-bag CV
+# out-of-bag predictions
 oob <- trainControl(method = "oob")
 
-# presence/absence of Cropland (CRP, present = P, absent = A)
+# presence/absence of Cropland (CRP, present = Yes, absent = No)
 CRP.rf <- train(CRP ~ ., data = crpTrain,
                 method = "rf",
                 trControl = oob)
@@ -123,7 +123,7 @@ crprf.test <- predict(CRP.rf, crpTest) ## predict test-set
 confusionMatrix(crprf.test, crpTest$CRP) ## print validation summaries
 crprf.pred <- predict(grid, CRP.rf, type = "prob") ## spatial predictions
 
-# presence/absence of Woody Vegetation Cover of >60% (WCP, present = P, absent = A)
+# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Yes, absent = No)
 WCP.rf <- train(WCP ~ ., data = wcpTrain,
                 method = "rf",
                 trControl = oob)
@@ -131,7 +131,7 @@ wcprf.test <- predict(WCP.rf, wcpTest) ## predict test-set
 confusionMatrix(wcprf.test, wcpTest$WCP) ## print validation summaries
 wcprf.pred <- predict(grid, WCP.rf, type = "prob") ## spatial predictions
 
-# presence/absence of (rural) Buildings/Human Settlements (HSP, present = P, absent = A)
+# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Yes, absent = No)
 HSP.rf <- train(HSP ~ ., data = hspTrain,
                 method = "rf",
                 trControl = oob)
@@ -144,11 +144,11 @@ rfpreds <- stack(1-crprf.pred, 1-wcprf.pred, 1-hsprf.pred)
 names(rfpreds) <- c("CRPrf", "WCPrf", "HSPrf")
 plot(rfpreds, axes = F)
 
-# Generalized boosted regression <gbm> ------------------------------------
+# Generalized boosting <gbm> ------------------------------------
 # CV for training gbm's
 gbm <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
 
-# presence/absence of Cropland (CRP, present = P, absent = A)
+# presence/absence of Cropland (CRP, present = Yes, absent = No)
 CRP.gbm <- train(CRP ~ ., data = crpTrain,
                  method = "gbm",
                  trControl = gbm)
@@ -156,7 +156,7 @@ crpgbm.test <- predict(CRP.gbm, crpTest) ## predict test-set
 confusionMatrix(crpgbm.test, crpTest$CRP) ## print validation summaries
 crpgbm.pred <- predict(grid, CRP.gbm, type = "prob") ## spatial predictions
 
-# presence/absence of Woody Vegetation Cover of >60% (WCP, present = P, absent = A)
+# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Yes, absent = No)
 WCP.gbm <- train(WCP ~ ., data = wcpTrain,
                  method = "gbm",
                  trControl = gbm)
@@ -164,7 +164,7 @@ wcpgbm.test <- predict(WCP.gbm, wcpTest) ## predict test-set
 confusionMatrix(wcpgbm.test, wcpTest$WCP) ## print validation summaries
 wcpgbm.pred <- predict(grid, WCP.gbm, type = "prob") ## spatial predictions
 
-# presence/absence of (rural) Buildings/Human Settlements (HSP, present = P, absent = A)
+# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Yes, absent = No)
 HSP.gbm <- train(HSP ~ ., data = hspTrain,
                  method = "gbm",
                  trControl = gbm)
@@ -181,7 +181,7 @@ plot(gbmpreds, axes = F)
 # CV for training nnet's
 nn <- trainControl(method = "cv", number = 10)
 
-# presence/absence of Cropland (CRP, present = P, absent = A)
+# presence/absence of Cropland (CRP, present = Yes, absent = No)
 CRP.nn <- train(CRP ~ ., data = crpTrain,
                 method = "nnet",
                 trControl = nn)
@@ -189,7 +189,7 @@ crpnn.test <- predict(CRP.nn, crpTest) ## predict test-set
 confusionMatrix(crpnn.test, crpTest$CRP) ## print validation summaries
 crpnn.pred <- predict(grid, CRP.nn, type = "prob") ## spatial predictions
 
-# presence/absence of Woody Vegetation Cover of >60% (WCP, present = P, absent = A)
+# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Yes, absent = No)
 WCP.nn <- train(WCP ~ ., data = wcpTrain,
                 method = "nnet",
                 trControl = nn)
@@ -197,7 +197,7 @@ wcpnn.test <- predict(WCP.nn, wcpTest) ## predict test-set
 confusionMatrix(wcpnn.test, wcpTest$WCP) ## print validation summaries
 wcpnn.pred <- predict(grid, WCP.nn, type = "prob") ## spatial predictions
 
-# presence/absence of (rural) Buildings/Human Settlements (HSP, present = P, absent = A)
+# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Yes, absent = No)
 HSP.nn <- train(HSP ~ ., data = hspTrain,
                 method = "nnet",
                 trControl = nn)
@@ -212,33 +212,43 @@ plot(nnpreds, axes = F)
 
 # Ensemble predictions <glm>, <rf>, <gbm>, <nnet> --------------------------
 # Ensemble set up
-preds <- stack(1-crpglm.pred, 1-wcpglm.pred, 1-hspglm.pred,
-               1-crprf.pred, 1-wcprf.pred, 1-hsprf.pred,
-               1-crpgbm.pred, 1-wcpgbm.pred, 1-hspgbm.pred,
-               1-crpnn.pred, 1-wcpnn.pred, 1-hspnn.pred)
-names(preds) <- c("CRPglm","WCPglm","HSPglm",
-                  "CRPrf","WCPrf","HSPrf",
-                  "CRPgbm","WCPgbm","HSPgbm",
-                  "CRPnn", "WCPnn", "HSPnn")
+preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred,
+               1-wcpglm.pred, 1-wcprf.pred, 1-wcpgbm.pred, 1-wcpnn.pred,
+               1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
 expreds <- extract(preds, geos)
 ensdat <- data.frame(geos[,4:6], expreds)
 ensIndex <- createDataPartition(ensdat$HSP, p = 0.75, list = FALSE, times = 1)
 ensTest  <- ensdat[-ensIndex,] ## previous set.seed important here to replicate test set
 
-# GLM based weighting on test set & spatial predictions
-# presence/absence of Cropland (CRP, present = P, absent = A)
+# Cropland prediction plots
+crp.preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred)
+names(crp.preds) <- c("glm","randomForest","gbm","nnet")
+plot(crp.preds, axes = F)
+
+# Woody vegetation cover >60% prediction plots
+wcp.preds <- stack(1-wcpglm.pred, 1-wcprf.pred, 1-wcpgbm.pred, 1-wcpnn.pred)
+names(wcp.preds) <- c("glm","randomForest","gbm","nnet")
+plot(wcp.preds, axes = F)
+
+# Human settlement prediction plots
+hsp.preds <- stack(1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
+names(hsp.preds) <- c("glm","randomForest","gbm","nnet")
+plot(hsp.preds, axes = F)
+
+# GLM based weighting on test set & train set spatial predictions
+# presence/absence of Cropland (CRP, present = Yes, absent = No)
 CRP.ens <- glm(CRP~CRPglm+CRPrf+CRPgbm+CRPnn, family=binomial(link="logit"), data=ensTest)
 summary(CRP.ens)
 crpens.pred <- predict(preds, CRP.ens, type="response")
 plot(crpens.pred, axes = F)
 
-# presence/absence of Woody Vegetation Cover of >60% (WCP, present = P, absent = A)
+# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Yes, absent = No)
 WCP.ens <- glm(WCP~WCPglm+WCPrf+WCPgbm+WCPnn, family=binomial(link="logit"), data=ensTest)
 summary(WCP.ens)
 wcpens.pred <- predict(preds, WCP.ens, type="response")
 plot(wcpens.pred, axes = F)
 
-# presence/absence of (rural) Buildings/Human Settlements (HSP, present = P, absent = A)
+# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Yes, absent = No)
 HSP.ens <- glm(HSP~HSPglm+HSPrf+HSPgbm+HSPnn, family=binomial(link="logit"), data=ensTest)
 summary(HSP.ens)
 hspens.pred <- predict(preds, HSP.ens, type="response")
@@ -247,12 +257,12 @@ plot(hspens.pred, axes = F)
 # Plot ensemble predictions
 enspred <- stack(crpens.pred, wcpens.pred, hspens.pred)
 names(enspred) <- c("CRP", "WCP", "HSP")
-plot(enspred, axes = F)
+plot(enspred, axes = F, main = "")
 
 # Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in your current working directory
 dir.create("Results", showWarnings=F)
 
 # Export Gtif's to "./Results"
-writeRaster(preds, filename="./Results/TZ_gspreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(preds, filename="./Results/TZ_crpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 writeRaster(enspred, filename="./Results/TZ_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
