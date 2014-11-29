@@ -3,7 +3,7 @@
 # M. Walsh, November 2014
 
 # Required packages
-# install.packages(c("downloader","raster","rgdal","caret","MASS",randomForest","gbm")), dependencies=TRUE)
+# install.packages(c("downloader","raster","rgdal","caret","MASS",randomForest","gbm","nnet")), dependencies=TRUE)
 require(downloader)
 require(raster)
 require(rgdal)
@@ -210,16 +210,7 @@ nnpreds <- stack(1-crpnn.pred, 1-wcpnn.pred, 1-hspnn.pred)
 names(nnpreds) <- c("CRPnn", "WCPnn", "HSPnn")
 plot(nnpreds, axes = F)
 
-# Ensemble predictions <glm>, <rf>, <gbm>, <nnet> --------------------------
-# Ensemble set up
-preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred,
-               1-wcpglm.pred, 1-wcprf.pred, 1-wcpgbm.pred, 1-wcpnn.pred,
-               1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
-expreds <- extract(preds, geos)
-ensdat <- data.frame(geos[,4:6], expreds)
-ensIndex <- createDataPartition(ensdat$HSP, p = 0.75, list = FALSE, times = 1)
-ensTest  <- ensdat[-ensIndex,] ## previous set.seed important here to replicate test set
-
+# Plot predictions by GeoSurvey variables ---------------------------------
 # Cropland prediction plots
 crp.preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred)
 names(crp.preds) <- c("glm","randomForest","gbm","nnet")
@@ -235,27 +226,58 @@ hsp.preds <- stack(1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
 names(hsp.preds) <- c("glm","randomForest","gbm","nnet")
 plot(hsp.preds, axes = F)
 
-# GLM based weighting on test set & train set spatial predictions
-# presence/absence of Cropland (CRP, present = Yes, absent = No)
-CRP.ens <- glm(CRP~CRPglm+CRPrf+CRPgbm+CRPnn, family=binomial(link="logit"), data=ensTest)
-summary(CRP.ens)
-crpens.pred <- predict(preds, CRP.ens, type="response")
-plot(crpens.pred, axes = F)
+# Ensemble predictions <glm>, <rf>, <gbm>, <nnet> --------------------------
+# Ensemble set up
+preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred,
+               1-wcpglm.pred, 1-wcprf.pred, 1-wcpgbm.pred, 1-wcpnn.pred,
+               1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
+names(preds) <- c("CRPglm","CRPrf","CRPgbm","CRPnn",
+                  "WCPglm","WCPrf","WCPgbm","WCPnn",
+                  "HSPglm","HSPrf","HSPgbm","HSPnn")
+expreds <- extract(preds, geos)
+ensdat <- data.frame(geos[,4:6], expreds)
+ensdat <- na.omit(ensdat)
+ensIndex <- createDataPartition(ensdat$CRP, p = 0.75, list = FALSE, times = 1)
+ensTrain <- ensdat[ensIndex,] ## replicate previous training set with prediction rasters
+ensTest  <- ensdat[-ensIndex,] ## replicate previous test set with prediction rasters
+
+# GLM weighted ensemble predictions for individual <glm>, <randomForest>, <gbm>
+# & <nnet> model train sets
+# presence/absence of Cropland (CRP, present = Yes, absent = N)
+CRP.ens <- train(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data = ensTrain,
+                 family = binomial, 
+                 method = "glmStepAIC",
+                 trControl = step)
+summary(CRP.ens) 
+crpens.test <- predict(CRP.ens, ensTest) ## predict test-set
+confusionMatrix(crpens.test, ensTest$CRP) ## print test set performance
+crpens.pred <- predict(preds, CRP.ens, type="prob") ## predict grid
+plot(1-crpens.pred, axes = F) ## plot gridded predictions
 
 # presence/absence of Woody Vegetation Cover of >60% (WCP, present = Yes, absent = No)
-WCP.ens <- glm(WCP~WCPglm+WCPrf+WCPgbm+WCPnn, family=binomial(link="logit"), data=ensTest)
-summary(WCP.ens)
-wcpens.pred <- predict(preds, WCP.ens, type="response")
-plot(wcpens.pred, axes = F)
+WCP.ens <- train(WCP ~ WCPglm + WCPrf + WCPgbm + WCPnn, data = ensTrain,
+                 family = binomial, 
+                 method = "glmStepAIC",
+                 trControl = step)
+summary(WCP.ens) 
+wcpens.test <- predict(WCP.ens, ensTest) ## predict test-set
+confusionMatrix(wcpens.test, ensTest$WCP) ## print test set performance
+wcpens.pred <- predict(preds, WCP.ens, type="prob") ## predict grid
+plot(1-wcpens.pred, axes = F) ## plot gridded predictions
 
 # presence/absence of (rural) Buildings/Human Settlements (HSP, present = Yes, absent = No)
-HSP.ens <- glm(HSP~HSPglm+HSPrf+HSPgbm+HSPnn, family=binomial(link="logit"), data=ensTest)
-summary(HSP.ens)
-hspens.pred <- predict(preds, HSP.ens, type="response")
-plot(hspens.pred, axes = F)
+HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = ensTrain,
+                 family = binomial, 
+                 method = "glmStepAIC",
+                 trControl = step)
+summary(HSP.ens) 
+hspens.test <- predict(HSP.ens, ensTest) ## predict test-set
+confusionMatrix(hspens.test, ensTest$HSP) ## print test set performance
+hspens.pred <- predict(preds, HSP.ens, type="prob") ## predict grid
+plot(1-hspens.pred, axes = F) ## plot gridded predictions
 
 # Plot ensemble predictions
-enspred <- stack(crpens.pred, wcpens.pred, hspens.pred)
+enspred <- stack(1-crpens.pred, 1-wcpens.pred, 1-hspens.pred)
 names(enspred) <- c("CRP", "WCP", "HSP")
 plot(enspred, axes = F, main = "")
 
@@ -264,5 +286,7 @@ plot(enspred, axes = F, main = "")
 dir.create("Results", showWarnings=F)
 
 # Export Gtif's to "./Results"
-writeRaster(preds, filename="./Results/TZ_crpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(crp.preds, filename="./Results/TZ_crpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(wcp.preds, filename="./Results/TZ_wcpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(hsp.preds, filename="./Results/TZ_crpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 writeRaster(enspred, filename="./Results/TZ_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
