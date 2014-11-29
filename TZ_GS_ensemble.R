@@ -252,7 +252,7 @@ summary(CRP.ens)
 crpens.test <- predict(CRP.ens, ensTest) ## predict test-set
 confusionMatrix(crpens.test, ensTest$CRP) ## print test set performance
 crpens.pred <- predict(preds, CRP.ens, type="prob") ## predict grid
-plot(1-crpens.pred, axes = F) ## plot gridded predictions
+plot(1-crpens.pred, axes = F) ## plot gridded ensemble predictions
 
 # presence/absence of Woody Vegetation Cover of >60% (WCP, present = Yes, absent = No)
 WCP.ens <- train(WCP ~ WCPglm + WCPrf + WCPgbm + WCPnn, data = ensTrain,
@@ -263,7 +263,7 @@ summary(WCP.ens)
 wcpens.test <- predict(WCP.ens, ensTest) ## predict test-set
 confusionMatrix(wcpens.test, ensTest$WCP) ## print test set performance
 wcpens.pred <- predict(preds, WCP.ens, type="prob") ## predict grid
-plot(1-wcpens.pred, axes = F) ## plot gridded predictions
+plot(1-wcpens.pred, axes = F) ## plot gridded ensemble predictions
 
 # presence/absence of (rural) Buildings/Human Settlements (HSP, present = Yes, absent = No)
 HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = ensTrain,
@@ -274,7 +274,7 @@ summary(HSP.ens)
 hspens.test <- predict(HSP.ens, ensTest) ## predict test-set
 confusionMatrix(hspens.test, ensTest$HSP) ## print test set performance
 hspens.pred <- predict(preds, HSP.ens, type="prob") ## predict grid
-plot(1-hspens.pred, axes = F) ## plot gridded predictions
+plot(1-hspens.pred, axes = F) ## plot gridded ensemble predictions
 
 # Plot ensemble predictions
 enspred <- stack(1-crpens.pred, 1-wcpens.pred, 1-hspens.pred)
