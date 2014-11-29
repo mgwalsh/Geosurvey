@@ -57,9 +57,10 @@ HSP <- geos$HSP
 hspdat <- cbind.data.frame(HSP, geosgrid)
 hspdat <- na.omit(hspdat)
 
-# Split data into train and test sets ------------------------------------
-set.seed(1385321) ## very important to set this as it will affect all subsequent calc's !!!
+# set train/test set randomization seed
+set.seed(1385321)
 
+# Split data into train and test sets ------------------------------------
 # Cropland train/test split
 crpIndex <- createDataPartition(crpdat$CRP, p = 0.75, list = FALSE, times = 1)
 crpTrain <- crpdat[ crpIndex,]
