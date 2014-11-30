@@ -81,7 +81,7 @@ hspTest  <- hspdat[-hspIndex,]
 # 10-fold CV
 step <- trainControl(method = "cv", number = 10)
 
-# presence/absence of Cropland (CRP, present = Yes, absent = No)
+# presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.glm <- train(CRP ~ ., data = crpTrain,
                  family = binomial, 
                  method = "glmStepAIC",
@@ -90,7 +90,7 @@ crpglm.test <- predict(CRP.glm, crpTest) ## predict test-set
 confusionMatrix(crpglm.test, crpTest$CRP, "Y") ## print validation summaries
 crpglm.pred <- predict(grid, CRP.glm, type = "prob") ## spatial predictions
 
-# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Yes, absent = No)
+# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Y, absent = N)
 WCP.glm <- train(WCP ~ ., data = wcpTrain,
                  family=binomial, 
                  method = "glmStepAIC",
@@ -99,7 +99,7 @@ wcpglm.test <- predict(WCP.glm, wcpTest) ## predict test-set
 confusionMatrix(wcpglm.test, wcpTest$WCP, "Y") ## print validation summaries
 wcpglm.pred <- predict(grid, WCP.glm, type = "prob") ## spatial predictions
 
-# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Yes, absent = No)
+# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.glm <- train(HSP ~ ., data = hspTrain,
                  family=binomial, 
                  method = "glmStepAIC",
@@ -117,7 +117,7 @@ plot(glmpreds, axes = F)
 # out-of-bag predictions
 oob <- trainControl(method = "oob")
 
-# presence/absence of Cropland (CRP, present = Yes, absent = No)
+# presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.rf <- train(CRP ~ ., data = crpTrain,
                 method = "rf",
                 trControl = oob)
@@ -125,7 +125,7 @@ crprf.test <- predict(CRP.rf, crpTest) ## predict test-set
 confusionMatrix(crprf.test, crpTest$CRP, "Y") ## print validation summaries
 crprf.pred <- predict(grid, CRP.rf, type = "prob") ## spatial predictions
 
-# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Yes, absent = No)
+# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Y, absent = N)
 WCP.rf <- train(WCP ~ ., data = wcpTrain,
                 method = "rf",
                 trControl = oob)
@@ -133,7 +133,7 @@ wcprf.test <- predict(WCP.rf, wcpTest) ## predict test-set
 confusionMatrix(wcprf.test, wcpTest$WCP, "Y") ## print validation summaries
 wcprf.pred <- predict(grid, WCP.rf, type = "prob") ## spatial predictions
 
-# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Yes, absent = No)
+# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.rf <- train(HSP ~ ., data = hspTrain,
                 method = "rf",
                 trControl = oob)
@@ -150,7 +150,7 @@ plot(rfpreds, axes = F)
 # CV for training gbm's
 gbm <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
 
-# presence/absence of Cropland (CRP, present = Yes, absent = No)
+# presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.gbm <- train(CRP ~ ., data = crpTrain,
                  method = "gbm",
                  trControl = gbm)
@@ -158,7 +158,7 @@ crpgbm.test <- predict(CRP.gbm, crpTest) ## predict test-set
 confusionMatrix(crpgbm.test, crpTest$CRP, "Y") ## print validation summaries
 crpgbm.pred <- predict(grid, CRP.gbm, type = "prob") ## spatial predictions
 
-# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Yes, absent = No)
+# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Y, absent = N)
 WCP.gbm <- train(WCP ~ ., data = wcpTrain,
                  method = "gbm",
                  trControl = gbm)
@@ -166,7 +166,7 @@ wcpgbm.test <- predict(WCP.gbm, wcpTest) ## predict test-set
 confusionMatrix(wcpgbm.test, wcpTest$WCP, "Y") ## print validation summaries
 wcpgbm.pred <- predict(grid, WCP.gbm, type = "prob") ## spatial predictions
 
-# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Yes, absent = No)
+# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.gbm <- train(HSP ~ ., data = hspTrain,
                  method = "gbm",
                  trControl = gbm)
@@ -183,7 +183,7 @@ plot(gbmpreds, axes = F)
 # CV for training nnet's
 nn <- trainControl(method = "cv", number = 10)
 
-# presence/absence of Cropland (CRP, present = Yes, absent = No)
+# presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.nn <- train(CRP ~ ., data = crpTrain,
                 method = "nnet",
                 trControl = nn)
@@ -191,7 +191,7 @@ crpnn.test <- predict(CRP.nn, crpTest) ## predict test-set
 confusionMatrix(crpnn.test, crpTest$CRP, "Y") ## print validation summaries
 crpnn.pred <- predict(grid, CRP.nn, type = "prob") ## spatial predictions
 
-# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Yes, absent = No)
+# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Y, absent = N)
 WCP.nn <- train(WCP ~ ., data = wcpTrain,
                 method = "nnet",
                 trControl = nn)
@@ -199,7 +199,7 @@ wcpnn.test <- predict(WCP.nn, wcpTest) ## predict test-set
 confusionMatrix(wcpnn.test, wcpTest$WCP, "Y") ## print validation summaries
 wcpnn.pred <- predict(grid, WCP.nn, type = "prob") ## spatial predictions
 
-# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Yes, absent = No)
+# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.nn <- train(HSP ~ ., data = hspTrain,
                 method = "nnet",
                 trControl = nn)
