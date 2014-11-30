@@ -146,7 +146,7 @@ rfpreds <- stack(1-crprf.pred, 1-wcprf.pred, 1-hsprf.pred)
 names(rfpreds) <- c("CRPrf", "WCPrf", "HSPrf")
 plot(rfpreds, axes = F)
 
-# Generalized boosting <gbm> ------------------------------------
+# Generalized boosting <gbm> ------------------------------------------
 # CV for training gbm's
 gbm <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
 
