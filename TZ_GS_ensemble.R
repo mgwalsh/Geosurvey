@@ -3,7 +3,7 @@
 # M. Walsh, November 2014
 
 # Required packages
-# install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet")), dependencies=TRUE)
+# install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","ROCR)), dependencies=TRUE)
 require(downloader)
 require(raster)
 require(rgdal)
@@ -12,6 +12,7 @@ require(MASS)
 require(randomForest)
 require(gbm)
 require(nnet)
+require(ROCR)
 
 # Data downloads ----------------------------------------------------------
 # Create a "Data" folder in your current working directory
@@ -228,7 +229,7 @@ names(hsp.preds) <- c("glm","randomForest","gbm","nnet")
 plot(hsp.preds, axes = F)
 
 # Ensemble predictions <glm>, <rf>, <gbm>, <nnet> --------------------------
-# Ensemble set up
+# Ensemble set-up
 preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred,
                1-wcpglm.pred, 1-wcprf.pred, 1-wcpgbm.pred, 1-wcpnn.pred,
                1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
@@ -281,6 +282,31 @@ plot(1-hspens.pred, axes = F) ## plot gridded ensemble predictions
 enspred <- stack(1-crpens.pred, 1-wcpens.pred, 1-hspens.pred)
 names(enspred) <- c("CRP", "WCP", "HSP")
 plot(enspred, axes = F, main = "")
+
+# Receiver/Operator Curves of ensemble prediction test sets ---------------
+# Cropland ensemble predictions
+crpprob <- predict(CRP.ens, ensTest, type="prob")
+crppred <- prediction(crpprob$Y, ensTest$CRP)
+crproc <- performance(crppred, "tpr", "fpr")
+plot(crproc)
+crpacc <- performance(crppred, "acc")
+plot(crpacc, xlab = "p(CRP = Y)")
+
+# Woody vegetation cover >60% ensemble predictions
+wcpprob <- predict(WCP.ens, ensTest, type="prob")
+wcppred <- prediction(wcpprob$Y, ensTest$WCP)
+wcproc <- performance(wcppred, "tpr", "fpr")
+plot(wcproc)
+wcpacc <- performance(wcppred, "acc")
+plot(wcpacc, xlab = "p(WCP = Y)")
+
+# Woody vegetation cover >60% ensemble predictions
+hspprob <- predict(HSP.ens, ensTest, type="prob")
+hsppred <- prediction(hspprob$Y, ensTest$HSP)
+hsproc <- performance(hsppred, "tpr", "fpr")
+plot(hsproc)
+hspacc <- performance(hsppred, "acc")
+plot(hspacc, xlab = "p(HSP = Y)")
 
 # Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in your current working directory
