@@ -239,8 +239,8 @@ expreds <- extract(preds, geos)
 ensdat <- data.frame(geos[,4:6], expreds)
 ensdat <- na.omit(ensdat)
 ensIndex <- createDataPartition(ensdat$CRP, p = 0.75, list = FALSE, times = 1)
-ensTrain <- ensdat[ensIndex,] ## replicate previous training set with prediction rasters
-ensTest  <- ensdat[-ensIndex,] ## replicate previous test set with prediction rasters
+ensTrain <- ensdat[ensIndex,] ## replicate previous training set including prediction rasters
+ensTest  <- ensdat[-ensIndex,] ## replicate previous test set including prediction rasters
 
 # GLM weighted ensemble predictions for <glm>, <randomForest>, <gbm>
 # & <nnet> model training sets
