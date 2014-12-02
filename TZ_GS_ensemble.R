@@ -289,8 +289,8 @@ crproc <- performance(crppred, "tpr", "fpr")
 plot(crproc)
 crpsens <- performance(crppred, "sens")
 crpspec <- performance(crppred, "spec")
-plot(crpsens, xlab = "p(CRP = Y)", ylab = "Sensitivity & Specificity")
-plot(crpspec, add = T)
+plot(crpsens, xlab = "p(CRP = Y)", col="blue", ylab = "Sensitivity & Specificity")
+plot(crpspec, col="red", add = T)
 
 # Woody vegetation cover >60% ensemble predictions
 wcpprob <- predict(WCP.ens, wcpensTest, type="response")
@@ -299,8 +299,8 @@ wcproc <- performance(wcppred, "tpr", "fpr")
 plot(wcproc)
 wcpsens <- performance(wcppred, "sens")
 wcpspec <- performance(wcppred, "spec")
-plot(wcpsens, xlab = "p(WCP = Y)", ylab = "Sensitivity & Specificity")
-plot(wcpspec, add = T)
+plot(wcpsens, xlab = "p(WCP = Y)", col="blue", ylab = "Sensitivity & Specificity")
+plot(wcpspec, col="red", add = T)
 
 # Building/Human settlement ensemble predictions
 hspprob <- predict(HSP.ens, hspensTest, type="response")
@@ -309,8 +309,8 @@ hsproc <- performance(hsppred, "tpr", "fpr")
 plot(hsproc)
 hspsens <- performance(hsppred, "sens")
 hspspec <- performance(hsppred, "spec")
-plot(hspsens, xlab = "p(HSP = Y)", ylab = "Sensitivity & Specificity")
-plot(hspspec, add = T)
+plot(hspsens, xlab = "p(HSP = Y)", col="blue", ylab = "Sensitivity & Specificity")
+plot(hspspec, col="red", add = T)
 
 # Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in your current working directory
