@@ -42,24 +42,25 @@ projection(geos) <- projection(grid)
 geosgrid <- extract(grid, geos)
 
 # Assemble dataframes
-# presence/absence of Cropland (CRP, present = Yes, absent = No)
+# presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP <- geos$CRP
 crpdat <- cbind.data.frame(CRP, geosgrid)
 crpdat <- na.omit(crpdat)
 
-# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Yes, absent = No)
+# presence/absence of Woody Vegetation Cover >60% (WCP, present = Y, absent = N)
 WCP <- geos$WCP
 wcpdat <- cbind.data.frame(WCP, geosgrid)
 wcpdat <- na.omit(wcpdat)
 
-# presence/absence of Buildings/Human Settlements (HSP, present = Yes, absent = No)
+# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
 # note that this excludes large urban areas where MODIS fPAR = 0
 HSP <- geos$HSP
 hspdat <- cbind.data.frame(HSP, geosgrid)
 hspdat <- na.omit(hspdat)
 
 # set train/test set randomization seed
-set.seed(1385321)
+seed <- 1385321
+set.seed(seed)
 
 # Split data into train and test sets ------------------------------------
 # Cropland train/test split
@@ -90,7 +91,7 @@ crpglm.test <- predict(CRP.glm, crpTest) ## predict test-set
 confusionMatrix(crpglm.test, crpTest$CRP, "Y") ## print validation summaries
 crpglm.pred <- predict(grid, CRP.glm, type = "prob") ## spatial predictions
 
-# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Y, absent = N)
+# presence/absence of Woody Vegetation Cover >60% (WCP, present = Y, absent = N)
 WCP.glm <- train(WCP ~ ., data = wcpTrain,
                  family=binomial, 
                  method = "glmStepAIC",
@@ -99,7 +100,7 @@ wcpglm.test <- predict(WCP.glm, wcpTest) ## predict test-set
 confusionMatrix(wcpglm.test, wcpTest$WCP, "Y") ## print validation summaries
 wcpglm.pred <- predict(grid, WCP.glm, type = "prob") ## spatial predictions
 
-# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Y, absent = N)
+# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.glm <- train(HSP ~ ., data = hspTrain,
                  family=binomial, 
                  method = "glmStepAIC",
@@ -125,7 +126,7 @@ crprf.test <- predict(CRP.rf, crpTest) ## predict test-set
 confusionMatrix(crprf.test, crpTest$CRP, "Y") ## print validation summaries
 crprf.pred <- predict(grid, CRP.rf, type = "prob") ## spatial predictions
 
-# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Y, absent = N)
+# presence/absence of Woody Vegetation Cover >60% (WCP, present = Y, absent = N)
 WCP.rf <- train(WCP ~ ., data = wcpTrain,
                 method = "rf",
                 trControl = oob)
@@ -133,7 +134,7 @@ wcprf.test <- predict(WCP.rf, wcpTest) ## predict test-set
 confusionMatrix(wcprf.test, wcpTest$WCP, "Y") ## print validation summaries
 wcprf.pred <- predict(grid, WCP.rf, type = "prob") ## spatial predictions
 
-# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Y, absent = N)
+# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.rf <- train(HSP ~ ., data = hspTrain,
                 method = "rf",
                 trControl = oob)
@@ -146,7 +147,7 @@ rfpreds <- stack(1-crprf.pred, 1-wcprf.pred, 1-hsprf.pred)
 names(rfpreds) <- c("CRPrf", "WCPrf", "HSPrf")
 plot(rfpreds, axes = F)
 
-# Generalized boosting <gbm> ------------------------------------------
+# Gradient boosting <gbm> ------------------------------------------
 # CV for training gbm's
 gbm <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
 
@@ -158,7 +159,7 @@ crpgbm.test <- predict(CRP.gbm, crpTest) ## predict test-set
 confusionMatrix(crpgbm.test, crpTest$CRP, "Y") ## print validation summaries
 crpgbm.pred <- predict(grid, CRP.gbm, type = "prob") ## spatial predictions
 
-# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Y, absent = N)
+# presence/absence of Woody Vegetation Cover >60% (WCP, present = Y, absent = N)
 WCP.gbm <- train(WCP ~ ., data = wcpTrain,
                  method = "gbm",
                  trControl = gbm)
@@ -166,7 +167,7 @@ wcpgbm.test <- predict(WCP.gbm, wcpTest) ## predict test-set
 confusionMatrix(wcpgbm.test, wcpTest$WCP, "Y") ## print validation summaries
 wcpgbm.pred <- predict(grid, WCP.gbm, type = "prob") ## spatial predictions
 
-# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Y, absent = N)
+# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.gbm <- train(HSP ~ ., data = hspTrain,
                  method = "gbm",
                  trControl = gbm)
@@ -191,7 +192,7 @@ crpnn.test <- predict(CRP.nn, crpTest) ## predict test-set
 confusionMatrix(crpnn.test, crpTest$CRP, "Y") ## print validation summaries
 crpnn.pred <- predict(grid, CRP.nn, type = "prob") ## spatial predictions
 
-# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Y, absent = N)
+# presence/absence of Woody Vegetation Cover >60% (WCP, present = Y, absent = N)
 WCP.nn <- train(WCP ~ ., data = wcpTrain,
                 method = "nnet",
                 trControl = nn)
@@ -199,7 +200,7 @@ wcpnn.test <- predict(WCP.nn, wcpTest) ## predict test-set
 confusionMatrix(wcpnn.test, wcpTest$WCP, "Y") ## print validation summaries
 wcpnn.pred <- predict(grid, WCP.nn, type = "prob") ## spatial predictions
 
-# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Y, absent = N)
+# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.nn <- train(HSP ~ ., data = hspTrain,
                 method = "nnet",
                 trControl = nn)
@@ -230,63 +231,60 @@ plot(hsp.preds, axes = F)
 
 # Ensemble predictions <glm>, <rf>, <gbm>, <nnet> --------------------------
 # Ensemble set-up
-preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred,
-               1-wcpglm.pred, 1-wcprf.pred, 1-wcpgbm.pred, 1-wcpnn.pred,
-               1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
-names(preds) <- c("CRPglm","CRPrf","CRPgbm","CRPnn",
-                  "WCPglm","WCPrf","WCPgbm","WCPnn",
-                  "HSPglm","HSPrf","HSPgbm","HSPnn")
-expreds <- extract(preds, geos)
-ensdat <- data.frame(geos[,4:6], expreds)
-ensdat <- na.omit(ensdat)
-ensIndex <- createDataPartition(ensdat$CRP, p = 0.75, list = FALSE, times = 1)
-ensTrain <- ensdat[ensIndex,] ## replicate previous training set including prediction rasters
-ensTest  <- ensdat[-ensIndex,] ## replicate previous test set including prediction rasters
+pred <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred,
+              1-wcpglm.pred, 1-wcprf.pred, 1-wcpgbm.pred, 1-wcpnn.pred,
+              1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
+names(pred) <- c("CRPglm","CRPrf","CRPgbm","CRPnn",
+                 "WCPglm","WCPrf","WCPgbm","WCPnn",
+                 "HSPglm","HSPrf","HSPgbm","HSPnn")
+geospred <- extract(pred, geos)
 
-# GLM weighted ensemble predictions for <glm>, <randomForest>, <gbm>
-# & <nnet> model training sets
 # presence/absence of Cropland (CRP, present = Y, absent = N)
-CRP.ens <- train(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data = ensTrain,
-                 family = binomial, 
-                 method = "glmStepAIC",
-                 trControl = step)
-summary(CRP.ens) 
-crpens.test <- predict(CRP.ens, ensTest) ## predict test-set
-confusionMatrix(crpens.test, ensTest$CRP, "Y") ## print test set performance
-crpens.pred <- predict(preds, CRP.ens, type="prob") ## predict grid
-plot(1-crpens.pred, axes = F) ## plot gridded ensemble predictions
+crpens <- cbind.data.frame(CRP, geospred)
+crpens <- na.omit(crpens)
+crpensTest <- crpens[-crpIndex,] ## replicate previous test set
 
-# presence/absence of Woody Vegetation Cover of >60% (WCP, present = Y, absent = N)
-WCP.ens <- train(WCP ~ WCPglm + WCPrf + WCPgbm + WCPnn, data = ensTrain,
-                 family = binomial, 
-                 method = "glmStepAIC",
-                 trControl = step)
-summary(WCP.ens) 
-wcpens.test <- predict(WCP.ens, ensTest) ## predict test-set
-confusionMatrix(wcpens.test, ensTest$WCP, "Y") ## print test set performance
-wcpens.pred <- predict(preds, WCP.ens, type="prob") ## predict grid
-plot(1-wcpens.pred, axes = F) ## plot gridded ensemble predictions
+# presence/absence of Woody Vegetation Cover >60% (WCP, present = Y, absent = N)
+wcpens <- cbind.data.frame(WCP, geospred)
+wcpens <- na.omit(wcpens)
+wcpensTest <- wcpens[-wcpIndex,] ## replicate previous test set
 
-# presence/absence of (rural) Buildings/Human Settlements (HSP, present = Y, absent = No)
-HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = ensTrain,
-                 family = binomial, 
-                 method = "glmStepAIC",
-                 trControl = step)
-summary(HSP.ens) 
-hspens.test <- predict(HSP.ens, ensTest) ## predict test-set
-confusionMatrix(hspens.test, ensTest$HSP, "Y") ## print test set performance
-hspens.pred <- predict(preds, HSP.ens, type="prob") ## predict grid
-plot(1-hspens.pred, axes = F) ## plot gridded ensemble predictions
+# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
+hspens <- cbind.data.frame(HSP, geospred)
+hspens <- na.omit(hspens)
+hspensTest <- hspens[-hspIndex,] ## replicate previous test set
+
+# GLM-based ensemble weighting on test set
+# Croplands
+CRP.ens <- glm(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data=crpensTest,
+               family = binomial(link="logit"))
+summary(CRP.ens)
+crpens.pred <- predict(pred, CRP.ens, type="response")
+plot(crpens.pred, axes = F)
+
+# Woody cover >60%
+WCP.ens <- glm(WCP ~ WCPglm + WCPrf + WCPgbm + WCPnn, data=wcpensTest,
+               family = binomial(link="logit"))
+summary(WCP.ens)
+wcpens.pred <- predict(pred, WCP.ens, type="response")
+plot(wcpens.pred, axes = F)
+
+# Human Settlements
+HSP.ens <- glm(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data=hspensTest,
+               family = binomial(link="logit"))
+summary(HSP.ens)
+hspens.pred <- predict(pred, HSP.ens, type="response")
+plot(hspens.pred, axes = F)
 
 # Plot ensemble predictions
-enspred <- stack(1-crpens.pred, 1-wcpens.pred, 1-hspens.pred)
+enspred <- stack(crpens.pred, wcpens.pred, hspens.pred)
 names(enspred) <- c("CRP", "WCP", "HSP")
 plot(enspred, axes = F, main = "")
 
 # Receiver/Operator Curves of ensemble prediction test sets ---------------
 # Cropland ensemble predictions
-crpprob <- predict(CRP.ens, ensTest, type="prob")
-crppred <- prediction(crpprob$Y, ensTest$CRP)
+crpprob <- predict(CRP.ens, crpensTest, type="response")
+crppred <- prediction(crpprob, crpensTest$CRP)
 crproc <- performance(crppred, "tpr", "fpr")
 plot(crproc)
 crpsens <- performance(crppred, "sens")
@@ -295,8 +293,8 @@ plot(crpsens, xlab = "p(CRP = Y)", ylab = "Sensitivity & Specificity")
 plot(crpspec, add = T)
 
 # Woody vegetation cover >60% ensemble predictions
-wcpprob <- predict(WCP.ens, ensTest, type="prob")
-wcppred <- prediction(wcpprob$Y, ensTest$WCP)
+wcpprob <- predict(WCP.ens, wcpensTest, type="response")
+wcppred <- prediction(wcpprob, wcpensTest$WCP)
 wcproc <- performance(wcppred, "tpr", "fpr")
 plot(wcproc)
 wcpsens <- performance(wcppred, "sens")
@@ -305,8 +303,8 @@ plot(wcpsens, xlab = "p(WCP = Y)", ylab = "Sensitivity & Specificity")
 plot(wcpspec, add = T)
 
 # Building/Human settlement ensemble predictions
-hspprob <- predict(HSP.ens, ensTest, type="prob")
-hsppred <- prediction(hspprob$Y, ensTest$HSP)
+hspprob <- predict(HSP.ens, hspensTest, type="response")
+hsppred <- prediction(hspprob, hspensTest$HSP)
 hsproc <- performance(hsppred, "tpr", "fpr")
 plot(hsproc)
 hspsens <- performance(hsppred, "sens")
