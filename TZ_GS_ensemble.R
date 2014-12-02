@@ -269,7 +269,7 @@ summary(WCP.ens)
 wcpens.pred <- predict(pred, WCP.ens, type="response")
 plot(wcpens.pred, axes = F)
 
-# Human Settlements
+# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.ens <- glm(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data=hspensTest,
                family = binomial(link="logit"))
 summary(HSP.ens)
@@ -281,7 +281,7 @@ enspred <- stack(crpens.pred, wcpens.pred, hspens.pred)
 names(enspred) <- c("CRP", "WCP", "HSP")
 plot(enspred, axes = F, main = "")
 
-# Receiver/Operator curves of ensemble prediction on test set ---------
+# Receiver/Operator curves of ensemble predictions on test set -------------
 # Cropland ensemble predictions
 crpprob <- predict(CRP.ens, crpensTest, type="response")
 crppred <- prediction(crpprob, crpensTest$CRP)
