@@ -255,14 +255,14 @@ hspens <- na.omit(hspens)
 hspensTest <- hspens[-hspIndex,] ## replicate previous test set
 
 # GLM-based ensemble weighting on test set
-# Croplands
+# presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.ens <- glm(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data=crpensTest,
                family = binomial(link="logit"))
 summary(CRP.ens)
 crpens.pred <- predict(pred, CRP.ens, type="response")
 plot(crpens.pred, axes = F)
 
-# Woody cover >60%
+# presence/absence of Woody Vegetation Cover >60% (WCP, present = Y, absent = N)
 WCP.ens <- glm(WCP ~ WCPglm + WCPrf + WCPgbm + WCPnn, data=wcpensTest,
                family = binomial(link="logit"))
 summary(WCP.ens)
@@ -281,7 +281,7 @@ enspred <- stack(crpens.pred, wcpens.pred, hspens.pred)
 names(enspred) <- c("CRP", "WCP", "HSP")
 plot(enspred, axes = F, main = "")
 
-# Receiver/Operator Curves of ensemble prediction test sets ---------------
+# Receiver/Operator curves of ensemble prediction on test set ---------
 # Cropland ensemble predictions
 crpprob <- predict(CRP.ens, crpensTest, type="response")
 crppred <- prediction(crpprob, crpensTest$CRP)
