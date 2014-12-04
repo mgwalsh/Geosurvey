@@ -16,18 +16,18 @@ require(ROCR)
 
 # Data downloads ----------------------------------------------------------
 # Create a "Data" folder in your current working directory
-dir.create("Data", showWarnings=F)
-dat_dir <- "./Data"
+dir.create("TZ_data", showWarnings=F)
+dat_dir <- "./TZ_data"
 
 # download GeoSurvey data
-download("https://www.dropbox.com/s/03l4m4zjdi5mhyu/TZ_geos_1114.csv?dl=0", "./Data/TZ_geos_1114.csv", mode="wb")
+download("https://www.dropbox.com/s/03l4m4zjdi5mhyu/TZ_geos_1114.csv?dl=0", "./TZ_data/TZ_geos_1114.csv", mode="wb")
 geos <- read.table(paste(dat_dir, "/TZ_geos_1114.csv", sep=""), header=T, sep=",")
 geos <- na.omit(geos)
 
 # download Tanzania Gtifs (~27 Mb) and stack in raster
-download("https://www.dropbox.com/s/otiqe78s0kf1z1s/TZ_grids.zip?dl=0", "./Data/TZ_grids.zip", mode="wb")
-unzip("./Data/TZ_grids.zip", exdir="./Data", overwrite=T)
-glist <- list.files(path="./Data", pattern="tif", full.names=T)
+download("https://www.dropbox.com/s/otiqe78s0kf1z1s/TZ_grids.zip?dl=0", "./TZ_data/TZ_grids.zip", mode="wb")
+unzip("./TZ_data/TZ_grids.zip", exdir="./TZ_data", overwrite=T)
+glist <- list.files(path="./TZ_data", pattern="tif", full.names=T)
 grid <- stack(glist)
 
 # Data setup --------------------------------------------------------------
@@ -314,10 +314,10 @@ plot(hspspec, col="red", add = T)
 
 # Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in your current working directory
-dir.create("Results", showWarnings=F)
+dir.create("TZ_results", showWarnings=F)
 
-# Export Gtif's to "./Results"
-writeRaster(crp.preds, filename="./Results/TZ_crpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-writeRaster(wcp.preds, filename="./Results/TZ_wcpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-writeRaster(hsp.preds, filename="./Results/TZ_hspreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-writeRaster(enspred, filename="./Results/TZ_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+# Export Gtif's to "./TZ_results"
+writeRaster(crp.preds, filename="./TZ_results/TZ_crpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(wcp.preds, filename="./TZ_results/TZ_wcpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(hsp.preds, filename="./TZ_results/TZ_hspreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(enspred, filename="./TZ_results/TZ_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
