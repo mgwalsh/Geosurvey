@@ -254,7 +254,7 @@ hspens <- cbind.data.frame(HSP, geospred)
 hspens <- na.omit(hspens)
 hspensTest <- hspens[-hspIndex,] ## replicate previous test set
 
-# GLM-based ensemble weighting on test set
+# GLM-based ensemble weighting on the test set
 # presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.ens <- glm(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data=crpensTest,
                family = binomial(link="logit"))
