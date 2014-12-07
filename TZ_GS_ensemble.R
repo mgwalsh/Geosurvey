@@ -313,7 +313,7 @@ plot(hspsens, xlab = "p(HSP = Y)", col="blue", ylab = "Sensitivity & Specificity
 plot(hspspec, col="red", add = T)
 
 # Write spatial predictions -----------------------------------------------
-# Create a "Results" folder in your current working directory
+# Create a "Results" folder in current working directory
 dir.create("TZ_results", showWarnings=F)
 
 # Export Gtif's to "./TZ_results"
