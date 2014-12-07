@@ -182,5 +182,39 @@ hsp.preds <- stack(1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
 names(hsp.preds) <- c("glm","randomForest","gbm","nnet")
 plot(hsp.preds, axes = F)
 
+# Ensemble predictions <glm>, <rf>, <gbm>, <nnet> --------------------------
+# Ensemble set-up
+pred <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred,
+              1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
+names(pred) <- c("CRPglm","CRPrf","CRPgbm","CRPnn",
+                 "HSPglm","HSPrf","HSPgbm","HSPnn")
+geospred <- extract(pred, geos)
+
+# presence/absence of Cropland (CRP, present = Y, absent = N)
+crpens <- cbind.data.frame(CRP, geospred)
+crpens <- na.omit(crpens)
+crpensTest <- crpens[-crpIndex,] ## replicate previous test set
+
+# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
+hspens <- cbind.data.frame(HSP, geospred)
+hspens <- na.omit(hspens)
+hspensTest <- hspens[-hspIndex,] ## replicate previous test set
+
+# GLM-based ensemble weighting on the test set
+# presence/absence of Cropland (CRP, present = Y, absent = N)
+CRP.ens <- glm(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data=crpensTest,
+               family = binomial(link="logit"))
+summary(CRP.ens)
+crpens.pred <- predict(pred, CRP.ens, type="response")
+plot(crpens.pred, axes = F)
+
+# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
+HSP.ens <- glm(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data=hspensTest,
+               family = binomial(link="logit"))
+summary(HSP.ens)
+hspens.pred <- predict(pred, HSP.ens, type="response")
+plot(hspens.pred, axes = F)
+
+
 
 
