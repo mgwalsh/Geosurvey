@@ -1,6 +1,6 @@
 # Ensemble machine learning predictions of Ethiopia Geo-Wiki cropland,
 # and human settlement observations.
-# Cropland & Human Settlement data courtesy http://www.geo-wiki.org/download-data
+# Cropland & Human Settlement survey data courtesy http://www.geo-wiki.org/download-data
 # M. Walsh, December 2014
 
 # Required packages
@@ -215,11 +215,6 @@ summary(HSP.ens)
 hspens.pred <- predict(pred, HSP.ens, type="response")
 plot(hspens.pred, axes = F)
 
-# Plot ensemble predictions
-enspred <- stack(crpens.pred, hspens.pred)
-names(enspred) <- c("CRP", "HSP")
-plot(enspred, axes = F, main = "")
-
 # Receiver/Operator curves of ensemble predictions on test set -------------
 # Cropland ensemble predictions
 crpprob <- predict(CRP.ens, crpensTest, type="response")
@@ -246,8 +241,11 @@ plot(hspspec, col="red", add = T)
 dir.create("ET_results", showWarnings=F)
 
 # Export Gtif's to "./ET_results"
+# Individual model predictions
 writeRaster(crp.preds, filename="./ET_results/ET_crpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 writeRaster(hsp.preds, filename="./ET_results/ET_hspreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+# Ensemble predictions
+enspred <- stack(crpens.pred, hspens.pred)
 writeRaster(enspred, filename="./ET_results/ET_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
 
