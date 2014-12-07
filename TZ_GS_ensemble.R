@@ -1,4 +1,4 @@
-# Ensemble machine learning predictions of Tanzania GeoSurvey cropland,
+# Ensemble predictions of Tanzania GeoSurvey cropland,
 # woody vegetation cover and human settlement observations. 
 # M. Walsh, November 2014
 
