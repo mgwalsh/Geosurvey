@@ -1,4 +1,4 @@
-# Ensemble machine learning predictions of Ethiopia Geo-Wiki cropland,
+# Ensemble predictions of Ethiopia Geo-Wiki cropland,
 # and human settlement observations.
 # Cropland & Human Settlement survey data courtesy http://www.geo-wiki.org/download-data
 # M. Walsh, December 2014
