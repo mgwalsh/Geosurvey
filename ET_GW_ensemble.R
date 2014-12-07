@@ -171,7 +171,7 @@ nnpreds <- stack(1-crpnn.pred, 1-hspnn.pred)
 names(nnpreds) <- c("CRPnn", "HSPnn")
 plot(nnpreds, axes = F)
 
-# Plot predictions by Geo-Wiki variables ---------------------------------
+# Plot predictions by Geo-Wiki variables ----------------------------------
 # Cropland prediction plots
 crp.preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred)
 names(crp.preds) <- c("glm","randomForest","gbm","nnet")
