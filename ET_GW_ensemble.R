@@ -195,7 +195,7 @@ crpens <- cbind.data.frame(CRP, geospred)
 crpens <- na.omit(crpens)
 crpensTest <- crpens[-crpIndex,] ## replicate previous test set
 
-# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
+# presence/absence of Human Settlements (HSP, present = Y, absent = N)
 hspens <- cbind.data.frame(HSP, geospred)
 hspens <- na.omit(hspens)
 hspensTest <- hspens[-hspIndex,] ## replicate previous test set
@@ -208,12 +208,49 @@ summary(CRP.ens)
 crpens.pred <- predict(pred, CRP.ens, type="response")
 plot(crpens.pred, axes = F)
 
-# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
+# presence/absence of Human Settlements (HSP, present = Y, absent = N)
 HSP.ens <- glm(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data=hspensTest,
                family = binomial(link="logit"))
 summary(HSP.ens)
 hspens.pred <- predict(pred, HSP.ens, type="response")
 plot(hspens.pred, axes = F)
+
+# Plot ensemble predictions
+enspred <- stack(crpens.pred, hspens.pred)
+names(enspred) <- c("CRP", "HSP")
+plot(enspred, axes = F, main = "")
+
+# Receiver/Operator curves of ensemble predictions on test set -------------
+# Cropland ensemble predictions
+crpprob <- predict(CRP.ens, crpensTest, type="response")
+crppred <- prediction(crpprob, crpensTest$CRP)
+crproc <- performance(crppred, "tpr", "fpr")
+plot(crproc)
+crpsens <- performance(crppred, "sens")
+crpspec <- performance(crppred, "spec")
+plot(crpsens, xlab = "p(CRP = Y)", col="blue", ylab = "Sensitivity & Specificity")
+plot(crpspec, col="red", add = T)
+
+# Human settlement ensemble predictions
+hspprob <- predict(HSP.ens, hspensTest, type="response")
+hsppred <- prediction(hspprob, hspensTest$HSP)
+hsproc <- performance(hsppred, "tpr", "fpr")
+plot(hsproc)
+hspsens <- performance(hsppred, "sens")
+hspspec <- performance(hsppred, "spec")
+plot(hspsens, xlab = "p(HSP = Y)", col="blue", ylab = "Sensitivity & Specificity")
+plot(hspspec, col="red", add = T)
+
+# Write spatial predictions -----------------------------------------------
+# Create a "Results" folder in current working directory
+dir.create("ET_results", showWarnings=F)
+
+# Export Gtif's to "./ET_results"
+writeRaster(crp.preds, filename="./ET_results/ET_crpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(hsp.preds, filename="./ET_results/ET_hspreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(enspred, filename="./ET_results/ET_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+
+
 
 
 
