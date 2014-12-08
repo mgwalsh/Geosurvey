@@ -121,7 +121,7 @@ rfpreds <- stack(1-crprf.pred, 1-hsprf.pred)
 names(rfpreds) <- c("CRPrf", "HSPrf")
 plot(rfpreds, axes = F)
 
-# Gradient boosting <gbm> ------------------------------------------
+# Gradient boosting <gbm> -----------------------------------------------
 # CV for training gbm's
 gbm <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
 
