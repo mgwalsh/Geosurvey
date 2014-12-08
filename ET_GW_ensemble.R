@@ -25,7 +25,7 @@ download("https://www.dropbox.com/s/qkgluhy31bhhsl8/ET_geow_31214.csv?dl=0", "./
 geos <- read.table(paste(dat_dir, "/ET_geow_31214.csv", sep=""), header=T, sep=",")
 geos <- na.omit(geos)
 
-# download Ethiopia Gtifs (~34.6 Mb) and stack in raster
+# download Ethiopia Gtifs (~35.5 Mb) and stack in raster
 download("https://www.dropbox.com/s/xgwxukuj2q9dgbf/ET_grids.zip?dl=0", "./ET_Data/ET_grids.zip", mode="wb")
 unzip("./ET_data/ET_grids.zip", exdir="./ET_data", overwrite=T)
 glist <- list.files(path="./ET_data", pattern="tif", full.names=T)
@@ -171,7 +171,7 @@ nnpreds <- stack(1-crpnn.pred, 1-hspnn.pred)
 names(nnpreds) <- c("CRPnn", "HSPnn")
 plot(nnpreds, axes = F)
 
-# Plot predictions by Geo-Wiki variables ----------------------------------
+# Plot predictions by Geo-Wiki variables -----------------------------------
 # Cropland prediction plots
 crp.preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred)
 names(crp.preds) <- c("glm","randomForest","gbm","nnet")
