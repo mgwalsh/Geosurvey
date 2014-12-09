@@ -24,7 +24,7 @@ download("https://www.dropbox.com/s/03l4m4zjdi5mhyu/TZ_geos_1114.csv?dl=0", "./T
 geos <- read.table(paste(dat_dir, "/TZ_geos_1114.csv", sep=""), header=T, sep=",")
 geos <- na.omit(geos)
 
-# download Tanzania Gtifs (~27 Mb) and stack in raster
+# download Tanzania Gtifs (~27.9 Mb) and stack in raster
 download("https://www.dropbox.com/s/otiqe78s0kf1z1s/TZ_grids.zip?dl=0", "./TZ_data/TZ_grids.zip", mode="wb")
 unzip("./TZ_data/TZ_grids.zip", exdir="./TZ_data", overwrite=T)
 glist <- list.files(path="./TZ_data", pattern="tif", full.names=T)
