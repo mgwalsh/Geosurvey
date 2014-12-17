@@ -276,11 +276,6 @@ summary(HSP.ens)
 hspens.pred <- predict(pred, HSP.ens, type="response")
 plot(hspens.pred, axes = F)
 
-# Plot ensemble predictions
-enspred <- stack(crpens.pred, wcpens.pred, hspens.pred)
-names(enspred) <- c("CRP", "WCP", "HSP")
-plot(enspred, axes = F, main = "")
-
 # Receiver/Operator curves of ensemble predictions on test set -------------
 # Cropland ensemble predictions
 crpprob <- predict(CRP.ens, crpensTest, type="response")
@@ -320,4 +315,6 @@ dir.create("TZ_results", showWarnings=F)
 writeRaster(crp.preds, filename="./TZ_results/TZ_crpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 writeRaster(wcp.preds, filename="./TZ_results/TZ_wcpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 writeRaster(hsp.preds, filename="./TZ_results/TZ_hspreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+# Ensemble predictions
+enspred <- stack(crpens.pred, wcpens.pred, hspens.pred)
 writeRaster(enspred, filename="./TZ_results/TZ_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
