@@ -3,7 +3,7 @@
 # M. Walsh, November 2014
 
 # Required packages
-# install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","ROCR)), dependencies=TRUE)
+# install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","dismo")), dependencies=TRUE)
 require(downloader)
 require(raster)
 require(rgdal)
@@ -12,6 +12,7 @@ require(MASS)
 require(randomForest)
 require(gbm)
 require(nnet)
+require(dismo)
 
 # Data downloads ----------------------------------------------------------
 # Create a "Data" folder in your current working directory
@@ -254,7 +255,7 @@ hspens <- na.omit(hspens)
 hspensTest <- hspens[-hspIndex,] ## replicate previous test set
 
 # GLM-based ensemble weighting on the test set
-# 10-fold CV set up
+# 10-fold CV
 ens <- trainControl(method = "cv", number = 10)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
@@ -263,8 +264,13 @@ CRP.ens <- train(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data = crpensTest,
                  method = "glm",
                  trControl = ens)
 summary(CRP.ens)
-crpens.test <- predict(CRP.ens, crpensTest) ## predict test-set
-confusionMatrix(crpens.test, crpensTest$CRP, "Y") ## print CV summary
+crp.pred <- predict(CRP.ens, crpensTest, type="prob")
+crp.test <- cbind(crpensTest, crp.pred)
+crp <- subset(crp.test, CRP=="Y", select=c(Y))
+cra <- subset(crp.test, CRP=="N", select=c(Y))
+crp.eval <- evaluate(p=crp[,1], a=cra[,1])
+threshold(crp.eval)
+plot(crp.eval, 'ROC')
 crpens.pred <- predict(pred, CRP.ens, type="prob")
 plot(1-crpens.pred, axes = F)
 
@@ -274,8 +280,13 @@ WCP.ens <- train(WCP ~ WCPglm + WCPrf + WCPgbm + WCPnn, data = wcpensTest,
                  method = "glm",
                  trControl = ens)
 summary(WCP.ens)
-wcpens.test <- predict(WCP.ens, wcpensTest) ## predict test-set
-confusionMatrix(wcpens.test, wcpensTest$WCP, "Y") ## print CV summary
+wcp.pred <- predict(WCP.ens, wcpensTest, type="prob")
+wcp.test <- cbind(wcpensTest, wcp.pred)
+wcp <- subset(wcp.test, WCP=="Y", select=c(Y))
+wca <- subset(wcp.test, WCP=="N", select=c(Y))
+wcp.eval <- evaluate(p=wcp[,1], a=wca[,1])
+threshold(wcp.eval)
+plot(wcp.eval, 'ROC')
 wcpens.pred <- predict(pred, WCP.ens, type="prob")
 plot(1-wcpens.pred, axes = F)
 
@@ -285,8 +296,13 @@ HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspensTest,
                  method = "glm",
                  trControl = ens)
 summary(HSP.ens)
-hspens.test <- predict(HSP.ens, hspensTest) ## predict test-set
-confusionMatrix(hspens.test, hspensTest$HSP, "Y") ## print CV summary
+hsp.pred <- predict(HSP.ens, hspensTest, type="prob")
+hsp.test <- cbind(hspensTest, hsp.pred)
+hsp <- subset(hsp.test, HSP=="Y", select=c(Y))
+hsa <- subset(hsp.test, HSP=="N", select=c(Y))
+hsp.eval <- evaluate(p=hsp[,1], a=hsa[,1])
+threshold(hsp.eval)
+plot(hsp.eval, 'ROC')
 hspens.pred <- predict(pred, HSP.ens, type="prob")
 plot(1-hspens.pred, axes = F)
 
