@@ -1,4 +1,4 @@
 Geosurvey
 =========
 
-Geosurvey mapping analyses (at: http://geosurvey.qed.ai/login)
+GeoSurvey mapping at: http://geosurvey.kutabiri.com
