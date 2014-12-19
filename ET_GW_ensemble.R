@@ -4,7 +4,7 @@
 # M. Walsh, December 2014
 
 # Required packages
-# install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","ROCR)), dependencies=TRUE)
+# install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","dismo")), dependencies=TRUE)
 require(downloader)
 require(raster)
 require(rgdal)
@@ -13,7 +13,7 @@ require(MASS)
 require(randomForest)
 require(gbm)
 require(nnet)
-require(ROCR)
+require(dismo)
 
 # Data downloads ----------------------------------------------------------
 # Create a "Data" folder in your current working directory
@@ -91,10 +91,9 @@ hspglm.test <- predict(HSP.glm, hspTest) ## predict test-set
 confusionMatrix(hspglm.test, hspTest$HSP, "Y") ## print validation summaries
 hspglm.pred <- predict(grid, HSP.glm, type = "prob") ## spatial predictions
 
-# Plot <MASS> predictions
+# <MASS> predictions
 glmpreds <- stack(1-crpglm.pred, 1-hspglm.pred)
 names(glmpreds) <- c("CRPglm", "HSPglm")
-plot(glmpreds, axes = F)
 
 # Random forests <randomForest> -------------------------------------------
 # out-of-bag predictions
@@ -116,10 +115,9 @@ hsprf.test <- predict(HSP.rf, hspTest) ## predict test-set
 confusionMatrix(hsprf.test, hspTest$HSP, "Y") ## print validation summaries
 hsprf.pred <- predict(grid, HSP.rf, type = "prob") ## spatial predictions
 
-# Plot <randomForest> predictions
+# <randomForest> predictions
 rfpreds <- stack(1-crprf.pred, 1-hsprf.pred)
 names(rfpreds) <- c("CRPrf", "HSPrf")
-plot(rfpreds, axes = F)
 
 # Gradient boosting <gbm> -----------------------------------------------
 # CV for training gbm's
@@ -141,10 +139,9 @@ hspgbm.test <- predict(HSP.gbm, hspTest) ## predict test-set
 confusionMatrix(hspgbm.test, hspTest$HSP, "Y") ## print validation summaries
 hspgbm.pred <- predict(grid, HSP.gbm, type = "prob") ## spatial predictions
 
-# Plot <gbm> predictions
+# <gbm> predictions
 gbmpreds <- stack(1-crpgbm.pred, 1-hspgbm.pred)
 names(gbmpreds) <- c("CRPgbm", "HSPgbm")
-plot(gbmpreds, axes = F)
 
 # Neural nets <nnet> ------------------------------------------------------
 # CV for training nnet's
@@ -166,10 +163,9 @@ hspnn.test <- predict(HSP.nn, hspTest) ## predict test-set
 confusionMatrix(hspnn.test, hspTest$HSP, "Y") ## print validation summaries
 hspnn.pred <- predict(grid, HSP.nn, type = "prob") ## spatial predictions
 
-# Plot <nnet> predictions
+# <nnet> predictions
 nnpreds <- stack(1-crpnn.pred, 1-hspnn.pred)
 names(nnpreds) <- c("CRPnn", "HSPnn")
-plot(nnpreds, axes = F)
 
 # Plot predictions by Geo-Wiki variables -----------------------------------
 # Cropland prediction plots
@@ -201,40 +197,42 @@ hspens <- na.omit(hspens)
 hspensTest <- hspens[-hspIndex,] ## replicate previous test set
 
 # GLM-based ensemble weighting on the test set
+# 10-fold CV
+ens <- trainControl(method = "cv", number = 10)
+
 # presence/absence of Cropland (CRP, present = Y, absent = N)
-CRP.ens <- glm(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data=crpensTest,
-               family = binomial(link="logit"))
+CRP.ens <- train(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data = crpensTest,
+                 family = binomial, 
+                 method = "glm",
+                 trControl = ens)
 summary(CRP.ens)
-crpens.pred <- predict(pred, CRP.ens, type="response")
-plot(crpens.pred, axes = F)
+crp.pred <- predict(CRP.ens, crpensTest, type="prob")
+crp.test <- cbind(crpensTest, crp.pred)
+crp <- subset(crp.test, CRP=="Y", select=c(Y))
+cra <- subset(crp.test, CRP=="N", select=c(Y))
+crp.eval <- evaluate(p=crp[,1], a=cra[,1])
+crp.eval
+threshold(crp.eval)
+plot(crp.eval, 'ROC')
+crpens.pred <- predict(pred, CRP.ens, type="prob")
+plot(1-crpens.pred, axes = F)
 
-# presence/absence of Human Settlements (HSP, present = Y, absent = N)
-HSP.ens <- glm(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data=hspensTest,
-               family = binomial(link="logit"))
+# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
+HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspensTest,
+                 family = binomial, 
+                 method = "glm",
+                 trControl = ens)
 summary(HSP.ens)
-hspens.pred <- predict(pred, HSP.ens, type="response")
-plot(hspens.pred, axes = F)
-
-# Receiver/Operator curves of ensemble predictions on test set -------------
-# Cropland ensemble predictions
-crpprob <- predict(CRP.ens, crpensTest, type="response")
-crppred <- prediction(crpprob, crpensTest$CRP)
-crproc <- performance(crppred, "tpr", "fpr")
-plot(crproc)
-crpsens <- performance(crppred, "sens")
-crpspec <- performance(crppred, "spec")
-plot(crpsens, xlab = "p(CRP = Y)", col="blue", ylab = "Sensitivity & Specificity")
-plot(crpspec, col="red", add = T)
-
-# Human settlement ensemble predictions
-hspprob <- predict(HSP.ens, hspensTest, type="response")
-hsppred <- prediction(hspprob, hspensTest$HSP)
-hsproc <- performance(hsppred, "tpr", "fpr")
-plot(hsproc)
-hspsens <- performance(hsppred, "sens")
-hspspec <- performance(hsppred, "spec")
-plot(hspsens, xlab = "p(HSP = Y)", col="blue", ylab = "Sensitivity & Specificity")
-plot(hspspec, col="red", add = T)
+hsp.pred <- predict(HSP.ens, hspensTest, type="prob")
+hsp.test <- cbind(hspensTest, hsp.pred)
+hsp <- subset(hsp.test, HSP=="Y", select=c(Y))
+hsa <- subset(hsp.test, HSP=="N", select=c(Y))
+hsp.eval <- evaluate(p=hsp[,1], a=hsa[,1])
+hsp.eval
+threshold(hsp.eval)
+plot(hsp.eval, 'ROC')
+hspens.pred <- predict(pred, HSP.ens, type="prob")
+plot(1-hspens.pred, axes = F)
 
 # Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in current working directory
