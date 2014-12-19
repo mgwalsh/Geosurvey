@@ -263,6 +263,8 @@ CRP.ens <- train(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data = crpensTest,
                  method = "glm",
                  trControl = ens)
 summary(CRP.ens)
+crpens.test <- predict(CRP.ens, crpensTest) ## predict test-set
+confusionMatrix(crpens.test, crpensTest$CRP, "Y") ## print CV summary
 crpens.pred <- predict(pred, CRP.ens, type="prob")
 plot(1-crpens.pred, axes = F)
 
@@ -272,6 +274,8 @@ WCP.ens <- train(WCP ~ WCPglm + WCPrf + WCPgbm + WCPnn, data = wcpensTest,
                  method = "glm",
                  trControl = ens)
 summary(WCP.ens)
+wcpens.test <- predict(WCP.ens, wcpensTest) ## predict test-set
+confusionMatrix(wcpens.test, wcpensTest$WCP, "Y") ## print CV summary
 wcpens.pred <- predict(pred, WCP.ens, type="prob")
 plot(1-wcpens.pred, axes = F)
 
@@ -281,6 +285,8 @@ HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspensTest,
                  method = "glm",
                  trControl = ens)
 summary(HSP.ens)
+hspens.test <- predict(HSP.ens, hspensTest) ## predict test-set
+confusionMatrix(hspens.test, hspensTest$HSP, "Y") ## print CV summary
 hspens.pred <- predict(pred, HSP.ens, type="prob")
 plot(1-hspens.pred, axes = F)
 
