@@ -12,7 +12,6 @@ require(MASS)
 require(randomForest)
 require(gbm)
 require(nnet)
-require(ROCR)
 
 # Data downloads ----------------------------------------------------------
 # Create a "Data" folder in your current working directory
@@ -255,57 +254,35 @@ hspens <- na.omit(hspens)
 hspensTest <- hspens[-hspIndex,] ## replicate previous test set
 
 # GLM-based ensemble weighting on the test set
+# 10-fold CV set up
+ens <- trainControl(method = "cv", number = 10)
+
 # presence/absence of Cropland (CRP, present = Y, absent = N)
-CRP.ens <- glm(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data=crpensTest,
-               family = binomial(link="logit"))
+CRP.ens <- train(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data = crpensTest,
+                 family = binomial, 
+                 method = "glm",
+                 trControl = ens)
 summary(CRP.ens)
-crpens.pred <- predict(pred, CRP.ens, type="response")
-plot(crpens.pred, axes = F)
+crpens.pred <- predict(pred, CRP.ens, type="prob")
+plot(1-crpens.pred, axes = F)
 
 # presence/absence of Woody Vegetation Cover >60% (WCP, present = Y, absent = N)
-WCP.ens <- glm(WCP ~ WCPglm + WCPrf + WCPgbm + WCPnn, data=wcpensTest,
-               family = binomial(link="logit"))
+WCP.ens <- train(WCP ~ WCPglm + WCPrf + WCPgbm + WCPnn, data = wcpensTest,
+                 family = binomial, 
+                 method = "glm",
+                 trControl = ens)
 summary(WCP.ens)
-wcpens.pred <- predict(pred, WCP.ens, type="response")
-plot(wcpens.pred, axes = F)
+wcpens.pred <- predict(pred, WCP.ens, type="prob")
+plot(1-wcpens.pred, axes = F)
 
 # presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
-HSP.ens <- glm(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data=hspensTest,
-               family = binomial(link="logit"))
+HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspensTest,
+                 family = binomial, 
+                 method = "glm",
+                 trControl = ens)
 summary(HSP.ens)
-hspens.pred <- predict(pred, HSP.ens, type="response")
-plot(hspens.pred, axes = F)
-
-# Receiver/Operator curves of ensemble predictions on test set -------------
-# Cropland ensemble predictions
-crpprob <- predict(CRP.ens, crpensTest, type="response")
-crppred <- prediction(crpprob, crpensTest$CRP)
-crproc <- performance(crppred, "tpr", "fpr")
-plot(crproc)
-crpsens <- performance(crppred, "sens")
-crpspec <- performance(crppred, "spec")
-plot(crpsens, xlab = "p(CRP = Y)", col="blue", ylab = "Sensitivity & Specificity")
-plot(crpspec, col="red", add = T)
-
-# Woody vegetation cover >60% ensemble predictions
-wcpprob <- predict(WCP.ens, wcpensTest, type="response")
-wcppred <- prediction(wcpprob, wcpensTest$WCP)
-wcproc <- performance(wcppred, "tpr", "fpr")
-plot(wcproc)
-wcpsens <- performance(wcppred, "sens")
-wcpspec <- performance(wcppred, "spec")
-plot(wcpsens, xlab = "p(WCP = Y)", col="blue", ylab = "Sensitivity & Specificity")
-plot(wcpspec, col="red", add = T)
-
-# Building/Human settlement ensemble predictions
-hspprob <- predict(HSP.ens, hspensTest, type="response")
-hsppred <- prediction(hspprob, hspensTest$HSP)
-hsproc <- performance(hsppred, "tpr", "fpr")
-plot(hsproc)
-hspsens <- performance(hsppred, "sens")
-hspspec <- performance(hsppred, "spec")
-plot(hspsens, xlab = "p(HSP = Y)", col="blue", ylab = "Sensitivity & Specificity")
-plot(hspspec, col="red", add = T)
+hspens.pred <- predict(pred, HSP.ens, type="prob")
+plot(1-hspens.pred, axes = F)
 
 # Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in current working directory
@@ -316,5 +293,5 @@ writeRaster(crp.preds, filename="./TZ_results/TZ_crpreds.tif", datatype="FLT4S",
 writeRaster(wcp.preds, filename="./TZ_results/TZ_wcpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 writeRaster(hsp.preds, filename="./TZ_results/TZ_hspreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 # Ensemble predictions
-enspred <- stack(crpens.pred, wcpens.pred, hspens.pred)
+enspred <- stack(1-crpens.pred, 1-wcpens.pred, 1-hspens.pred)
 writeRaster(enspred, filename="./TZ_results/TZ_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
