@@ -1,6 +1,6 @@
 # Ensemble predictions of Ethiopia Geo-Wiki cropland,
-# and human settlement observations.
-# Cropland & Human Settlement survey data courtesy http://www.geo-wiki.org/download-data
+# and rural settlement observations.
+# Cropland & Rural Settlement survey data courtesy http://www.geo-wiki.org/download-data
 # M. Walsh, December 2014
 
 # Required packages
@@ -121,7 +121,7 @@ names(rfpreds) <- c("CRPrf", "HSPrf")
 
 # Gradient boosting <gbm> -----------------------------------------------
 # CV for training gbm's
-gbm <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
+gbm <- trainControl(method = "repeatedcv", number = 5, repeats = 5)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.gbm <- train(CRP ~ ., data = crpTrain,
@@ -170,12 +170,12 @@ names(nnpreds) <- c("CRPnn", "HSPnn")
 # Plot predictions by Geo-Wiki variables -----------------------------------
 # Cropland prediction plots
 crp.preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred)
-names(crp.preds) <- c("glm","randomForest","gbm","nnet")
+names(crp.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
 plot(crp.preds, axes = F)
 
 # Human settlement prediction plots
 hsp.preds <- stack(1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
-names(hsp.preds) <- c("glm","randomForest","gbm","nnet")
+names(hsp.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
 plot(hsp.preds, axes = F)
 
 # Ensemble predictions <glm>, <rf>, <gbm>, <nnet> --------------------------
@@ -210,12 +210,14 @@ crp.pred <- predict(CRP.ens, crpensTest, type="prob")
 crp.test <- cbind(crpensTest, crp.pred)
 crp <- subset(crp.test, CRP=="Y", select=c(Y))
 cra <- subset(crp.test, CRP=="N", select=c(Y))
-crp.eval <- evaluate(p=crp[,1], a=cra[,1]) ## evaluate ROC on test set
+crp.eval <- evaluate(p=crp[,1], a=cra[,1]) ## calculate ROC on test set
 crp.eval
-threshold(crp.eval) ## calculate probability thresholds for classification
 plot(crp.eval, 'ROC') ## plot ROC curve
+crp.thld <- threshold(crp.eval, 'prevalence') ## prevalence threshold for classification
 crpens.pred <- predict(pred, CRP.ens, type="prob") ## spatial prediction
-plot(1-crpens.pred, axes = F)
+plot(1-crpens.pred, axes = F) ## plot CRP probs
+crpmask <- 1-crpens.pred > crp.thld 
+plot(crpmask, axes = F) ## plot CRP mask
 
 # presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspensTest,
@@ -227,12 +229,14 @@ hsp.pred <- predict(HSP.ens, hspensTest, type="prob")
 hsp.test <- cbind(hspensTest, hsp.pred)
 hsp <- subset(hsp.test, HSP=="Y", select=c(Y))
 hsa <- subset(hsp.test, HSP=="N", select=c(Y))
-hsp.eval <- evaluate(p=hsp[,1], a=hsa[,1]) ## evaluate ROC on test set
+hsp.eval <- evaluate(p=hsp[,1], a=hsa[,1]) ## calculate ROC's on test set
 hsp.eval
-threshold(hsp.eval) ## calculate probability thresholds for classification
 plot(hsp.eval, 'ROC') ## plot ROC curve
+hsp.thld <- threshold(hsp.eval, 'prevalence') ## prevalence threshold for classification
 hspens.pred <- predict(pred, HSP.ens, type="prob") ## spatial prediction
-plot(1-hspens.pred, axes = F)
+plot(1-hspens.pred, axes = F) ## plot HSP probs
+hspmask <- 1-hspens.pred > hsp.thld 
+plot(hspmask, axes = F) ## plot HSP mask
 
 # Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in current working directory
@@ -243,5 +247,5 @@ dir.create("ET_results", showWarnings=F)
 writeRaster(crp.preds, filename="./ET_results/ET_crpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 writeRaster(hsp.preds, filename="./ET_results/ET_hspreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 # Ensemble predictions
-enspred <- stack(crpens.pred, hspens.pred)
+enspred <- stack(1-crpens.pred, crpmask, 1-hspens.pred, hspmask)
 writeRaster(enspred, filename="./ET_results/ET_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
