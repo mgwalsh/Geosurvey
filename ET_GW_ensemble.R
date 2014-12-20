@@ -25,7 +25,7 @@ download("https://www.dropbox.com/s/qkgluhy31bhhsl8/ET_geow_31214.csv?dl=0", "./
 geos <- read.table(paste(dat_dir, "/ET_geow_31214.csv", sep=""), header=T, sep=",")
 geos <- na.omit(geos)
 
-# download Ethiopia Gtifs (~35.5 Mb) and stack in raster
+# download Ethiopia Gtifs (~35.7 Mb) and stack in raster
 download("https://www.dropbox.com/s/xgwxukuj2q9dgbf/ET_grids.zip?dl=0", "./ET_Data/ET_grids.zip", mode="wb")
 unzip("./ET_data/ET_grids.zip", exdir="./ET_data", overwrite=T)
 glist <- list.files(path="./ET_data", pattern="tif", full.names=T)
@@ -210,11 +210,11 @@ crp.pred <- predict(CRP.ens, crpensTest, type="prob")
 crp.test <- cbind(crpensTest, crp.pred)
 crp <- subset(crp.test, CRP=="Y", select=c(Y))
 cra <- subset(crp.test, CRP=="N", select=c(Y))
-crp.eval <- evaluate(p=crp[,1], a=cra[,1])
+crp.eval <- evaluate(p=crp[,1], a=cra[,1]) ## evaluate ROC on test set
 crp.eval
-threshold(crp.eval)
-plot(crp.eval, 'ROC')
-crpens.pred <- predict(pred, CRP.ens, type="prob")
+threshold(crp.eval) ## calculate probability thresholds for classification
+plot(crp.eval, 'ROC') ## plot ROC curve
+crpens.pred <- predict(pred, CRP.ens, type="prob") ## spatial prediction
 plot(1-crpens.pred, axes = F)
 
 # presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
@@ -227,11 +227,11 @@ hsp.pred <- predict(HSP.ens, hspensTest, type="prob")
 hsp.test <- cbind(hspensTest, hsp.pred)
 hsp <- subset(hsp.test, HSP=="Y", select=c(Y))
 hsa <- subset(hsp.test, HSP=="N", select=c(Y))
-hsp.eval <- evaluate(p=hsp[,1], a=hsa[,1])
+hsp.eval <- evaluate(p=hsp[,1], a=hsa[,1]) ## evaluate ROC on test set
 hsp.eval
-threshold(hsp.eval)
-plot(hsp.eval, 'ROC')
-hspens.pred <- predict(pred, HSP.ens, type="prob")
+threshold(hsp.eval) ## calculate probability thresholds for classification
+plot(hsp.eval, 'ROC') ## plot ROC curve
+hspens.pred <- predict(pred, HSP.ens, type="prob") ## spatial prediction
 plot(1-hspens.pred, axes = F)
 
 # Write spatial predictions -----------------------------------------------
