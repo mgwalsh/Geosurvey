@@ -255,7 +255,7 @@ crp.thld <- threshold(crp.eval, 'prevalence') ## prevalence threshold for classi
 crpens.pred <- predict(pred, CRP.ens, type="prob") ## spatial prediction
 plot(1-crpens.pred, axes = F) ## plot CRP probs
 crpmask <- 1-crpens.pred > crp.thld 
-plot(crpmask, axes = F) ## plot CRP mask
+plot(crpmask, axes = F, legend = F) ## plot CRP mask
 
 # presence/absence of Woody Vegetation Cover >60% (WCP, present = Y, absent = N)
 WCP.ens <- train(WCP ~ WCPglm + WCPrf + WCPgbm + WCPnn, data = wcpensTest,
@@ -274,7 +274,7 @@ wcp.thld <- threshold(wcp.eval, 'prevalence') ## prevalence threshold for classi
 wcpens.pred <- predict(pred, WCP.ens, type="prob") ## spatial prediction
 plot(1-wcpens.pred, axes = F) ## plot WCP probs
 wcpmask <- 1-wcpens.pred > wcp.thld 
-plot(wcpmask, axes = F) ## plot WCP mask
+plot(wcpmask, axes = F, legend = F) ## plot WCP mask
 
 # presence/absence of Buildings/Rural Settlements (HSP, present = Y, absent = N)
 HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspensTest,
@@ -293,7 +293,7 @@ hsp.thld <- threshold(hsp.eval, 'prevalence') ## prevalence threshold for classi
 hspens.pred <- predict(pred, HSP.ens, type="prob") ## spatial prediction
 plot(1-hspens.pred, axes = F) ## plot HSP probs
 hspmask <- 1-hspens.pred > hsp.thld 
-plot(hspmask, axes = F) ## plot HSP mask
+plot(hspmask, axes = F, legend = F) ## plot HSP mask
 
 # Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in current working directory
