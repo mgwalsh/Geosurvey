@@ -109,11 +109,6 @@ hspglm.test <- predict(HSP.glm, hspTest) ## predict test-set
 confusionMatrix(hspglm.test, hspTest$HSP, "Y") ## print validation summaries
 hspglm.pred <- predict(grid, HSP.glm, type = "prob") ## spatial predictions
 
-# Plot <MASS> predictions
-glmpreds <- stack(1-crpglm.pred, 1-wcpglm.pred, 1-hspglm.pred)
-names(glmpreds) <- c("CRPglm", "WCPglm", "HSPglm")
-plot(glmpreds, axes = F)
-
 # Random forests <randomForest> -------------------------------------------
 # out-of-bag predictions
 oob <- trainControl(method = "oob")
@@ -141,11 +136,6 @@ HSP.rf <- train(HSP ~ ., data = hspTrain,
 hsprf.test <- predict(HSP.rf, hspTest) ## predict test-set
 confusionMatrix(hsprf.test, hspTest$HSP, "Y") ## print validation summaries
 hsprf.pred <- predict(grid, HSP.rf, type = "prob") ## spatial predictions
-
-# Plot <randomForest> predictions
-rfpreds <- stack(1-crprf.pred, 1-wcprf.pred, 1-hsprf.pred)
-names(rfpreds) <- c("CRPrf", "WCPrf", "HSPrf")
-plot(rfpreds, axes = F)
 
 # Gradient boosting <gbm> ------------------------------------------
 # CV for training gbm's
@@ -175,11 +165,6 @@ hspgbm.test <- predict(HSP.gbm, hspTest) ## predict test-set
 confusionMatrix(hspgbm.test, hspTest$HSP, "Y") ## print validation summaries
 hspgbm.pred <- predict(grid, HSP.gbm, type = "prob") ## spatial predictions
 
-# Plot <gbm> predictions
-gbmpreds <- stack(1-crpgbm.pred, 1-wcpgbm.pred, 1-hspgbm.pred)
-names(gbmpreds) <- c("CRPgbm", "WCPgbm", "HSPgbm")
-plot(gbmpreds, axes = F)
-
 # Neural nets <nnet> ------------------------------------------------------
 # CV for training nnet's
 nn <- trainControl(method = "cv", number = 10)
@@ -208,25 +193,20 @@ hspnn.test <- predict(HSP.nn, hspTest) ## predict test-set
 confusionMatrix(hspnn.test, hspTest$HSP, "Y") ## print validation summaries
 hspnn.pred <- predict(grid, HSP.nn, type = "prob") ## spatial predictions
 
-# Plot <nnet> predictions
-nnpreds <- stack(1-crpnn.pred, 1-wcpnn.pred, 1-hspnn.pred)
-names(nnpreds) <- c("CRPnn", "WCPnn", "HSPnn")
-plot(nnpreds, axes = F)
-
 # Plot predictions by GeoSurvey variables ---------------------------------
 # Cropland prediction plots
 crp.preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred)
-names(crp.preds) <- c("glm","randomForest","gbm","nnet")
+names(crp.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
 plot(crp.preds, axes = F)
 
 # Woody vegetation cover >60% prediction plots
 wcp.preds <- stack(1-wcpglm.pred, 1-wcprf.pred, 1-wcpgbm.pred, 1-wcpnn.pred)
-names(wcp.preds) <- c("glm","randomForest","gbm","nnet")
+names(wcp.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
 plot(wcp.preds, axes = F)
 
 # Human settlement prediction plots
 hsp.preds <- stack(1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
-names(hsp.preds) <- c("glm","randomForest","gbm","nnet")
+names(hsp.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
 plot(hsp.preds, axes = F)
 
 # Ensemble predictions <glm>, <rf>, <gbm>, <nnet> --------------------------
@@ -268,12 +248,14 @@ crp.pred <- predict(CRP.ens, crpensTest, type="prob")
 crp.test <- cbind(crpensTest, crp.pred)
 crp <- subset(crp.test, CRP=="Y", select=c(Y))
 cra <- subset(crp.test, CRP=="N", select=c(Y))
-crp.eval <- evaluate(p=crp[,1], a=cra[,1])
+crp.eval <- evaluate(p=crp[,1], a=cra[,1]) ## calculate ROC's on test set
 crp.eval
-threshold(crp.eval)
-plot(crp.eval, 'ROC')
-crpens.pred <- predict(pred, CRP.ens, type="prob")
-plot(1-crpens.pred, axes = F)
+plot(crp.eval, 'ROC') ## plot ROC curve
+crp.thld <- threshold(crp.eval, 'prevalence') ## prevalence threshold for classification
+crpens.pred <- predict(pred, CRP.ens, type="prob") ## spatial prediction
+plot(1-crpens.pred, axes = F) ## plot CRP probs
+crpmask <- 1-crpens.pred > crp.thld 
+plot(crpmask, axes = F) ## plot CRP mask
 
 # presence/absence of Woody Vegetation Cover >60% (WCP, present = Y, absent = N)
 WCP.ens <- train(WCP ~ WCPglm + WCPrf + WCPgbm + WCPnn, data = wcpensTest,
@@ -285,14 +267,16 @@ wcp.pred <- predict(WCP.ens, wcpensTest, type="prob")
 wcp.test <- cbind(wcpensTest, wcp.pred)
 wcp <- subset(wcp.test, WCP=="Y", select=c(Y))
 wca <- subset(wcp.test, WCP=="N", select=c(Y))
-wcp.eval <- evaluate(p=wcp[,1], a=wca[,1])
+wcp.eval <- evaluate(p=wcp[,1], a=wca[,1]) ## calculate ROC's on test set
 wcp.eval
-threshold(wcp.eval)
-plot(wcp.eval, 'ROC')
-wcpens.pred <- predict(pred, WCP.ens, type="prob")
-plot(1-wcpens.pred, axes = F)
+plot(wcp.eval, 'ROC') ## plot ROC curve
+wcp.thld <- threshold(wcp.eval, 'prevalence') ## prevalence threshold for classification
+wcpens.pred <- predict(pred, WCP.ens, type="prob") ## spatial prediction
+plot(1-wcpens.pred, axes = F) ## plot WCP probs
+wcpmask <- 1-wcpens.pred > wcp.thld 
+plot(wcpmask, axes = F) ## plot WCP mask
 
-# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
+# presence/absence of Buildings/Rural Settlements (HSP, present = Y, absent = N)
 HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspensTest,
                  family = binomial, 
                  method = "glm",
@@ -302,12 +286,14 @@ hsp.pred <- predict(HSP.ens, hspensTest, type="prob")
 hsp.test <- cbind(hspensTest, hsp.pred)
 hsp <- subset(hsp.test, HSP=="Y", select=c(Y))
 hsa <- subset(hsp.test, HSP=="N", select=c(Y))
-hsp.eval <- evaluate(p=hsp[,1], a=hsa[,1])
+hsp.eval <- evaluate(p=hsp[,1], a=hsa[,1]) ## calculate ROC's on test set
 hsp.eval
-threshold(hsp.eval)
-plot(hsp.eval, 'ROC')
-hspens.pred <- predict(pred, HSP.ens, type="prob")
-plot(1-hspens.pred, axes = F)
+plot(hsp.eval, 'ROC') ## plot ROC curve
+hsp.thld <- threshold(hsp.eval, 'prevalence') ## prevalence threshold for classification
+hspens.pred <- predict(pred, HSP.ens, type="prob") ## spatial prediction
+plot(1-hspens.pred, axes = F) ## plot HSP probs
+hspmask <- 1-hspens.pred > hsp.thld 
+plot(hspmask, axes = F) ## plot HSP mask
 
 # Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in current working directory
@@ -318,5 +304,5 @@ writeRaster(crp.preds, filename="./TZ_results/TZ_crpreds.tif", datatype="FLT4S",
 writeRaster(wcp.preds, filename="./TZ_results/TZ_wcpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 writeRaster(hsp.preds, filename="./TZ_results/TZ_hspreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 # Ensemble predictions
-enspred <- stack(1-crpens.pred, 1-wcpens.pred, 1-hspens.pred)
+enspred <- stack(1-crpens.pred, crpmask, 1-wcpens.pred, wcpmask, 1-hspens.pred, hspmask)
 writeRaster(enspred, filename="./TZ_results/TZ_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
