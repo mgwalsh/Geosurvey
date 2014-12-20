@@ -1,5 +1,4 @@
-# Ensemble predictions of Ethiopia Geo-Wiki cropland,
-# and rural settlement observations.
+# Ensemble predictions of Ethiopia Geo-Wiki cropland and rural settlement observations.
 # Cropland & Rural Settlement survey data courtesy http://www.geo-wiki.org/download-data
 # M. Walsh, December 2014
 
