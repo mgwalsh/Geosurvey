@@ -299,7 +299,7 @@ hsp.thld <- threshold(hsp.eval, 'prevalence') ## prevalence threshold for classi
 hspens.pred <- predict(pred, HSP.ens, type="prob") ## spatial prediction
 hspmask <- 1-hspens.pred > hsp.thld
 
-# plot Cropland probabilities <rasterVis>
+# plot Rural Settlement probabilities <rasterVis>
 hspTheme <- rasterTheme(region = brewer.pal(4, "YlOrRd"))
 levelplot(1-hspens.pred, margin = F, par.settings = hspTheme, main="Probability settlements present")
 
