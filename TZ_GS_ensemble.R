@@ -257,9 +257,9 @@ crp.thld <- threshold(crp.eval, 'prevalence') ## prevalence threshold for classi
 crpens.pred <- predict(pred, CRP.ens, type="prob") ## spatial prediction
 crpmask <- 1-crpens.pred > crp.thld
 
-# plot Cropland probabilities <rasterVis>
-crpTheme <- rasterTheme(region = brewer.pal(4, "YlGn"))
-levelplot(1-crpens.pred, margin = F, par.settings = crpTheme, main="Probability cropland present")
+# plot Cropland probabilities <rasterVis, RColorBrewer>
+crpTheme <- rasterTheme(region = brewer.pal(4, "Greys"))
+levelplot(1-crpens.pred, margin = F, par.settings = crpTheme)
  
 # presence/absence of Woody Vegetation Cover >60% (WCP, present = Y, absent = N)
 WCP.ens <- train(WCP ~ WCPglm + WCPrf + WCPgbm + WCPnn, data = wcpensTest,
@@ -278,9 +278,9 @@ wcp.thld <- threshold(wcp.eval, 'prevalence') ## prevalence threshold for classi
 wcpens.pred <- predict(pred, WCP.ens, type="prob") ## spatial prediction
 crpmask <- 1-crpens.pred > crp.thld
 
-# plot Woody cover probabilities <rasterVis>
-wcpTheme <- rasterTheme(region = brewer.pal(4, "YlGn"))
-levelplot(1-wcpens.pred, margin = F, par.settings = wcpTheme, main="Probability woody cover >60%")
+# plot Woody cover probabilities <rasterVis, RColorBrewer>
+wcpTheme <- rasterTheme(region = brewer.pal(4, "Greys"))
+levelplot(1-wcpens.pred, margin = F, par.settings = wcpTheme)
 
 # presence/absence of Buildings/Rural Settlements (HSP, present = Y, absent = N)
 HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspensTest,
@@ -299,9 +299,9 @@ hsp.thld <- threshold(hsp.eval, 'prevalence') ## prevalence threshold for classi
 hspens.pred <- predict(pred, HSP.ens, type="prob") ## spatial prediction
 hspmask <- 1-hspens.pred > hsp.thld
 
-# plot Rural Settlement probabilities <rasterVis>
-hspTheme <- rasterTheme(region = brewer.pal(4, "YlOrRd"))
-levelplot(1-hspens.pred, margin = F, par.settings = hspTheme, main="Probability settlements present")
+# plot Rural Settlement probabilities <rasterVis, RColorBrewer>
+hspTheme <- rasterTheme(region = brewer.pal(4, "Greys"))
+levelplot(1-hspens.pred, margin = F, par.settings = hspTheme)
 
 # Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in current working directory
