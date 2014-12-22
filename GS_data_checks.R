@@ -16,12 +16,12 @@ download("https://www.dropbox.com/s/a9tvwodid2g3ijd/1MGS_18_22_Dec_14.csv?dl=0",
 geos <- read.table(paste(dat_dir, "/1MGS_18_22_Dec_14.csv", sep=""), header=T, sep=",")
 
 # Generate check sample ---------------------------------------------------
-# set check set randomization seed
+# set check sample randomization seed
 seed <- 1385321
 set.seed(seed)
 
-# Check split
-checkIndex <- createDataPartition(geos$CP, p = 0.99, list = FALSE, times = 1)
+# Check sample split
+checkIndex <- createDataPartition(geos$User, p = 0.99, list = FALSE, times = 1)
 checkTest  <- geos[-checkIndex, ]
 
 # Write checkTest csv -----------------------------------------------------
