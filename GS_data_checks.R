@@ -1,5 +1,5 @@
 # Incoming GeoSurvey data check's
-# M. Walsh, W. Wu, J. Chen, Dec. 2014
+# M. Walsh, W. Wu, J. Chen, A. Verlinden, Dec. 2014
 
 # Required packages
 # install.packages(c("downloader","caret")), dependencies = T)
@@ -21,11 +21,13 @@ seed <- 1385321
 set.seed(seed)
 
 # Check sample split
-checkIndex <- createDataPartition(geos$User, p = 0.99, list = FALSE, times = 1)
+checkIndex <- createDataPartition(geos$Group, p = 0.99, list = FALSE, times = 1)
 checkTest  <- geos[-checkIndex, ]
+checkSample <- checkTest[ ,3:4]
 
-# Write checkTest csv -----------------------------------------------------
+# Write checkSample csv ---------------------------------------------------
 dir.create("1MGS_check", showWarnings=F)
+write.csv(checkSample, "./1MGS_check/Check_sample.csv", row.names=F)
 
 
 
