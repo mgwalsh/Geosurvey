@@ -1,5 +1,5 @@
 # Incoming GeoSurvey data check's
-# M. Walsh, J. Chen & A. Verlinden, Dec. 2014
+# M. Walsh, W. Wu, J. Chen, Dec. 2014
 
 # Required packages
 # install.packages(c("downloader","caret")), dependencies = T)
