@@ -27,6 +27,7 @@ checkSample <- checkTest[ ,3:4]
 
 # Write checkSample csv ---------------------------------------------------
 dir.create("1MGS_check", showWarnings=F)
+write.csv(checkTest, "./1MGS_check/Check_test.csv", row.names=F)
 write.csv(checkSample, "./1MGS_check/Check_sample.csv", row.names=F)
 
 
