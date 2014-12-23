@@ -252,7 +252,7 @@ cra <- subset(crp.test, CRP=="N", select=c(Y))
 crp.eval <- evaluate(p=crp[,1], a=cra[,1]) ## calculate ROC's on test set
 crp.eval
 plot(crp.eval, 'ROC') ## plot ROC curve
-crp.thld <- threshold(crp.eval, 'prevalence') ## prevalence threshold for classification
+crp.thld <- threshold(crp.eval, 'spec_sens') ## TPR+TNR threshold for classification
 crpens.pred <- predict(pred, CRP.ens, type="prob") ## spatial prediction
 crpmask <- 1-crpens.pred > crp.thld
 plot(crpmask, axes = F, legend = F)
@@ -270,7 +270,7 @@ wca <- subset(wcp.test, WCP=="N", select=c(Y))
 wcp.eval <- evaluate(p=wcp[,1], a=wca[,1]) ## calculate ROC's on test set
 wcp.eval
 plot(wcp.eval, 'ROC') ## plot ROC curve
-wcp.thld <- threshold(wcp.eval, 'prevalence') ## prevalence threshold for classification
+wcp.thld <- threshold(wcp.eval, 'spec_sens') ## TPR+TNR threshold for classification
 wcpens.pred <- predict(pred, WCP.ens, type="prob") ## spatial prediction
 wcpmask <- 1-wcpens.pred > wcp.thld
 plot(wcpmask, axes = F, legend = F)
@@ -288,7 +288,7 @@ hsa <- subset(hsp.test, HSP=="N", select=c(Y))
 hsp.eval <- evaluate(p=hsp[,1], a=hsa[,1]) ## calculate ROC's on test set
 hsp.eval
 plot(hsp.eval, 'ROC') ## plot ROC curve
-hsp.thld <- threshold(hsp.eval, 'prevalence') ## prevalence threshold for classification
+hsp.thld <- threshold(hsp.eval, 'spec_sens') ## TPR+TNR threshold for classification
 hspens.pred <- predict(pred, HSP.ens, type="prob") ## spatial prediction
 hspmask <- 1-hspens.pred > hsp.thld
 plot(hspmask, axes = F, legend = F)
