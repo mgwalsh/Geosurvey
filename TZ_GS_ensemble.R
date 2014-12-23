@@ -3,10 +3,9 @@
 # M. Walsh, November 2014
 
 # Required packages
-# install.packages(c("downloader","raster","rasterVis","rgdal","caret","MASS","randomForest","gbm","nnet","dismo","RColorBrewer)), dependencies=TRUE)
+# install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","dismo","RColorBrewer)), dependencies=TRUE)
 require(downloader)
 require(raster)
-require(rasterVis)
 require(rgdal)
 require(caret)
 require(MASS)
@@ -22,8 +21,8 @@ dir.create("TZ_data", showWarnings=F)
 dat_dir <- "./TZ_data"
 
 # download GeoSurvey data
-download("https://www.dropbox.com/s/03l4m4zjdi5mhyu/TZ_geos_1114.csv?dl=0", "./TZ_data/TZ_geos_1114.csv", mode="wb")
-geos <- read.table(paste(dat_dir, "/TZ_geos_1114.csv", sep=""), header=T, sep=",")
+download("https://www.dropbox.com/s/c3oxd3j9i6xv0pr/TZ_geos_122314.csv?dl=0", "./TZ_data/TZ_geos_122314.csv", mode="wb")
+geos <- read.table(paste(dat_dir, "/TZ_geos_122314.csv", sep=""), header=T, sep=",")
 geos <- na.omit(geos)
 
 # download Tanzania Gtifs (~27.9 Mb) and stack in raster
@@ -256,11 +255,8 @@ plot(crp.eval, 'ROC') ## plot ROC curve
 crp.thld <- threshold(crp.eval, 'prevalence') ## prevalence threshold for classification
 crpens.pred <- predict(pred, CRP.ens, type="prob") ## spatial prediction
 crpmask <- 1-crpens.pred > crp.thld
+plot(crpmask, axes = F, legend = F)
 
-# plot Cropland probabilities <rasterVis, RColorBrewer>
-crpTheme <- rasterTheme(region = brewer.pal(4, "Greys"))
-levelplot(1-crpens.pred, margin = F, par.settings = crpTheme)
- 
 # presence/absence of Woody Vegetation Cover >60% (WCP, present = Y, absent = N)
 WCP.ens <- train(WCP ~ WCPglm + WCPrf + WCPgbm + WCPnn, data = wcpensTest,
                  family = binomial, 
@@ -276,11 +272,8 @@ wcp.eval
 plot(wcp.eval, 'ROC') ## plot ROC curve
 wcp.thld <- threshold(wcp.eval, 'prevalence') ## prevalence threshold for classification
 wcpens.pred <- predict(pred, WCP.ens, type="prob") ## spatial prediction
-crpmask <- 1-crpens.pred > crp.thld
-
-# plot Woody cover probabilities <rasterVis, RColorBrewer>
-wcpTheme <- rasterTheme(region = brewer.pal(4, "Greys"))
-levelplot(1-wcpens.pred, margin = F, par.settings = wcpTheme)
+wcpmask <- 1-wcpens.pred > wcp.thld
+plot(wcpmask, axes = F, legend = F)
 
 # presence/absence of Buildings/Rural Settlements (HSP, present = Y, absent = N)
 HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspensTest,
@@ -298,10 +291,7 @@ plot(hsp.eval, 'ROC') ## plot ROC curve
 hsp.thld <- threshold(hsp.eval, 'prevalence') ## prevalence threshold for classification
 hspens.pred <- predict(pred, HSP.ens, type="prob") ## spatial prediction
 hspmask <- 1-hspens.pred > hsp.thld
-
-# plot Rural Settlement probabilities <rasterVis, RColorBrewer>
-hspTheme <- rasterTheme(region = brewer.pal(4, "Greys"))
-levelplot(1-hspens.pred, margin = F, par.settings = hspTheme)
+plot(hspmask, axes = F, legend = F)
 
 # Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in current working directory
