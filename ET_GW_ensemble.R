@@ -212,11 +212,10 @@ cra <- subset(crp.test, CRP=="N", select=c(Y))
 crp.eval <- evaluate(p=crp[,1], a=cra[,1]) ## calculate ROC on test set
 crp.eval
 plot(crp.eval, 'ROC') ## plot ROC curve
-crp.thld <- threshold(crp.eval, 'prevalence') ## prevalence threshold for classification
+crp.thld <- threshold(crp.eval, 'spec_sens') ## prevalence threshold for classification
 crpens.pred <- predict(pred, CRP.ens, type="prob") ## spatial prediction
-plot(1-crpens.pred, axes = F) ## plot CRP probs
 crpmask <- 1-crpens.pred > crp.thld 
-plot(crpmask, axes = F) ## plot CRP mask
+plot(crpmask, axes = F, legend = F) ## plot CRP mask
 
 # presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspensTest,
@@ -231,11 +230,10 @@ hsa <- subset(hsp.test, HSP=="N", select=c(Y))
 hsp.eval <- evaluate(p=hsp[,1], a=hsa[,1]) ## calculate ROC's on test set
 hsp.eval
 plot(hsp.eval, 'ROC') ## plot ROC curve
-hsp.thld <- threshold(hsp.eval, 'prevalence') ## prevalence threshold for classification
+hsp.thld <- threshold(hsp.eval, 'spec_sens') ## prevalence threshold for classification
 hspens.pred <- predict(pred, HSP.ens, type="prob") ## spatial prediction
-plot(1-hspens.pred, axes = F) ## plot HSP probs
 hspmask <- 1-hspens.pred > hsp.thld 
-plot(hspmask, axes = F) ## plot HSP mask
+plot(hspmask, axes = F, legend = F) ## plot HSP mask
 
 # Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in current working directory
