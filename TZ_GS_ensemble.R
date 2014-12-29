@@ -3,7 +3,7 @@
 # M. Walsh, November 2014
 
 # Required packages
-# install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","dismo","RColorBrewer)), dependencies=TRUE)
+# install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","dismo")), dependencies=TRUE)
 require(downloader)
 require(raster)
 require(rgdal)
@@ -13,7 +13,6 @@ require(randomForest)
 require(gbm)
 require(nnet)
 require(dismo)
-require(RColorBrewer)
 
 # Data downloads ----------------------------------------------------------
 # Create a "Data" folder in your current working directory
