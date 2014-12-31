@@ -20,7 +20,7 @@ dir.create("TZ_data", showWarnings=F)
 dat_dir <- "./TZ_data"
 
 # download GeoSurvey data
-download("https://www.dropbox.com/s/c3oxd3j9i6xv0pr/TZ_geos_122314.csv?dl=0", "./TZ_data/TZ_geos_122314.csv", mode="wb")
+download("https://www.dropbox.com/s/gfgjnrgllwqt79d/TZ_geos_123114.csv?dl=0", "./TZ_data/TZ_geos_123114.csv", mode="wb")
 geos <- read.table(paste(dat_dir, "/TZ_geos_122314.csv", sep=""), header=T, sep=",")
 geos <- na.omit(geos)
 
