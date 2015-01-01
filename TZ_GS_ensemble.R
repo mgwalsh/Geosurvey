@@ -278,7 +278,6 @@ HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspensTest,
                  family = "binomial", 
                  method = "glmnet",
                  trControl = ens)
-summary(HSP.ens)
 hsp.pred <- predict(HSP.ens, hspensTest, type="prob")
 hsp.test <- cbind(hspensTest, hsp.pred)
 hsp <- subset(hsp.test, HSP=="Y", select=c(Y))
