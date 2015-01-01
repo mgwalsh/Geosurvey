@@ -216,5 +216,15 @@ plot(1-hspens.pred, axes = F)
 hspmask <- 1-hspens.pred > hsp.thld
 plot(hspmask, axes = F, legend = F)
 
+# Write spatial predictions -----------------------------------------------
+# Create a "Results" folder in current working directory
+dir.create("TZ_1MGS_results", showWarnings=F)
+
+# Export Gtif's to "./TZ_results"
+writeRaster(crp.preds, filename="./TZ_1MGS_results/TZ_1MGS_crpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(hsp.preds, filename="./TZ_1MGS_results/TZ_1MGS_hspreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+# Ensemble predictions
+enspred <- stack(1-crpens.pred, crpmask, 1-hspens.pred, hspmask)
+writeRaster(enspred, filename="./TZ_1MGS_results/TZ_1MGS_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
 
