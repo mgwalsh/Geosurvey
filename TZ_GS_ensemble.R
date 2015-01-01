@@ -3,7 +3,7 @@
 # M. Walsh, November 2014
 
 # Required packages
-# install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","dismo")), dependencies=TRUE)
+# install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","glmnet","dismo")), dependencies=TRUE)
 require(downloader)
 require(raster)
 require(rgdal)
@@ -12,6 +12,7 @@ require(MASS)
 require(randomForest)
 require(gbm)
 require(nnet)
+require(glmnet)
 require(dismo)
 
 # Data downloads ----------------------------------------------------------
@@ -204,7 +205,7 @@ wcp.preds <- stack(1-wcpglm.pred, 1-wcprf.pred, 1-wcpgbm.pred, 1-wcpnn.pred)
 names(wcp.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
 plot(wcp.preds, axes = F)
 
-# Human settlement prediction plots
+# Settlement prediction plots
 hsp.preds <- stack(1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
 names(hsp.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
 plot(hsp.preds, axes = F)
@@ -234,21 +235,20 @@ hspens <- cbind.data.frame(HSP, geospred)
 hspens <- na.omit(hspens)
 hspensTest <- hspens[-hspIndex,] ## replicate previous test set
 
-# GLM-based ensemble weighting on the test set
+# Regularized ensemble weighting on the test set <glmnet>
 # 10-fold CV
 ens <- trainControl(method = "cv", number = 10)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.ens <- train(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data = crpensTest,
-                 family = binomial, 
-                 method = "glm",
+                 family = "binomial", 
+                 method = "glmnet",
                  trControl = ens)
-summary(CRP.ens)
 crp.pred <- predict(CRP.ens, crpensTest, type="prob")
 crp.test <- cbind(crpensTest, crp.pred)
 crp <- subset(crp.test, CRP=="Y", select=c(Y))
 cra <- subset(crp.test, CRP=="N", select=c(Y))
-crp.eval <- evaluate(p=crp[,1], a=cra[,1]) ## calculate ROC's on test set
+crp.eval <- evaluate(p=crp[,1], a=cra[,1]) ## calculate ROC's on test set <dismo>
 crp.eval
 plot(crp.eval, 'ROC') ## plot ROC curve
 crp.thld <- threshold(crp.eval, 'spec_sens') ## TPR+TNR threshold for classification
@@ -258,10 +258,9 @@ plot(crpmask, axes = F, legend = F)
 
 # presence/absence of Woody Vegetation Cover >60% (WCP, present = Y, absent = N)
 WCP.ens <- train(WCP ~ WCPglm + WCPrf + WCPgbm + WCPnn, data = wcpensTest,
-                 family = binomial, 
-                 method = "glm",
+                 family = "binomial", 
+                 method = "glmnet",
                  trControl = ens)
-summary(WCP.ens)
 wcp.pred <- predict(WCP.ens, wcpensTest, type="prob")
 wcp.test <- cbind(wcpensTest, wcp.pred)
 wcp <- subset(wcp.test, WCP=="Y", select=c(Y))
@@ -276,8 +275,8 @@ plot(wcpmask, axes = F, legend = F)
 
 # presence/absence of Buildings/Rural Settlements (HSP, present = Y, absent = N)
 HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspensTest,
-                 family = binomial, 
-                 method = "glm",
+                 family = "binomial", 
+                 method = "glmnet",
                  trControl = ens)
 summary(HSP.ens)
 hsp.pred <- predict(HSP.ens, hspensTest, type="prob")
