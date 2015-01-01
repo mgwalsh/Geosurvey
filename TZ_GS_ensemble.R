@@ -265,7 +265,7 @@ wcp.pred <- predict(WCP.ens, wcpensTest, type="prob")
 wcp.test <- cbind(wcpensTest, wcp.pred)
 wcp <- subset(wcp.test, WCP=="Y", select=c(Y))
 wca <- subset(wcp.test, WCP=="N", select=c(Y))
-wcp.eval <- evaluate(p=wcp[,1], a=wca[,1]) ## calculate ROC's on test set
+wcp.eval <- evaluate(p=wcp[,1], a=wca[,1]) ## calculate ROC's on test set <dismo>
 wcp.eval
 plot(wcp.eval, 'ROC') ## plot ROC curve
 wcp.thld <- threshold(wcp.eval, 'spec_sens') ## TPR+TNR threshold for classification
@@ -283,7 +283,7 @@ hsp.pred <- predict(HSP.ens, hspensTest, type="prob")
 hsp.test <- cbind(hspensTest, hsp.pred)
 hsp <- subset(hsp.test, HSP=="Y", select=c(Y))
 hsa <- subset(hsp.test, HSP=="N", select=c(Y))
-hsp.eval <- evaluate(p=hsp[,1], a=hsa[,1]) ## calculate ROC's on test set
+hsp.eval <- evaluate(p=hsp[,1], a=hsa[,1]) ## calculate ROC's on test set <dismo>
 hsp.eval
 plot(hsp.eval, 'ROC') ## plot ROC curve
 hsp.thld <- threshold(hsp.eval, 'spec_sens') ## TPR+TNR threshold for classification
