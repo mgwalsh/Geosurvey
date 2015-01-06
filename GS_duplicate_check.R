@@ -21,7 +21,7 @@ time_counts <- aggregate(geosurvey_total$Time, by=list(day), length)
 names(time_counts) <- c("day", "countsperuser")
 
 # Plot number of submissions per day
-plot(1:length(c(18:31, 1:5)), time_counts$countsperuser,  axes=FALSE, xlab="day", ylab="submissions per user", type="b")
+plot(1:length(c(18:31, 1:5)), time_counts$countsperuser,  axes=FALSE, xlab="Day", ylab="Number of submissions", type="b")
 axis(1, at=1:length(c(18:31, 1:5)), labels = FALSE)
 text(1:length(c(18:31, 1:5)), par("usr")[3] - 0.2, labels = time_counts$day, srt = 90, pos = 1, xpd = TRUE, cex=0.7)
 axis(2)
