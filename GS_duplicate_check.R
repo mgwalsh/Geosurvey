@@ -52,4 +52,4 @@ dupindex <- which(duplicated(geosurvey_total[ ,2:3]))
 geos_nodups <- geosurvey_total[-dupindex, ]
 
 # Write cleaned file
-write.csv(geos_nodups, paste(dat_dir, "/geos_cleaned.csv", sep=""))
+write.csv(geos_nodups, paste(dat_dir, "/geos_cleaned.csv", sep="", row.names=F))
