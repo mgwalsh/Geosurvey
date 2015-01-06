@@ -21,8 +21,8 @@ dir.create("TZ_1MGS_data", showWarnings=F)
 dat_dir <- "./TZ_1MGS_data"
 
 # download 1M GeoSurvey data
-download("https://www.dropbox.com/s/eq19mgnj86d4qo2/1MGS_123114.csv?dl=0", "./TZ_1MGS_data/1MGS_123114.csv", mode="wb")
-geos <- read.table(paste(dat_dir, "/1MGS_123114.csv", sep=""), header=T, sep=",")
+download("https://www.dropbox.com/s/pt9gdc0pg1nr6tv/1MGS_010615c.csv?dl=0", "./TZ_1MGS_data/1MGS_010615c.csv", mode="wb")
+geos <- read.table(paste(dat_dir, "/1MGS_010615c.csv", sep=""), header=T, sep=",")
 
 # download Tanzania validation data
 download("https://www.dropbox.com/s/gfgjnrgllwqt79d/TZ_geos_123114.csv?dl=0", "./TZ_1MGS_data/TZ_geos_123114.csv", mode="wb")
@@ -75,7 +75,7 @@ CRP.glm <- train(CRP ~ ., data = crpdat,
                  method = "glmStepAIC",
                  trControl = step)
 crpglm.test <- predict(CRP.glm, crpdat) ## predict test-set
-confusionMatrix(crpglm.test, crpdat$CRP, "Y") ## print validation summaries
+confusionMatrix(crpglm.test, crpdat$CRP, "Y") ## print cross-validation summaries
 crpglm.pred <- predict(grid, CRP.glm, type = "prob") ## spatial predictions
 
 # presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
@@ -84,7 +84,7 @@ HSP.glm <- train(HSP ~ ., data = hspdat,
                  method = "glmStepAIC",
                  trControl = step)
 hspglm.test <- predict(HSP.glm, hspdat) ## predict test-set
-confusionMatrix(hspglm.test, hspdat$HSP, "Y") ## print validation summaries
+confusionMatrix(hspglm.test, hspdat$HSP, "Y") ## print cross-validation summaries
 hspglm.pred <- predict(grid, HSP.glm, type = "prob") ## spatial predictions
 
 # Random forests <randomForest> -------------------------------------------
@@ -96,7 +96,7 @@ CRP.rf <- train(CRP ~ ., data = crpdat,
                 method = "rf",
                 trControl = oob)
 crprf.test <- predict(CRP.rf, crpdat) ## predict test-set
-confusionMatrix(crprf.test, crpdat$CRP, "Y") ## print validation summaries
+confusionMatrix(crprf.test, crpdat$CRP, "Y") ## print cross-validation summaries
 crprf.pred <- predict(grid, CRP.rf, type = "prob") ## spatial predictions
 
 # presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
@@ -104,7 +104,7 @@ HSP.rf <- train(HSP ~ ., data = hspdat,
                 method = "rf",
                 trControl = oob)
 hsprf.test <- predict(HSP.rf, hspdat) ## predict test-set
-confusionMatrix(hsprf.test, hspdat$HSP, "Y") ## print validation summaries
+confusionMatrix(hsprf.test, hspdat$HSP, "Y") ## print cross-validation summaries
 hsprf.pred <- predict(grid, HSP.rf, type = "prob") ## spatial predictions
 
 # Gradient boosting <gbm> ------------------------------------------
@@ -116,7 +116,7 @@ CRP.gbm <- train(CRP ~ ., data = crpdat,
                  method = "gbm",
                  trControl = gbm)
 crpgbm.test <- predict(CRP.gbm, crpdat) ## predict test-set
-confusionMatrix(crpgbm.test, crpdat$CRP, "Y") ## print validation summaries
+confusionMatrix(crpgbm.test, crpdat$CRP, "Y") ## print cross-validation summaries
 crpgbm.pred <- predict(grid, CRP.gbm, type = "prob") ## spatial predictions
 
 # presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
@@ -124,7 +124,7 @@ HSP.gbm <- train(HSP ~ ., data = hspdat,
                  method = "gbm",
                  trControl = gbm)
 hspgbm.test <- predict(HSP.gbm, hspdat) ## predict test-set
-confusionMatrix(hspgbm.test, hspdat$HSP, "Y") ## print validation summaries
+confusionMatrix(hspgbm.test, hspdat$HSP, "Y") ## print cross-validation summaries
 hspgbm.pred <- predict(grid, HSP.gbm, type = "prob") ## spatial predictions
 
 # Neural nets <nnet> ------------------------------------------------------
@@ -136,7 +136,7 @@ CRP.nn <- train(CRP ~ ., data = crpdat,
                 method = "nnet",
                 trControl = nn)
 crpnn.test <- predict(CRP.nn, crpdat) ## predict test-set
-confusionMatrix(crpnn.test, crpdat$CRP, "Y") ## print validation summaries
+confusionMatrix(crpnn.test, crpdat$CRP, "Y") ## print cross-validation summaries
 crpnn.pred <- predict(grid, CRP.nn, type = "prob") ## spatial predictions
 
 # presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
@@ -144,7 +144,7 @@ HSP.nn <- train(HSP ~ ., data = hspdat,
                 method = "nnet",
                 trControl = nn)
 hspnn.test <- predict(HSP.nn, hspdat) ## predict test-set
-confusionMatrix(hspnn.test, hspdat$HSP, "Y") ## print validation summaries
+confusionMatrix(hspnn.test, hspdat$HSP, "Y") ## print cross-validation summaries
 hspnn.pred <- predict(grid, HSP.nn, type = "prob") ## spatial predictions
 
 # Plot predictions by GeoSurvey variables ---------------------------------
