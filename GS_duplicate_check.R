@@ -1,5 +1,5 @@
 # Duplicate checks on 1M GeoSurvey cropland and human settlement observations.
-# J. Chen, January 2015
+# J. Chen & M. Walsh, January 2015
 
 # Required packages
 require(downloader)
@@ -46,3 +46,10 @@ axis(1, at=1:length(user_duplicates[,1]), labels = FALSE)
 text(1:length(user_duplicates[,1]), par("usr")[3] - 0.2, labels = users, srt = 90, pos = 1.5, offset=1.5, xpd = TRUE, cex=0.7)
 axis(2)
 abline(h=0)
+
+# Identify coordinate duplicates ------------------------------------------
+dupindex <- which(duplicated(geosurvey_total[ ,2:3]))
+geos_nodups <- geosurvey_total[-dupindex, ]
+
+# Write cleaned file
+write.csv(geos_nodups, paste(dat_dir, "/geos_cleaned.csv", sep=""))
