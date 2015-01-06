@@ -30,7 +30,7 @@ axis(2)
 geosurvey_duplicates <- duplicated(geosurvey_total)
 day_duplicates <- aggregate(geosurvey_duplicates, by=list(day), sum)
 
-# Plot number of duplicates per day
+# Plot number of duplicate observations per day
 plot(1:length(c(18:31, 1:5)),day_duplicates[,2],  axes=FALSE, xlab="Day", ylab="Number of duplicates", type="b")
 axis(1, at=1:length(c(18:31, 1:5)), labels = FALSE)
 text(1:length(c(18:31, 1:5)), par("usr")[3] - 0.2, labels = time_counts$day, srt = 90, pos = 1.5, offset=1.5, xpd = TRUE, cex=0.7)
