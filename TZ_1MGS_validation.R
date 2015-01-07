@@ -226,5 +226,3 @@ writeRaster(hsp.preds, filename="./TZ_1MGS_results/TZ_1MGS_hspreds.tif", datatyp
 # Ensemble predictions
 enspred <- stack(1-crpens.pred, crpmask, 1-hspens.pred, hspmask)
 writeRaster(enspred, filename="./TZ_1MGS_results/TZ_1MGS_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-
-
