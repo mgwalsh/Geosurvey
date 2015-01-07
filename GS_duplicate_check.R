@@ -47,7 +47,7 @@ text(1:length(user_duplicates[,1]), par("usr")[3] - 0.2, labels = users, srt = 9
 axis(2)
 abline(h=0)
 
-# Identify coordinate duplicates ------------------------------------------
+# Remove coordinate duplicates --------------------------------------------
 dupindex <- which(duplicated(geosurvey_total[ ,2:3]))
 geos_nodups <- geosurvey_total[-dupindex, ]
 
