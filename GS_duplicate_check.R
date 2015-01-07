@@ -27,7 +27,7 @@ text(1:length(c(18:31, 1:5)), par("usr")[3] - 0.2, labels = time_counts$day, srt
 axis(2)
 
 # Calculate number of duplicates per day ----------------------------------
-geosurvey_duplicates <- duplicated(geosurvey_total)
+geosurvey_duplicates <- duplicated(geosurvey_total[ ,2:3])
 day_duplicates <- aggregate(geosurvey_duplicates, by=list(day), sum)
 
 # Plot number of duplicate observations per day
