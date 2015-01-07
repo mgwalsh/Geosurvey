@@ -1,4 +1,4 @@
-# Duplicate checks on 1M GeoSurvey cropland and human settlement observations.
+# Geolocation duplicate checks on 1M GeoSurvey cropland and human settlement observations.
 # J. Chen & M. Walsh, January 2015
 
 # Required packages
