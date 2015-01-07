@@ -41,7 +41,7 @@ user_duplicates <- aggregate(geosurvey_duplicates, by=list(geosurvey_total$User)
 users <- do.call("rbind", strsplit(user_duplicates[,1], split="@"))[, 1]
 
 # Plot number of duplicates per user
-plot(1:length(user_duplicates[,1]),user_duplicates[,2],  axes=FALSE, xlab="Worker", ylab="Number of duplicates", type="b")
+plot(1:length(user_duplicates[,1]), user_duplicates[,2], axes=FALSE, xlab="Worker", ylab="Number of duplicates", type="b")
 axis(1, at=1:length(user_duplicates[,1]), labels = FALSE)
 text(1:length(user_duplicates[,1]), par("usr")[3] - 0.2, labels = users, srt = 90, pos = 1.5, offset=1.5, xpd = TRUE, cex=0.7)
 axis(2)
