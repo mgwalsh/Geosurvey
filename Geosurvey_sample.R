@@ -4,7 +4,7 @@
 require(downloader)
 require(rgdal)
 
-# Download sampling mask grid (fAPAR > 0) ---------------------------------
+# Download sampling mask grid (fAPAR => 0) --------------------------------
 download("https://www.dropbox.com/s/brikq1ceek16w3s/Af_mask.tif.zip?dl=0", "AF_mask.tif.zip", mode="wb")
 unzip("Af_mask.tif.zip", overwrite=T)
 mask <- readGDAL("AF_mask.tif", silent=TRUE)
