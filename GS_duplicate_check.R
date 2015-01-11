@@ -1,5 +1,5 @@
 #' Geolocation duplicate checks on 1M GeoSurvey cropland and human settlement observations.
-#' J. Chen & M. Walsh, January 2015
+#' J.Chen & M.Walsh, January 2015
 
 # Required packages
 require(downloader)
@@ -20,15 +20,17 @@ day <- do.call("rbind", do.call("rbind", lapply(geosurvey_total$Time, strsplit, 
 submis <- aggregate(geosurvey_total$Time, by=list(day), length)
 names(submis) <- c("Date", "Submissions")
 submis$Date <- as.Date(submis$Date)
+submis
 
-# Plot number of submissions per day
+# Plot total number of submissions per day
 plot(Submissions~Date, submis, type="b", ylab="Total submissions")
 
 #+ Calculate number of duplicates per day ---------------------------------
 geosurvey_duplicates <- duplicated(geosurvey_total[ ,2:3])
 geodups <- aggregate(geosurvey_duplicates, by=list(day), sum)
-names(geodups) <- c("Date", "geodups")
+names(geodups) <- c("Date", "Duplicates")
 geodups$Date <- as.Date(geodups$Date)
+geodups
 
 # Plot number of duplicate observations per day
 plot(geodups~Date, geodups, type="b", ylab="Total Geo-duplicates")
