@@ -33,7 +33,7 @@ geodups$Date <- as.Date(geodups$Date)
 geodups
 
 # Plot number of duplicate observations per day
-plot(geodups~Date, geodups, type="b", ylab="Total Geo-duplicates")
+plot(Duplicates~Date, geodups, type="b", ylab="Total Geo-duplicates")
 
 #+ Calculate number of duplicates per user --------------------------------
 user_dups <- aggregate(geosurvey_duplicates, by=list(geosurvey_total$User), sum)
