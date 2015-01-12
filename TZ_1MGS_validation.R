@@ -1,8 +1,8 @@
-# Validation of ensemble predictions of Tanzania 1M GeoSurvey cropland and
-# human settlement observations.
-# M.Walsh, J.Chen & A.Verlinden, January 2015
+#' Validation of ensemble predictions of Tanzania 1M GeoSurvey cropland and
+#' human settlement observations.
+#' M.Walsh, J.Chen & A.Verlinden, January 2015
 
-# Required packages
+#+ Required packages
 # install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","glmnet","dismo")), dependencies=TRUE)
 require(downloader)
 require(raster)
@@ -15,14 +15,14 @@ require(nnet)
 require(glmnet)
 require(dismo)
 
-# Data downloads ----------------------------------------------------------
+#+ Data downloads ----------------------------------------------------------
 # Create a "Data" folder in your current working directory
 dir.create("TZ_1MGS_data", showWarnings=F)
 dat_dir <- "./TZ_1MGS_data"
 
 # download 1M GeoSurvey data
-download("https://www.dropbox.com/s/pt9gdc0pg1nr6tv/1MGS_010615c.csv?dl=0", "./TZ_1MGS_data/1MGS_010615c.csv", mode="wb")
-geos <- read.table(paste(dat_dir, "/1MGS_010615c.csv", sep=""), header=T, sep=",")
+download("https://www.dropbox.com/s/culc40jiqxazeg7/1MGS_011015c.csv?dl=0", "./TZ_1MGS_data/1MGS_011015c.csv", mode="wb")
+geos <- read.table(paste(dat_dir, "/1MGS_011015c.csv", sep=""), header=T, sep=",")
 
 # download Tanzania validation data
 download("https://www.dropbox.com/s/gfgjnrgllwqt79d/TZ_geos_123114.csv?dl=0", "./TZ_1MGS_data/TZ_geos_123114.csv", mode="wb")
@@ -34,7 +34,7 @@ unzip("./TZ_1MGS_data/TZ_grids.zip", exdir="./TZ_1MGS_data", overwrite=T)
 glist <- list.files(path="./TZ_1MGS_data", pattern="tif", full.names=T)
 grid <- stack(glist)
 
-# Data setup --------------------------------------------------------------
+#+ Data setup --------------------------------------------------------------
 # Project 1M GeoSurvey coords to grid CRS
 geos.proj <- as.data.frame(project(cbind(geos$Lon, geos$Lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
 colnames(geos.proj) <- c("x","y")
@@ -65,7 +65,7 @@ HSP <- geos$HSP
 hspdat <- cbind.data.frame(HSP, geosgrid)
 hspdat <- na.omit(hspdat)
 
-# Stepwise main effects GLM's <MASS> --------------------------------------
+#+ Stepwise main effects GLM's <MASS> --------------------------------------
 # 10-fold CV
 step <- trainControl(method = "cv", number = 10)
 
@@ -87,7 +87,7 @@ hspglm.test <- predict(HSP.glm, hspdat) ## predict test-set
 confusionMatrix(hspglm.test, hspdat$HSP, "Y") ## print cross-validation summaries
 hspglm.pred <- predict(grid, HSP.glm, type = "prob") ## spatial predictions
 
-# Random forests <randomForest> -------------------------------------------
+#+ Random forests <randomForest> -------------------------------------------
 # out-of-bag predictions
 oob <- trainControl(method = "oob")
 
@@ -107,7 +107,7 @@ hsprf.test <- predict(HSP.rf, hspdat) ## predict test-set
 confusionMatrix(hsprf.test, hspdat$HSP, "Y") ## print cross-validation summaries
 hsprf.pred <- predict(grid, HSP.rf, type = "prob") ## spatial predictions
 
-# Gradient boosting <gbm> ------------------------------------------
+#+ Gradient boosting <gbm> ------------------------------------------
 # CV for training gbm's
 gbm <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
 
@@ -127,7 +127,7 @@ hspgbm.test <- predict(HSP.gbm, hspdat) ## predict test-set
 confusionMatrix(hspgbm.test, hspdat$HSP, "Y") ## print cross-validation summaries
 hspgbm.pred <- predict(grid, HSP.gbm, type = "prob") ## spatial predictions
 
-# Neural nets <nnet> ------------------------------------------------------
+#+ Neural nets <nnet> ------------------------------------------------------
 # CV for training nnet's
 nn <- trainControl(method = "cv", number = 10)
 
@@ -147,7 +147,7 @@ hspnn.test <- predict(HSP.nn, hspdat) ## predict test-set
 confusionMatrix(hspnn.test, hspdat$HSP, "Y") ## print cross-validation summaries
 hspnn.pred <- predict(grid, HSP.nn, type = "prob") ## spatial predictions
 
-# Plot predictions by GeoSurvey variables ---------------------------------
+#+ Plot predictions by GeoSurvey variables ---------------------------------
 # Cropland prediction plots
 crp.preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred)
 names(crp.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
@@ -158,7 +158,7 @@ hsp.preds <- stack(1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
 names(hsp.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
 plot(hsp.preds, axes = F)
 
-# Ensemble predictions <glm>, <rf>, <gbm>, <nnet> --------------------------
+#+ Ensemble predictions <glm>, <rf>, <gbm>, <nnet> -------------------------
 # Ensemble set-up
 pred <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred,
               1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
@@ -216,7 +216,7 @@ plot(1-hspens.pred, axes = F)
 hspmask <- 1-hspens.pred > hsp.thld
 plot(hspmask, axes = F, legend = F)
 
-# Write spatial predictions -----------------------------------------------
+#+ Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in current working directory
 dir.create("TZ_1MGS_results", showWarnings=F)
 
