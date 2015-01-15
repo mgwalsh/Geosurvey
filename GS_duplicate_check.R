@@ -23,7 +23,7 @@ submis$Date <- as.Date(submis$Date)
 submis
 
 # Plot total number of submissions per day
-plot(Submissions~Date, submis, type="b", ylab="Total submissions")
+plot(Submissions/1000~Date, submis, type="b", ylab="Total submissions ('000's)")
 
 #+ Calculate number of duplicates per day ---------------------------------
 geosurvey_duplicates <- duplicated(geosurvey_total[ ,2:3])
