@@ -9,8 +9,8 @@ require(downloader)
 dir.create("1MGS_check", showWarnings=F)
 dat_dir <- "./1MGS_check"
 
-download("https://www.dropbox.com/s/pfvca7tr2l8flma/2015-01-10_18-00-02_243611.zip?dl=0", "./1MGS_check/2015-01-10_18-00-02_243611.zip", mode="wb")
-unzip("./1MGS_check/2015-01-10_18-00-02_243611.zip", exdir="./1MGS_check", junkpaths=T, overwrite=T)
+download("https://www.dropbox.com/s/joxjr1rz32uk2rm/2015-01-14_18-00-01_784908.zip?dl=0", "./1MGS_check/2015-01-14_18-00-01_784908.zip", mode="wb")
+unzip("./1MGS_check/2015-01-14_18-00-01_784908.zip", exdir="./1MGS_check", junkpaths=T, overwrite=T)
 geosurvey_a1 <- read.csv(paste(dat_dir, "/6_1m-point-survey-a1.csv", sep=""), stringsAsFactors=FALSE)
 geosurvey_a2 <- read.csv(paste(dat_dir, "/7_1m-point-survey-a2.csv", sep=""), stringsAsFactors=FALSE)
 geosurvey_total <- rbind(geosurvey_a1[ ,1:6], geosurvey_a2[ ,1:6])
