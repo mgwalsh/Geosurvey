@@ -21,8 +21,9 @@ dir.create("TZ_1MGS_data", showWarnings=F)
 dat_dir <- "./TZ_1MGS_data"
 
 # download 1M GeoSurvey data
-download("https://www.dropbox.com/s/culc40jiqxazeg7/1MGS_011015c.csv?dl=0", "./TZ_1MGS_data/1MGS_011015c.csv", mode="wb")
-geos <- read.table(paste(dat_dir, "/1MGS_011015c.csv", sep=""), header=T, sep=",")
+download("https://www.dropbox.com/s/jtwmf7ck9ebh7bm/1MGS_cleaned.csv.zip?dl=0", "./TZ_1MGS_data/1MGS_cleaned.csv.zip", mode="wb")
+unzip("./TZ_1MGS_data/1MGS_cleaned.csv.zip", exdir="./TZ_1MGS_data", overwrite=T)
+geos <- read.table(paste(dat_dir, "/1MGS_cleaned.csv", sep=""), header=T, sep=",")
 
 # download Tanzania validation data
 download("https://www.dropbox.com/s/gfgjnrgllwqt79d/TZ_geos_123114.csv?dl=0", "./TZ_1MGS_data/TZ_geos_123114.csv", mode="wb")
