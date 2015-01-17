@@ -194,7 +194,7 @@ hspnn.test <- predict(HSP.nn, hspTest) ## predict test-set
 confusionMatrix(hspnn.test, hspTest$HSP, "Y") ## print validation summaries
 hspnn.pred <- predict(grid, HSP.nn, type = "prob") ## spatial predictions
 
-# Plot predictions by GeoSurvey variables ---------------------------------
+#+ Plot predictions by GeoSurvey variables ---------------------------------
 # Cropland prediction plots
 crp.preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred)
 names(crp.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
