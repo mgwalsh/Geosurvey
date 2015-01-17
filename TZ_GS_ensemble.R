@@ -1,6 +1,6 @@
-# Ensemble predictions of Tanzania GeoSurvey cropland,
-# woody vegetation cover and human settlement observations. 
-# M. Walsh, November 2014
+#' Ensemble predictions of Tanzania GeoSurvey cropland,
+#' woody vegetation cover and human settlement observations. 
+#' M. Walsh, November 2014
 
 # Required packages
 # install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","glmnet","dismo")), dependencies=TRUE)
@@ -15,7 +15,7 @@ require(nnet)
 require(glmnet)
 require(dismo)
 
-# Data downloads ----------------------------------------------------------
+#+ Data downloads ----------------------------------------------------------
 # Create a "Data" folder in your current working directory
 dir.create("TZ_data", showWarnings=F)
 dat_dir <- "./TZ_data"
@@ -31,7 +31,7 @@ unzip("./TZ_data/TZ_grids.zip", exdir="./TZ_data", overwrite=T)
 glist <- list.files(path="./TZ_data", pattern="tif", full.names=T)
 grid <- stack(glist)
 
-# Data setup --------------------------------------------------------------
+#+ Data setup --------------------------------------------------------------
 # Project GeoSurvey coords to grid CRS
 geos.proj <- as.data.frame(project(cbind(geos$Lon, geos$Lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
 colnames(geos.proj) <- c("x","y")
@@ -63,7 +63,7 @@ hspdat <- na.omit(hspdat)
 seed <- 1385321
 set.seed(seed)
 
-# Split data into train and test sets ------------------------------------
+#+ Split data into train and test sets ------------------------------------
 # Cropland train/test split
 crpIndex <- createDataPartition(crpdat$CRP, p = 0.75, list = FALSE, times = 1)
 crpTrain <- crpdat[ crpIndex,]
@@ -79,7 +79,7 @@ hspIndex <- createDataPartition(hspdat$HSP, p = 0.75, list = FALSE, times = 1)
 hspTrain <- hspdat[ hspIndex,]
 hspTest  <- hspdat[-hspIndex,]
 
-# Stepwise main effects GLM's <MASS> --------------------------------------
+#+ Stepwise main effects GLM's <MASS> --------------------------------------
 # 10-fold CV
 step <- trainControl(method = "cv", number = 10)
 
@@ -110,7 +110,7 @@ hspglm.test <- predict(HSP.glm, hspTest) ## predict test-set
 confusionMatrix(hspglm.test, hspTest$HSP, "Y") ## print validation summaries
 hspglm.pred <- predict(grid, HSP.glm, type = "prob") ## spatial predictions
 
-# Random forests <randomForest> -------------------------------------------
+#+ Random forests <randomForest> -------------------------------------------
 # out-of-bag predictions
 oob <- trainControl(method = "oob")
 
@@ -138,7 +138,7 @@ hsprf.test <- predict(HSP.rf, hspTest) ## predict test-set
 confusionMatrix(hsprf.test, hspTest$HSP, "Y") ## print validation summaries
 hsprf.pred <- predict(grid, HSP.rf, type = "prob") ## spatial predictions
 
-# Gradient boosting <gbm> ------------------------------------------
+#+ Gradient boosting <gbm> ------------------------------------------
 # CV for training gbm's
 gbm <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
 
@@ -166,7 +166,7 @@ hspgbm.test <- predict(HSP.gbm, hspTest) ## predict test-set
 confusionMatrix(hspgbm.test, hspTest$HSP, "Y") ## print validation summaries
 hspgbm.pred <- predict(grid, HSP.gbm, type = "prob") ## spatial predictions
 
-# Neural nets <nnet> ------------------------------------------------------
+#+ Neural nets <nnet> ------------------------------------------------------
 # CV for training nnet's
 nn <- trainControl(method = "cv", number = 10)
 
@@ -210,7 +210,7 @@ hsp.preds <- stack(1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
 names(hsp.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
 plot(hsp.preds, axes = F)
 
-# Ensemble predictions <glm>, <rf>, <gbm>, <nnet> --------------------------
+#+ Ensemble predictions <glm>, <rf>, <gbm>, <nnet> --------------------------
 # Ensemble set-up
 pred <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred,
               1-wcpglm.pred, 1-wcprf.pred, 1-wcpgbm.pred, 1-wcpnn.pred,
@@ -290,7 +290,7 @@ hspens.pred <- predict(pred, HSP.ens, type="prob") ## spatial prediction
 hspmask <- 1-hspens.pred > hsp.thld
 plot(hspmask, axes = F, legend = F)
 
-# Write spatial predictions -----------------------------------------------
+#+ Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in current working directory
 dir.create("TZ_results", showWarnings=F)
 
