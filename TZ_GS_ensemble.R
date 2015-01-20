@@ -21,8 +21,8 @@ dir.create("TZ_data", showWarnings=F)
 dat_dir <- "./TZ_data"
 
 # download GeoSurvey data
-download("https://www.dropbox.com/s/gfgjnrgllwqt79d/TZ_geos_123114.csv?dl=0", "./TZ_data/TZ_geos_123114.csv", mode="wb")
-geos <- read.table(paste(dat_dir, "/TZ_geos_123114.csv", sep=""), header=T, sep=",")
+download("https://www.dropbox.com/s/339k17oic3n3ju6/TZ_geos_012015.csv?dl=0", "./TZ_data/TZ_geos_012015.csv", mode="wb")
+geos <- read.table(paste(dat_dir, "/TZ_geos_012015.csv", sep=""), header=T, sep=",")
 geos <- na.omit(geos)
 
 # download Tanzania Gtifs (~27.6 Mb) and stack in raster
