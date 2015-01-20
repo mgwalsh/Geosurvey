@@ -253,6 +253,7 @@ crp.eval
 plot(crp.eval, 'ROC') ## plot ROC curve
 crp.thld <- threshold(crp.eval, 'spec_sens') ## TPR+TNR threshold for classification
 crpens.pred <- predict(pred, CRP.ens, type="prob") ## spatial prediction
+plot(1-crpens.pred, axes=F)
 crpmask <- 1-crpens.pred > crp.thld
 plot(crpmask, axes = F, legend = F)
 
@@ -270,6 +271,7 @@ wcp.eval
 plot(wcp.eval, 'ROC') ## plot ROC curve
 wcp.thld <- threshold(wcp.eval, 'spec_sens') ## TPR+TNR threshold for classification
 wcpens.pred <- predict(pred, WCP.ens, type="prob") ## spatial prediction
+plot(1-wcpens.pred, axes=F)
 wcpmask <- 1-wcpens.pred > wcp.thld
 plot(wcpmask, axes = F, legend = F)
 
@@ -287,6 +289,7 @@ hsp.eval
 plot(hsp.eval, 'ROC') ## plot ROC curve
 hsp.thld <- threshold(hsp.eval, 'spec_sens') ## TPR+TNR threshold for classification
 hspens.pred <- predict(pred, HSP.ens, type="prob") ## spatial prediction
+plot(1-hspens.pred, axes=F)
 hspmask <- 1-hspens.pred > hsp.thld
 plot(hspmask, axes = F, legend = F)
 
