@@ -50,21 +50,25 @@ geosv <- cbind(geosv, geosv.proj)
 coordinates(geosv) <- ~x+y
 projection(geosv) <- projection(grid)
 
-# Extract gridded variables at GeoSurvey locations
-geosgrid <- extract(grid, geos)
-geosvgrid <- extract(grid, geosv)
+# Extract gridded variables to GeoSurvey locations
+gsext <- data.frame(coordinates(geos), geos$CRP, geos$HSP, extract(grid, geos))
+gsext <- na.omit(gsext)
+colnames(gsext)[3:4] <- c("CRP", "HSP")
+# write.csv(gsext, "TZ_1MGS.csv", row.names=F)
+
+# Extract gridded variables to validation observations
+gsexv <- data.frame(coordinates(geosv), geosv$CRP, geosv$HSP, extract(grid, geosv))
+gsexv <- na.omit(gsext)
+colnames(gsext)[3:4] <- c("CRP", "HSP")
 
 # Assemble dataframes
 # presence/absence of Cropland (CRP, present = Y, absent = N)
-CRP <- geos$CRP
-crpdat <- cbind.data.frame(CRP, geosgrid)
-crpdat <- na.omit(crpdat)
+crpdat <- data.frame(gsext$CRP, gsext[,5:28])
+colnames(crpdat)[1] <- "CRP"
 
-# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
-# note that this excludes large urban areas where MODIS fPAR = 0
-HSP <- geos$HSP
-hspdat <- cbind.data.frame(HSP, geosgrid)
-hspdat <- na.omit(hspdat)
+# presence/absence of Buildings/Settlements (HSP, present = Y, absent = N)
+hspdat <- data.frame(gsext$HSP, gsext[,5:28])
+colnames(hspdat)[1] <- "HSP"
 
 #+ Stepwise main effects GLM's <MASS> --------------------------------------
 # 10-fold CV
@@ -165,31 +169,30 @@ pred <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred,
               1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
 names(pred) <- c("CRPglm","CRPrf","CRPgbm","CRPnn",
                  "HSPglm","HSPrf","HSPgbm","HSPnn")
-geosvpred <- extract(pred, geosv)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
-CRPv <- geosv$CRP
-crpens <- cbind.data.frame(CRPv, geosvpred)
+crpens <- data.frame(geosv$CRP, extract(pred, geosv))
 crpens <- na.omit(crpens)
+colnames(crpens)[1] <- "CRP"
 
-# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
-HSPv <- geosv$HSP
-hspens <- cbind.data.frame(HSPv, geosvpred)
+# presence/absence of Buildings/Settlements (HSP, present = Y, absent = N)
+hspens <- data.frame(geosv$HSP, extract(pred, geosv))
 hspens <- na.omit(hspens)
+colnames(hspens)[1] <- "HSP"
 
 # Regularized ensemble weighting on the test set <glmnet>
 # 10-fold CV
 ens <- trainControl(method = "cv", number = 10)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
-CRP.ens <- train(CRPv ~ CRPglm + CRPrf + CRPgbm + CRPnn, data = crpens,
+CRP.ens <- train(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data = crpens,
                  family = "binomial", 
                  method = "glmnet",
                  trControl = ens)
 crp.pred <- predict(CRP.ens, crpens, type="prob")
 crp.test <- cbind(crpens, crp.pred)
-crp <- subset(crp.test, CRPv=="Y", select=c(Y))
-cra <- subset(crp.test, CRPv=="N", select=c(Y))
+crp <- subset(crp.test, CRP=="Y", select=c(Y))
+cra <- subset(crp.test, CRP=="N", select=c(Y))
 crp.eval <- evaluate(p=crp[,1], a=cra[,1]) ## calculate ROC's on test set <dismo>
 crp.eval
 plot(crp.eval, 'ROC') ## plot ROC curve
@@ -200,14 +203,14 @@ crpmask <- 1-crpens.pred > crp.thld
 plot(crpmask, axes = F, legend = F)
 
 # presence/absence of Buildings/Rural Settlements (HSP, present = Y, absent = N)
-HSP.ens <- train(HSPv ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspens,
+HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspens,
                  family = "binomial", 
                  method = "glmnet",
                  trControl = ens)
 hsp.pred <- predict(HSP.ens, hspens, type="prob")
 hsp.test <- cbind(hspens, hsp.pred)
-hsp <- subset(hsp.test, HSPv=="Y", select=c(Y))
-hsa <- subset(hsp.test, HSPv=="N", select=c(Y))
+hsp <- subset(hsp.test, HSP=="Y", select=c(Y))
+hsa <- subset(hsp.test, HSP=="N", select=c(Y))
 hsp.eval <- evaluate(p=hsp[,1], a=hsa[,1]) ## calculate ROC's on test set <dismo>
 hsp.eval
 plot(hsp.eval, 'ROC') ## plot ROC curve
