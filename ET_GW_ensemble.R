@@ -203,9 +203,8 @@ ens <- trainControl(method = "cv", number = 10)
 # presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.ens <- train(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data = crpensTest,
                  family = binomial, 
-                 method = "glmnet",
+                 method = "glm",
                  trControl = ens)
-summary(CRP.ens)
 crp.pred <- predict(CRP.ens, crpensTest, type="prob")
 crp.test <- cbind(crpensTest, crp.pred)
 crp <- subset(crp.test, CRP=="Y", select=c(Y))
@@ -221,7 +220,7 @@ plot(crpmask, axes = F, legend = F) ## plot CRP mask
 # presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspensTest,
                  family = binomial, 
-                 method = "glmnet",
+                 method = "glm",
                  trControl = ens)
 summary(HSP.ens)
 hsp.pred <- predict(HSP.ens, hspensTest, type="prob")
