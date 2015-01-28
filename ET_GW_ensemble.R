@@ -3,7 +3,7 @@
 # M. Walsh, December 2014
 
 # Required packages
-# install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","dismo")), dependencies=TRUE)
+# install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","glmnet",dismo")), dependencies=TRUE)
 require(downloader)
 require(raster)
 require(rgdal)
@@ -12,6 +12,7 @@ require(MASS)
 require(randomForest)
 require(gbm)
 require(nnet)
+require(glmnet)
 require(dismo)
 
 # Data downloads ----------------------------------------------------------
@@ -195,14 +196,14 @@ hspens <- cbind.data.frame(HSP, geospred)
 hspens <- na.omit(hspens)
 hspensTest <- hspens[-hspIndex,] ## replicate previous test set
 
-# GLM-based ensemble weighting on the test set
+# <glmnet>-based ensemble weighting on the test set
 # 10-fold CV
 ens <- trainControl(method = "cv", number = 10)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.ens <- train(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data = crpensTest,
                  family = binomial, 
-                 method = "glm",
+                 method = "glmnet",
                  trControl = ens)
 summary(CRP.ens)
 crp.pred <- predict(CRP.ens, crpensTest, type="prob")
@@ -220,7 +221,7 @@ plot(crpmask, axes = F, legend = F) ## plot CRP mask
 # presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspensTest,
                  family = binomial, 
-                 method = "glm",
+                 method = "glmnet",
                  trControl = ens)
 summary(HSP.ens)
 hsp.pred <- predict(HSP.ens, hspensTest, type="prob")
