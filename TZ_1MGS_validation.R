@@ -3,11 +3,12 @@
 #' M.Walsh, J.Chen & A.Verlinden, January 2015
 
 #+ Required packages
-# install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","glmnet","dismo")), dependencies=TRUE)
+# install.packages(c("downloader","raster","rgdal","caret","pROC","MASS","randomForest","gbm","nnet","glmnet","dismo")), dependencies=TRUE)
 require(downloader)
 require(raster)
 require(rgdal)
 require(caret)
+require(pROC)
 require(MASS)
 require(randomForest)
 require(gbm)
@@ -72,24 +73,24 @@ colnames(hspdat)[1] <- "HSP"
 
 #+ Stepwise main effects GLM's <MASS> --------------------------------------
 # 10-fold CV
-step <- trainControl(method = "cv", number = 10)
+step <- trainControl(method = "cv", number = 10, classProbs = T, summaryFunction = twoClassSummary)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.glm <- train(CRP ~ ., data = crpdat,
                  family = binomial, 
                  method = "glmStepAIC",
+                 metric = "ROC",
                  trControl = step)
-crpglm.test <- predict(CRP.glm, crpdat) ## predict test-set
-confusionMatrix(crpglm.test, crpdat$CRP, "Y") ## print cross-validation summaries
+CRP.glm
 crpglm.pred <- predict(grid, CRP.glm, type = "prob") ## spatial predictions
 
 # presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.glm <- train(HSP ~ ., data = hspdat,
                  family=binomial, 
                  method = "glmStepAIC",
+                 metric = "ROC",
                  trControl = step)
-hspglm.test <- predict(HSP.glm, hspdat) ## predict test-set
-confusionMatrix(hspglm.test, hspdat$HSP, "Y") ## print cross-validation summaries
+HSP.glm
 hspglm.pred <- predict(grid, HSP.glm, type = "prob") ## spatial predictions
 
 #+ Random forests <randomForest> -------------------------------------------
@@ -99,57 +100,57 @@ oob <- trainControl(method = "oob")
 # presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.rf <- train(CRP ~ ., data = crpdat,
                 method = "rf",
+                metric = "Kappa",
                 trControl = oob)
-crprf.test <- predict(CRP.rf, crpdat) ## predict test-set
-confusionMatrix(crprf.test, crpdat$CRP, "Y") ## print cross-validation summaries
+CRP.rf
 crprf.pred <- predict(grid, CRP.rf, type = "prob") ## spatial predictions
 
 # presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.rf <- train(HSP ~ ., data = hspdat,
                 method = "rf",
+                metric = "Kappa",
                 trControl = oob)
-hsprf.test <- predict(HSP.rf, hspdat) ## predict test-set
-confusionMatrix(hsprf.test, hspdat$HSP, "Y") ## print cross-validation summaries
+HSP.rf
 hsprf.pred <- predict(grid, HSP.rf, type = "prob") ## spatial predictions
 
 #+ Gradient boosting <gbm> ------------------------------------------
 # CV for training gbm's
-gbm <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
+gbm <- trainControl(method = "repeatedcv", number = 5, repeats = 5, classProbs = T, summaryFunction = twoClassSummary)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.gbm <- train(CRP ~ ., data = crpdat,
                  method = "gbm",
+                 metric = "ROC",
                  trControl = gbm)
-crpgbm.test <- predict(CRP.gbm, crpdat) ## predict test-set
-confusionMatrix(crpgbm.test, crpdat$CRP, "Y") ## print cross-validation summaries
+CRP.gbm
 crpgbm.pred <- predict(grid, CRP.gbm, type = "prob") ## spatial predictions
 
 # presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.gbm <- train(HSP ~ ., data = hspdat,
                  method = "gbm",
+                 metric = "ROC",
                  trControl = gbm)
-hspgbm.test <- predict(HSP.gbm, hspdat) ## predict test-set
-confusionMatrix(hspgbm.test, hspdat$HSP, "Y") ## print cross-validation summaries
+HSP.gbm
 hspgbm.pred <- predict(grid, HSP.gbm, type = "prob") ## spatial predictions
 
 #+ Neural nets <nnet> ------------------------------------------------------
 # CV for training nnet's
-nn <- trainControl(method = "cv", number = 10)
+nn <- trainControl(method = "cv", number = 10, classProbs = T, summaryFunction = twoClassSummary)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.nn <- train(CRP ~ ., data = crpdat,
                 method = "nnet",
+                metric = "ROC",
                 trControl = nn)
-crpnn.test <- predict(CRP.nn, crpdat) ## predict test-set
-confusionMatrix(crpnn.test, crpdat$CRP, "Y") ## print cross-validation summaries
+CRP.nn
 crpnn.pred <- predict(grid, CRP.nn, type = "prob") ## spatial predictions
 
 # presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.nn <- train(HSP ~ ., data = hspdat,
                 method = "nnet",
+                metric = "ROC",
                 trControl = nn)
-hspnn.test <- predict(HSP.nn, hspdat) ## predict test-set
-confusionMatrix(hspnn.test, hspdat$HSP, "Y") ## print cross-validation summaries
+HSP.nn
 hspnn.pred <- predict(grid, HSP.nn, type = "prob") ## spatial predictions
 
 #+ Plot predictions by GeoSurvey variables ---------------------------------
