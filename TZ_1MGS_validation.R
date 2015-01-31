@@ -73,13 +73,13 @@ colnames(hspdat)[1] <- "HSP"
 
 #+ Stepwise main effects GLM's <MASS> --------------------------------------
 # 10-fold CV
-step <- trainControl(method = "cv", number = 10, classProbs = T, summaryFunction = twoClassSummary)
+step <- trainControl(method = "cv", number = 10)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.glm <- train(CRP ~ ., data = crpdat,
                  family = binomial, 
                  method = "glmStepAIC",
-                 metric = "ROC",
+                 metric = "Kappa",
                  trControl = step)
 CRP.glm
 crpglm.pred <- predict(grid, CRP.glm, type = "prob") ## spatial predictions
@@ -88,7 +88,7 @@ crpglm.pred <- predict(grid, CRP.glm, type = "prob") ## spatial predictions
 HSP.glm <- train(HSP ~ ., data = hspdat,
                  family=binomial, 
                  method = "glmStepAIC",
-                 metric = "ROC",
+                 metric = "Kappa",
                  trControl = step)
 HSP.glm
 hspglm.pred <- predict(grid, HSP.glm, type = "prob") ## spatial predictions
@@ -115,12 +115,12 @@ hsprf.pred <- predict(grid, HSP.rf, type = "prob") ## spatial predictions
 
 #+ Gradient boosting <gbm> ------------------------------------------
 # CV for training gbm's
-gbm <- trainControl(method = "repeatedcv", number = 5, repeats = 5, classProbs = T, summaryFunction = twoClassSummary)
+gbm <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.gbm <- train(CRP ~ ., data = crpdat,
                  method = "gbm",
-                 metric = "ROC",
+                 metric = "Kappa",
                  trControl = gbm)
 CRP.gbm
 crpgbm.pred <- predict(grid, CRP.gbm, type = "prob") ## spatial predictions
@@ -128,19 +128,19 @@ crpgbm.pred <- predict(grid, CRP.gbm, type = "prob") ## spatial predictions
 # presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.gbm <- train(HSP ~ ., data = hspdat,
                  method = "gbm",
-                 metric = "ROC",
+                 metric = "Kappa",
                  trControl = gbm)
 HSP.gbm
 hspgbm.pred <- predict(grid, HSP.gbm, type = "prob") ## spatial predictions
 
 #+ Neural nets <nnet> ------------------------------------------------------
 # CV for training nnet's
-nn <- trainControl(method = "cv", number = 10, classProbs = T, summaryFunction = twoClassSummary)
+nn <- trainControl(method = "cv", number = 10)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.nn <- train(CRP ~ ., data = crpdat,
                 method = "nnet",
-                metric = "ROC",
+                metric = "Kappa",
                 trControl = nn)
 CRP.nn
 crpnn.pred <- predict(grid, CRP.nn, type = "prob") ## spatial predictions
@@ -148,7 +148,7 @@ crpnn.pred <- predict(grid, CRP.nn, type = "prob") ## spatial predictions
 # presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
 HSP.nn <- train(HSP ~ ., data = hspdat,
                 method = "nnet",
-                metric = "ROC",
+                metric = "Kappa",
                 trControl = nn)
 HSP.nn
 hspnn.pred <- predict(grid, HSP.nn, type = "prob") ## spatial predictions
@@ -183,13 +183,15 @@ colnames(hspens)[1] <- "HSP"
 
 # Regularized ensemble weighting on the test set <glmnet>
 # 10-fold CV
-ens <- trainControl(method = "cv", number = 10)
+ens <- trainControl(method = "cv", number = 10, classProbs = T, summaryFunction = twoClassSummary)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.ens <- train(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data = crpens,
                  family = "binomial", 
                  method = "glmnet",
+                 metric = "ROC",
                  trControl = ens)
+CRP.ens
 crp.pred <- predict(CRP.ens, crpens, type="prob")
 crp.test <- cbind(crpens, crp.pred)
 crp <- subset(crp.test, CRP=="Y", select=c(Y))
@@ -207,7 +209,9 @@ plot(crpmask, axes = F, legend = F)
 HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspens,
                  family = "binomial", 
                  method = "glmnet",
+                 metric = "ROC",
                  trControl = ens)
+HSP.ens
 hsp.pred <- predict(HSP.ens, hspens, type="prob")
 hsp.test <- cbind(hspens, hsp.pred)
 hsp <- subset(hsp.test, HSP=="Y", select=c(Y))
