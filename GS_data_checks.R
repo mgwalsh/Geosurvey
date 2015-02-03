@@ -1,5 +1,5 @@
 # Incoming GeoSurvey data check's
-# M. Walsh, W. Wu, J. Chen, A. Verlinden, Dec. 2014
+# M. Walsh, J. Chen, W. Wu, February 2015
 
 # Required packages
 # install.packages(c("downloader","caret")), dependencies = T)
@@ -12,8 +12,9 @@ dir.create("1MGS_data", showWarnings=F)
 dat_dir <- "./1MGS_data"
 
 # download GeoSurvey data
-download("https://www.dropbox.com/s/a9tvwodid2g3ijd/1MGS_18_22_Dec_14.csv?dl=0", "./1MGS_data/1MGS_18_22_Dec_14.csv", mode="wb")
-geos <- read.table(paste(dat_dir, "/1MGS_18_22_Dec_14.csv", sep=""), header=T, sep=",")
+download("https://www.dropbox.com/s/jtwmf7ck9ebh7bm/1MGS_cleaned.csv.zip?dl=0", "./1MGS_data/1MGS_cleaned.csv.zip", mode="wb")
+unzip("./1MGS_data/1MGS_cleaned.csv.zip", exdir="./1MGS_data", overwrite=T)
+geos <- read.table(paste(dat_dir, "/1MGS_cleaned.csv", sep=""), header=T, sep=",")
 
 # Generate check sample ---------------------------------------------------
 # set check sample randomization seed
@@ -21,9 +22,9 @@ seed <- 1385321
 set.seed(seed)
 
 # Check sample split
-checkIndex <- createDataPartition(geos$Group, p = 0.99, list = FALSE, times = 1)
+checkIndex <- createDataPartition(geos$User, list=F, p=0.999, times=1)
 checkTest  <- geos[-checkIndex, ]
-checkSample <- checkTest[ ,3:4]
+checkSample <- checkTest[ ,2:3]
 
 # Write checkSample csv ---------------------------------------------------
 dir.create("1MGS_check", showWarnings=F)
