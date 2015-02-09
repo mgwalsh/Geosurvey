@@ -1,5 +1,5 @@
 #' Ensemble predictions of Tanzania 1M GeoSurvey cropland and human settlement observations.
-#' M.Walsh, J.Chen & A.Verlinden, January 2015
+#' M.Walsh & J.Chen January 2015
 
 #+ Required packages
 # install.packages(c("downloader","raster","rgdal","caret","pROC","MASS","randomForest","gbm","nnet","glmnet","dismo")), dependencies=TRUE)
@@ -180,19 +180,34 @@ hspens <- data.frame(geosv$HSP, extract(pred, geosv))
 hspens <- na.omit(hspens)
 colnames(hspens)[1] <- "HSP"
 
-# Regularized ensemble weighting on the test set <glmnet>
+# Split data into stack and validation sets
+# set train/test set randomization seed
+seed <- 1385321
+set.seed(seed)
+
+# Cropland stack/test split
+crpIndex <- createDataPartition(crpens$CRP, p = 0.5, list = FALSE, times = 1)
+crpStack <- crpens[ crpIndex,]
+crpTest  <- crpens[-crpIndex,]
+
+# Buildings/Settlements stack/test split
+hspIndex <- createDataPartition(hspens$HSP, p = 0.5, list = FALSE, times = 1)
+hspStack <- hspens[ crpIndex,]
+hspTest  <- hspens[-crpIndex,]
+
+# Regularized ensemble weighting on the stack set <glmnet>
 # 10-fold CV
 ens <- trainControl(method = "cv", number = 10, classProbs = T, summaryFunction = twoClassSummary)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
-CRP.ens <- train(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data = crpens,
+CRP.ens <- train(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data = crpStack,
                  family = "binomial", 
                  method = "glmnet",
                  metric = "ROC",
                  trControl = ens)
 CRP.ens
-crp.pred <- predict(CRP.ens, crpens, type="prob")
-crp.test <- cbind(crpens, crp.pred)
+crp.pred <- predict(CRP.ens, crpTest, type="prob")
+crp.test <- cbind(crpTest, crp.pred)
 crp <- subset(crp.test, CRP=="Y", select=c(Y))
 cra <- subset(crp.test, CRP=="N", select=c(Y))
 crp.eval <- evaluate(p=crp[,1], a=cra[,1]) ## calculate ROC's on test set <dismo>
@@ -205,14 +220,14 @@ crpmask <- 1-crpens.pred > crp.thld
 plot(crpmask, axes = F, legend = F)
 
 # presence/absence of Buildings/Rural Settlements (HSP, present = Y, absent = N)
-HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspens,
+HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspStack,
                  family = "binomial", 
                  method = "glmnet",
                  metric = "ROC",
                  trControl = ens)
 HSP.ens
-hsp.pred <- predict(HSP.ens, hspens, type="prob")
-hsp.test <- cbind(hspens, hsp.pred)
+hsp.pred <- predict(HSP.ens, hspTest, type="prob")
+hsp.test <- cbind(hspTest, hsp.pred)
 hsp <- subset(hsp.test, HSP=="Y", select=c(Y))
 hsa <- subset(hsp.test, HSP=="N", select=c(Y))
 hsp.eval <- evaluate(p=hsp[,1], a=hsa[,1]) ## calculate ROC's on test set <dismo>
