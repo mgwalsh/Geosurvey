@@ -18,11 +18,11 @@ geos <- read.table(paste(dat_dir, "/1MGS_cleaned.csv", sep=""), header=T, sep=",
 
 # Generate check sample ---------------------------------------------------
 # set check sample randomization seed
-seed <- 1385321
+seed <- 321
 set.seed(seed)
 
 # Check sample split
-checkIndex <- createDataPartition(geos$User, list=F, p=0.999, times=1)
+checkIndex <- createDataPartition(geos$User, list=F, p=0.995, times=1)
 checkTest  <- geos[-checkIndex, ]
 checkSample <- checkTest[ ,2:3]
 
