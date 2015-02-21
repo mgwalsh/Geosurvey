@@ -1,9 +1,9 @@
 #' Geosurvey duplicate and accuracy checks on cropland and human settlement observations.
-#' J. Chen & M. Walsh, February 2015
+#' J.Chen & M.Walsh, February 2015
 
 # Required packages
 require(downloader)
-library(arm)
+require(arm)
 
 #+ Data download ----------------------------------------------------------
 # Create a "Data" folder in your current working directory
