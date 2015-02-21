@@ -74,5 +74,3 @@ nrow(hsp_data)
 #+ Write cleaned files -----------------------------------------------------
 write.csv(crp_data, paste(dat_dir, "/CRP_cleaned.csv", sep=""), row.names=F)
 write.csv(hsp_data, paste(dat_dir, "/HSP_cleaned.csv", sep=""), row.names=F)
-
-
