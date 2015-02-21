@@ -1,5 +1,5 @@
 #' Geosurvey duplicate and accuracy checks on cropland and human settlement observations.
-#' J.Chen & M.Walsh, February 2015
+#' J. Chen & M. Walsh, February 2015
 
 # Required packages
 require(downloader)
@@ -45,7 +45,7 @@ CRP.glmer <- glmer(CRP_diff~1+(1|geosv_narm$User), family=binomial)
 display(CRP.glmer)
 ranef(CRP.glmer)
 
-# If a GS's accuracy rate is < 0.5, the data for that GS are removed from further analyses
+# If a GS's estimated accuracy rate is < 0.5, the data for that GS are removed from further analyses
 nosample_CRP <- rownames(coef(CRP.glmer)[[1]])[coef(CRP.glmer)[[1]][,1]<0]
 crp_data <- geos_nodups[!geos_nodups$User%in%nosample_CRP, ]
 nrow(crp_data)
@@ -66,7 +66,7 @@ HSP.glmer <- glmer(HSP_diff~1+(1|geosv_narm$User), family=binomial)
 display(HSP.glmer)
 ranef(HSP.glmer)
 
-# If a GS's accuracy rate is < 0.5, the data for that GS are removed from further analyses
+# If a GS's estimated accuracy rate is < 0.5, the data for that GS are removed from further analyses
 nosample_HSP <- rownames(coef(HSP.glmer)[[1]])[coef(HSP.glmer)[[1]][,1]<0]
 hsp_data <- geos_nodups[!geos_nodups$User%in%nosample_HSP, ]
 nrow(hsp_data)
