@@ -50,7 +50,7 @@ nosample_CRP <- rownames(coef(CRP.glmer)[[1]])[coef(CRP.glmer)[[1]][,1]<0]
 crp_data <- geos_nodups[!geos_nodups$User%in%nosample_CRP, ]
 nrow(crp_data)
 
-# Building / rural settlement data
+# Building / rural settlement observations
 geov_hs <- geosv[, c(1:4, 5, 7)]
 # NA values in 1MQ are "Don't know", which should also be compared to expert answers to calculate accuracy rates
 geov_hs[,5] <- ifelse(is.na(geov_hs[,5]), "NA", geov_hs[,5])
