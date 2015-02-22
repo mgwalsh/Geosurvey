@@ -43,9 +43,9 @@ geosv_narm <- geov_crp[!is.na(CRP_diff), ]
 CRP_diff <- na.omit(CRP_diff)
 CRP.glmer <- glmer(CRP_diff~1+(1|geosv_narm$User), family=binomial)
 display(CRP.glmer)
-coef(CRP.glmer)
 
 # If a GS's estimated agreement rate is <50%, the data for that GS are removed from further analyses
+coef(CRP.glmer)
 nosample_CRP <- rownames(coef(CRP.glmer)[[1]])[coef(CRP.glmer)[[1]][,1]<0]
 crp_data <- geos_nodups[!geos_nodups$User%in%nosample_CRP, ]
 nrow(crp_data)
@@ -64,9 +64,9 @@ geosv_narm <- geosv[!is.na(HSP_diff), ]
 HSP_diff <- na.omit(HSP_diff)
 HSP.glmer <- glmer(HSP_diff~1+(1|geosv_narm$User), family=binomial)
 display(HSP.glmer)
-coef(HSP.glmer)
 
 # If a GS's estimated agreement rate is <50%, the data for that GS are removed from further analyses
+coef(HSP.glmer)
 nosample_HSP <- rownames(coef(HSP.glmer)[[1]])[coef(HSP.glmer)[[1]][,1]<0]
 hsp_data <- geos_nodups[!geos_nodups$User%in%nosample_HSP, ]
 nrow(hsp_data)
