@@ -72,5 +72,5 @@ hsp_data <- geos_nodups[!geos_nodups$User%in%nosample_HSP, ]
 nrow(hsp_data)
 
 #+ Write cleaned files -----------------------------------------------------
-write.csv(crp_data, paste(dat_dir, "/CRP_cleaned.csv", sep=""), row.names=F)
-write.csv(hsp_data, paste(dat_dir, "/HSP_cleaned.csv", sep=""), row.names=F)
+write.csv(crp_data[ ,1:4,6], paste(dat_dir, "/CRP_cleaned.csv", sep=""), row.names=F)
+write.csv(hsp_data[ ,1:5], paste(dat_dir, "/HSP_cleaned.csv", sep=""), row.names=F)
