@@ -13,20 +13,21 @@ dat_dir <- "./1MGS_data"
 # 1MQ GeoSurvey
 download("https://www.dropbox.com/s/tnc1wwmi8a4h6b1/2015-01-20_18-00-02_248261.zip?dl=0", "./1MGS_data/2015-01-20_18-00-02_248261.zip", mode="wb")
 unzip("./1MGS_data/2015-01-20_18-00-02_248261.zip", exdir="./1MGS_data", junkpaths=T, overwrite=T)
-geosurvey_a1 <- read.csv(paste(dat_dir, "/6_1m-point-survey-a1.csv", sep=""), stringsAsFactors=FALSE)
-geosurvey_a2 <- read.csv(paste(dat_dir, "/7_1m-point-survey-a2.csv", sep=""), stringsAsFactors=FALSE)
+geosurvey_a1 <- read.csv(paste(dat_dir, "/6_1m-point-survey-a1.csv", sep=""), stringsAsFactors=F)
+geosurvey_a2 <- read.csv(paste(dat_dir, "/7_1m-point-survey-a2.csv", sep=""), stringsAsFactors=F)
 geosurvey_total <- rbind(geosurvey_a1[ ,1:6], geosurvey_a2[ ,1:6])
 
 # Validation dataset
 download("https://www.dropbox.com/s/pt86fr3ko379f8h/1MQ_validation_data.csv?dl=0", "./1MGS_data/1MQ_validation_data.csv", mode ="wb")
-geosv <- read.table(paste(dat_dir, "/1MQ_validation_data.csv", sep=""), header=T, sep=",")
+geosv <- read.csv(paste(dat_dir, "/1MQ_validation_data.csv", sep=""), stringsAsFactors=F)
+geosv$User <- do.call("rbind", strsplit(geosv$User, split="@"))[,1]
 
 #+ Remove coordinate duplicates -------------------------------------------
 dupindex <- which(duplicated(geosurvey_total[ ,2:3]))
-dupindex_rev <- which(duplicated(geosurvey_total[ ,2:3], fromLast=TRUE))
+dupindex_rev <- which(duplicated(geosurvey_total[ ,2:3], fromLast=T))
 dupindex_total <- unique(c(dupindex, dupindex_rev))
 geos_nodups <- geosurvey_total[-dupindex, ]
-nrow(geos_nodups)
+geos_nodups$User <- do.call("rbind", strsplit(geos_nodups$User, split="@"))[,1]
 
 #+ Geosurveyor (GS) accuracy assessment -----------------------------------
 # Cropland observations
@@ -47,7 +48,8 @@ display(CRP.glmer)
 # If a GS's estimated agreement rate is <50%, the data for that GS are removed from further analyses
 coef(CRP.glmer)
 nosample_CRP <- rownames(coef(CRP.glmer)[[1]])[coef(CRP.glmer)[[1]][,1]<0]
-crp_data <- geos_nodups[!geos_nodups$User%in%nosample_CRP, ]
+crp_data <- geos_nodups
+crp_data$Cropland.present <- ifelse(crp_data$User%in%nosample_CRP|crp_data$Cropland.present=="Don't Know", NA, crp_data$Cropland.present)
 nrow(crp_data)
 
 # Building / rural settlement observations
@@ -68,9 +70,10 @@ display(HSP.glmer)
 # If a GS's estimated agreement rate is <50%, the data for that GS are removed from further analyses
 coef(HSP.glmer)
 nosample_HSP <- rownames(coef(HSP.glmer)[[1]])[coef(HSP.glmer)[[1]][,1]<0]
-hsp_data <- geos_nodups[!geos_nodups$User%in%nosample_HSP, ]
+hsp_data <- geos_nodups
+hsp_data[,5] <- ifelse(hsp_data$User%in%nosample_HSP|hsp_data[,5]=="Don't Know", NA, hsp_data[,5])
 nrow(hsp_data)
 
 #+ Write cleaned files -----------------------------------------------------
-write.csv(crp_data[ ,1:4,6], paste(dat_dir, "/CRP_cleaned.csv", sep=""), row.names=F)
-write.csv(hsp_data[ ,1:5], paste(dat_dir, "/HSP_cleaned.csv", sep=""), row.names=F)
+write.csv(crp_data, paste(dat_dir, "/CRP_cleaned.csv", sep=""), row.names=F)
+write.csv(hsp_data, paste(dat_dir, "/HSP_cleaned.csv", sep=""), row.names=F)
