@@ -1,12 +1,14 @@
-#' Ensemble validation of Tanzania 1M GeoSurvey cropland and human settlement observations.
+#' Ensemble evaluation of Tanzania 1M GeoSurvey cropland and human settlement observations.
 #' M.Walsh & J.Chen April 2015
 
 #+ Required packages
-# install.packages(c("downloader","raster","rgdal","dismo")), dependencies=TRUE)
+# install.packages(c("downloader","raster","rgdal","dismo","caret","glmnet")), dependencies=TRUE)
 require(downloader)
 require(raster)
 require(rgdal)
 require(dismo)
+require(caret)
+require(glmnet)
 
 #+ Data downloads ----------------------------------------------------------
 # Create a "Data" folder in your current working directory
@@ -58,12 +60,15 @@ rfcrp.eval <- evaluate(p=rfcrp[,1], a=rfcra[,1]) ## calculate ROC's on test set 
 rfcrp.eval
 plot(rfcrp.eval, "ROC")
 
-# Cropland ensemble
+# Cropland 1MGS ensemble classifier
 enscrp <- subset(gsexv, CRP=="Y", select=c(CRP_ens))
 enscra <- subset(gsexv, CRP=="N", select=c(CRP_ens))
 enscrp.eval <- evaluate(p=enscrp[,1], a=enscra[,1]) ## calculate ROC's on test set <dismo>
 enscrp.eval
 plot(enscrp.eval, "ROC")
+enscrp.thld <- threshold(enscrp.eval, "spec_sens") ## TPR+TNR threshold for classification
+CRP_ens_mask <- grid$CRP_ens > enscrp.thld
+plot(CRP_ens_mask, axes = F, legend = F)
 
 # Building/rural settlement boosting classifier
 gbmhsp <- subset(gsexv, HSP=="Y", select=c(RSP_gbm))
@@ -86,15 +91,59 @@ rfhsp.eval <- evaluate(p=rfhsp[,1], a=rfhsa[,1]) ## calculate ROC's on test set 
 rfhsp.eval
 plot(rfhsp.eval, "ROC")
 
-# Building/rural settlement ensemble classifier
+# Building/rural settlement 1MGS ensemble classifier
 enshsp <- subset(gsexv, HSP=="Y", select=c(RSP_ens))
 enshsa <- subset(gsexv, HSP=="N", select=c(RSP_ens))
 enshsp.eval <- evaluate(p=enshsp[,1], a=enshsa[,1]) ## calculate ROC's on test set <dismo>
 enshsp.eval
 plot(enshsp.eval, "ROC")
+enshsp.thld <- threshold(enshsp.eval, "spec_sens") ## TPR+TNR threshold for classification
+RSP_ens_mask <- grid$RSP_ens > enshsp.thld
+plot(RSP_ens_mask, axes = F, legend = F)
 
-#+ Local classifier stacking ----------------------------------------------
+#+ Local classifier (re)stacking ------------------------------------------
+# 10-fold CV
+lcs <- trainControl(method = "cv", number = 10, classProbs = T, summaryFunction = twoClassSummary)
 
+# presence/absence of Cropland (CRP, present = Y, absent = N)
+CRP.lcs <- train(CRP ~ CRP_gbm + CRP_nn + CRP_rf, data = gsexv,
+                 family = "binomial", 
+                 method = "glmnet",
+                 metric = "ROC",
+                 trControl = lcs)
+CRP.lcs
+crp.pred <- predict(CRP.lcs, gsexv, type="prob")
+crp.test <- cbind(gsexv, crp.pred)
+lcscrp <- subset(crp.test, CRP=="Y", select=c(Y))
+lcscra <- subset(crp.test, CRP=="N", select=c(Y))
+lcscrp.eval <- evaluate(p=lcscrp[,1], a=lcscra[,1]) ## calculate ROC's on test set <dismo>
+lcscrp.eval
+plot(lcscrp.eval, "ROC") ## plot ROC curve
+lcscrp.thld <- threshold(crp.eval, 'spec_sens') ## TPR+TNR threshold for classification
+CRP_lcs <- predict(grid, CRP.lcs, type="prob") ## spatial prediction
+plot(1-CRP_lcs, axes = F)
+CRP_lcs_mask <- 1-CRP_lcs > lcscrp.thld
+plot(CRP_lcs_mask, axes = F, legend = F)
+
+# presence/absence of Buildings/rural settlements (HSP, present = Y, absent = N)
+RSP.lcs <- train(HSP ~ RSP_gbm + RSP_nn + RSP_rf, data = gsexv,
+                 family = "binomial", 
+                 method = "glmnet",
+                 metric = "ROC",
+                 trControl = lcs)
+RSP.lcs
+rsp.pred <- predict(RSP.lcs, gsexv, type="prob")
+rsp.test <- cbind(gsexv, rsp.pred)
+lcsrsp <- subset(rsp.test, HSP=="Y", select=c(Y))
+lcsrsa <- subset(rsp.test, HSP=="N", select=c(Y))
+lcsrsp.eval <- evaluate(p=lcsrsp[,1], a=lcsrsa[,1]) ## calculate ROC's on test set <dismo>
+lcsrsp.eval
+plot(lcsrsp.eval, "ROC") ## plot ROC curve
+lcsrsp.thld <- threshold(lcsrsp.eval, 'spec_sens') ## TPR+TNR threshold for classification
+RSP_lcs <- predict(grid, RSP.lcs, type="prob") ## spatial prediction
+plot(1-RSP_lcs, axes = F)
+RSP_lcs_mask <- 1-RSP_lcs > lcsrsp.thld
+plot(RSP_lcs_mask, axes = F, legend = F)
 
 
 
