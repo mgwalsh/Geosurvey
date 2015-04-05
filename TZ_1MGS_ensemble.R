@@ -148,9 +148,9 @@ plot(RSP_lcs_mask, axes = F, legend = F)
 
 #+ Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in current working directory
-dir.create("TZ_results", showWarnings=F)
+dir.create("TZ_1MGS_results", showWarnings=F)
 LCS_pred <- stack(1-CRP_lcs, CRP_lcs_mask, 1-RSP_lcs, RSP_lcs_mask)
-writeRaster(LCS_pred, filename="./TZ_results/TZ_lcs_pred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(LCS_pred, filename="./TZ_1MGS_results/TZ_lcs_pred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
 
 
