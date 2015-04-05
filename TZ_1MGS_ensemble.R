@@ -47,7 +47,7 @@ gbmcrp.eval <- evaluate(p=gbmcrp[,1], a=gbmcra[,1]) ## calculate ROC's on test s
 gbmcrp.eval
 plot(gbmcrp.eval, "ROC")
 
-# Cropland neural network classification
+# Cropland neural network classifier
 nncrp <- subset(gsexv, CRP=="Y", select=c(CRP_nn))
 nncra <- subset(gsexv, CRP=="N", select=c(CRP_nn))
 nncrp.eval <- evaluate(p=nncrp[,1], a=nncra[,1]) ## calculate ROC's on test set <dismo>
