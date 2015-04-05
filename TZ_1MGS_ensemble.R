@@ -1,5 +1,6 @@
-#' Ensemble evaluation of Tanzania 1M GeoSurvey cropland and human settlement observations.
-#' M.Walsh & J.Chen April 2015
+#' Evaluation of Tanzania 1M GeoSurvey cropland and human settlement predictions against
+#' independent Tanzania GeoSurvey test data.
+#' M.Walsh, J.Chen & A.Verlinden, April 2015
 
 #+ Required packages
 # install.packages(c("downloader","raster","rgdal","dismo","caret","glmnet")), dependencies=TRUE)
@@ -144,6 +145,13 @@ RSP_lcs <- predict(grid, RSP.lcs, type="prob") ## spatial prediction
 plot(1-RSP_lcs, axes = F)
 RSP_lcs_mask <- 1-RSP_lcs > lcsrsp.thld
 plot(RSP_lcs_mask, axes = F, legend = F)
+
+#+ Write spatial predictions -----------------------------------------------
+# Create a "Results" folder in current working directory
+dir.create("TZ_results", showWarnings=F)
+LCS_pred <- stack(1-CRP_lcs, CRP_lcs_mask, 1-RSP_lcs, RSP_lcs_mask)
+writeRaster(LCS_pred, filename="./TZ_results/TZ_lcs_pred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+
 
 
 
