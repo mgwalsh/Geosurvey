@@ -40,21 +40,21 @@ gsexv <- na.omit(gsexv)
 colnames(gsexv)[3:4] <- c("CRP", "HSP")
 
 # 1 MGS classifier performance evaluation ---------------------------------
-# Cropland boosting
+# Cropland boosting classifier
 gbmcrp <- subset(gsexv, CRP=="Y", select=c(CRP_gbm))
 gbmcra <- subset(gsexv, CRP=="N", select=c(CRP_gbm))
 gbmcrp.eval <- evaluate(p=gbmcrp[,1], a=gbmcra[,1]) ## calculate ROC's on test set <dismo>
 gbmcrp.eval
 plot(gbmcrp.eval, "ROC")
 
-# Cropland neural network
+# Cropland neural network classification
 nncrp <- subset(gsexv, CRP=="Y", select=c(CRP_nn))
 nncra <- subset(gsexv, CRP=="N", select=c(CRP_nn))
 nncrp.eval <- evaluate(p=nncrp[,1], a=nncra[,1]) ## calculate ROC's on test set <dismo>
 nncrp.eval
 plot(nncrp.eval, "ROC")
 
-# Cropland random forest
+# Cropland random forest classifier
 rfcrp <- subset(gsexv, CRP=="Y", select=c(CRP_rf))
 rfcra <- subset(gsexv, CRP=="N", select=c(CRP_rf))
 rfcrp.eval <- evaluate(p=rfcrp[,1], a=rfcra[,1]) ## calculate ROC's on test set <dismo>
