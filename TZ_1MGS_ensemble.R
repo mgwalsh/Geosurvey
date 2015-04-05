@@ -2,13 +2,10 @@
 #' M.Walsh & J.Chen April 2015
 
 #+ Required packages
-# install.packages(c("downloader","raster","rgdal","caret","pROC","glmnet","dismo")), dependencies=TRUE)
+# install.packages(c("downloader","raster","rgdal","dismo")), dependencies=TRUE)
 require(downloader)
 require(raster)
 require(rgdal)
-require(caret)
-require(pROC)
-require(glmnet)
 require(dismo)
 
 #+ Data downloads ----------------------------------------------------------
@@ -20,9 +17,9 @@ dat_dir <- "./TZ_1MGS_data"
 download("https://www.dropbox.com/s/gfgjnrgllwqt79d/TZ_geos_123114.csv?dl=0", "./TZ_1MGS_data/TZ_geos_123114.csv", mode="wb")
 geosv <- read.table(paste(dat_dir, "/TZ_geos_123114.csv", sep=""), header=T, sep=",")
 
-# download Tanzania prediction grids (~18.6 Mb) and stack in raster
-download("https://www.dropbox.com/s/semwhdlxu9a0863/TZ_preds.zip?dl=0", "./TZ_1MGS_data/TZ_preds.zip", mode="wb")
-unzip("./TZ_1MGS_data/TZ_preds.zip", exdir="./TZ_1MGS_data", overwrite=T)
+# download Tanzania prediction grids (~21.1 Mb) and stack in raster
+download("https://www.dropbox.com/s/w8l41t5muc1rr4j/TZ_1MQ_preds.zip?dl=0", "./TZ_1MGS_data/TZ_1MQ_preds.zip", mode="wb")
+unzip("./TZ_1MGS_data/TZ_1MQ_preds.zip", exdir="./TZ_1MGS_data", overwrite=T)
 glist <- list.files(path="./TZ_1MGS_data", pattern="tif", full.names=T)
 grid <- stack(glist)
 
@@ -39,54 +36,66 @@ gsexv <- data.frame(coordinates(geosv), geosv$CRP, geosv$HSP, extract(grid, geos
 gsexv <- na.omit(gsexv)
 colnames(gsexv)[3:4] <- c("CRP", "HSP")
 
-# Regularized ensemble weighting <glmnet> -------------------------------
-# 10-fold CV
-ens <- trainControl(method = "cv", number = 10, classProbs = T, summaryFunction = twoClassSummary)
+# 1 MGS classifier performance evaluation ---------------------------------
+# Cropland boosting
+gbmcrp <- subset(gsexv, CRP=="Y", select=c(CRP_gbm))
+gbmcra <- subset(gsexv, CRP=="N", select=c(CRP_gbm))
+gbmcrp.eval <- evaluate(p=gbmcrp[,1], a=gbmcra[,1]) ## calculate ROC's on test set <dismo>
+gbmcrp.eval
+plot(gbmcrp.eval, "ROC")
 
-# presence/absence of Cropland (CRP, present = Y, absent = N)
-CRP.ens <- train(CRP ~ CRP_gbm + CRP_nn + CRP_rf, data = gsexv,
-                 family = "binomial", 
-                 method = "glmnet",
-                 metric = "ROC",
-                 trControl = ens)
-CRP.ens
-crp.pred <- predict(CRP.ens, gsexv, type="prob")
-crp.test <- cbind(gsexv, crp.pred)
-crp <- subset(crp.test, CRP=="Y", select=c(Y))
-cra <- subset(crp.test, CRP=="N", select=c(Y))
-crp.eval <- evaluate(p=crp[,1], a=cra[,1]) ## calculate ROC's on test set <dismo>
-crp.eval
-plot(crp.eval, 'ROC') ## plot ROC curve
-crp.thld <- threshold(crp.eval, 'spec_sens') ## TPR+TNR threshold for classification
-crpens.pred <- predict(grid, CRP.ens, type="prob") ## spatial prediction
-plot(1-crpens.pred, axes = F)
-crpmask <- 1-crpens.pred > crp.thld
-plot(crpmask, axes = F, legend = F)
+# Cropland neural network
+nncrp <- subset(gsexv, CRP=="Y", select=c(CRP_nn))
+nncra <- subset(gsexv, CRP=="N", select=c(CRP_nn))
+nncrp.eval <- evaluate(p=nncrp[,1], a=nncra[,1]) ## calculate ROC's on test set <dismo>
+nncrp.eval
+plot(nncrp.eval, "ROC")
 
-# presence/absence of Buildings/Rural Settlements (HSP, present = Y, absent = N)
-HSP.ens <- train(HSP ~ RSP_gbm + RSP_nn + RSP_rf, data = gsexv,
-                 family = "binomial", 
-                 method = "glmnet",
-                 metric = "ROC",
-                 trControl = ens)
-HSP.ens
-hsp.pred <- predict(HSP.ens, gsexv, type="prob")
-hsp.test <- cbind(gsexv, hsp.pred)
-hsp <- subset(hsp.test, HSP=="Y", select=c(Y))
-hsa <- subset(hsp.test, HSP=="N", select=c(Y))
-hsp.eval <- evaluate(p=hsp[,1], a=hsa[,1]) ## calculate ROC's on test set <dismo>
-hsp.eval
-plot(hsp.eval, 'ROC') ## plot ROC curve
-hsp.thld <- threshold(hsp.eval, 'spec_sens') ## TPR+TNR threshold for classification
-hspens.pred <- predict(grid, HSP.ens, type="prob") ## spatial prediction
-plot(1-hspens.pred, axes = F)
-hspmask <- 1-hspens.pred > hsp.thld
-plot(hspmask, axes = F, legend = F)
+# Cropland random forest
+rfcrp <- subset(gsexv, CRP=="Y", select=c(CRP_rf))
+rfcra <- subset(gsexv, CRP=="N", select=c(CRP_rf))
+rfcrp.eval <- evaluate(p=rfcrp[,1], a=rfcra[,1]) ## calculate ROC's on test set <dismo>
+rfcrp.eval
+plot(rfcrp.eval, "ROC")
 
-#+ Write spatial predictions -----------------------------------------------
-# Create a "Results" folder in current working directory
-dir.create("TZ_1MGS_results", showWarnings=F)
+# Cropland ensemble
+enscrp <- subset(gsexv, CRP=="Y", select=c(CRP_ens))
+enscra <- subset(gsexv, CRP=="N", select=c(CRP_ens))
+enscrp.eval <- evaluate(p=enscrp[,1], a=enscra[,1]) ## calculate ROC's on test set <dismo>
+enscrp.eval
+plot(enscrp.eval, "ROC")
 
-# Export Gtif's to "./TZ_results"
-enspred <- stack(1-crpens.pred, crpmask, 1-hspens.pred, hspmask)
-writeRaster(enspred, filename="./TZ_1MGS_results/TZ_1MGS_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+# Building/rural settlement boosting classifier
+gbmhsp <- subset(gsexv, HSP=="Y", select=c(RSP_gbm))
+gbmhsa <- subset(gsexv, HSP=="N", select=c(RSP_gbm))
+gbmhsp.eval <- evaluate(p=gbmhsp[,1], a=gbmhsa[,1]) ## calculate ROC's on test set <dismo>
+gbmhsp.eval
+plot(gbmhsp.eval, "ROC")
+
+# Building/rural settlement neural network classifier
+nnhsp <- subset(gsexv, HSP=="Y", select=c(RSP_nn))
+nnhsa <- subset(gsexv, HSP=="N", select=c(RSP_nn))
+nnhsp.eval <- evaluate(p=nnhsp[,1], a=nnhsa[,1]) ## calculate ROC's on test set <dismo>
+nnhsp.eval
+plot(nnhsp.eval, "ROC")
+
+# Building/rural settlement random forest classifier
+rfhsp <- subset(gsexv, HSP=="Y", select=c(RSP_rf))
+rfhsa <- subset(gsexv, HSP=="N", select=c(RSP_rf))
+rfhsp.eval <- evaluate(p=rfhsp[,1], a=rfhsa[,1]) ## calculate ROC's on test set <dismo>
+rfhsp.eval
+plot(rfhsp.eval, "ROC")
+
+# Building/rural settlement ensemble classifier
+enshsp <- subset(gsexv, HSP=="Y", select=c(RSP_ens))
+enshsa <- subset(gsexv, HSP=="N", select=c(RSP_ens))
+enshsp.eval <- evaluate(p=enshsp[,1], a=enshsa[,1]) ## calculate ROC's on test set <dismo>
+enshsp.eval
+plot(enshsp.eval, "ROC")
+
+#+ Local classifier stacking ----------------------------------------------
+
+
+
+
+
