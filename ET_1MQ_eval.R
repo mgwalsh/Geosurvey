@@ -121,7 +121,7 @@ lcscra <- subset(crp.test, CRP=="N", select=c(Y))
 lcscrp.eval <- evaluate(p=lcscrp[,1], a=lcscra[,1]) ## calculate ROC's on test set <dismo>
 lcscrp.eval
 plot(lcscrp.eval, "ROC") ## plot ROC curve
-lcscrp.thld <- threshold(crp.eval, 'spec_sens') ## TPR+TNR threshold for classification
+lcscrp.thld <- threshold(lcscrp.eval, 'spec_sens') ## TPR+TNR threshold for classification
 CRP_lcs <- predict(grid, CRP.lcs, type="prob") ## spatial prediction
 plot(1-CRP_lcs, axes = F)
 CRP_lcs_mask <- 1-CRP_lcs > lcscrp.thld
