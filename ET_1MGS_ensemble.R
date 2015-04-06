@@ -1,51 +1,33 @@
-#' Ensemble model predictions of Ethiopia 1MGS cropland and rural settlement observations.
-#' Original cropland & settlement Geo-Wiki test data, courtesy http://www.geo-wiki.org/download-data
-#' M. Walsh, January 2015
+#' Evaluation and local stacking of Ethiopia 1M GeoSurvey cropland and human settlement
+#' predictions with Ethiopia Geo-Wiki test data.
+#' Original Ethiopia Geo-Wiki data at: http://www.geo-wiki.org/download-data/
+#' M.Walsh, J.Chen & A.Verlinden, April 2015
 
 #+ Required packages
-# install.packages(c("downloader","raster","rgdal","caret","pROC","MASS","randomForest","gbm","nnet","glmnet","dismo")), dependencies=TRUE)
+# install.packages(c("downloader","raster","rgdal","dismo","caret","glmnet")), dependencies=TRUE)
 require(downloader)
 require(raster)
 require(rgdal)
-require(caret)
-require(pROC)
-require(MASS)
-require(randomForest)
-require(gbm)
-require(nnet)
-require(glmnet)
 require(dismo)
+require(caret)
+require(glmnet)
 
 #+ Data downloads ----------------------------------------------------------
 # Create a "Data" folder in your current working directory
-dir.create("ET_1MGS_data", showWarnings=F)
-dat_dir <- "./ET_1MGS_data"
+dir.create("ET_1MQ_data", showWarnings=F)
+dat_dir <- "./ET_1MQ_data"
 
-# download 1MGS GeoSurvey data
-download("https://www.dropbox.com/s/jtwmf7ck9ebh7bm/1MGS_cleaned.csv.zip?dl=0", "./ET_1MGS_data/1MGS_cleaned.csv.zip", mode="wb")
-unzip("./ET_1MGS_data/1MGS_cleaned.csv.zip", exdir="./ET_1MGS_data", overwrite=T)
-geos <- read.table(paste(dat_dir, "/1MGS_cleaned.csv", sep=""), header=T, sep=",")
-geos <- na.omit(geos)
-
-# download Ethiopia Geo-Wiki test data
-download("https://www.dropbox.com/s/qkgluhy31bhhsl8/ET_geow_31214.csv?dl=0", "./ET_1MGS_data/ET_geow_31214.csv", mode="wb")
+# download Ethiopia test data
+download("https://www.dropbox.com/s/qkgluhy31bhhsl8/ET_geow_31214.csv?dl=0", "./ET_1MQ_data/ET_geow_31214.csv", mode="wb")
 geosv <- read.table(paste(dat_dir, "/ET_geow_31214.csv", sep=""), header=T, sep=",")
-geosv <- na.omit(geosv)
 
-# download Ethiopia Gtifs (~35.7 Mb) and stack in raster
-download("https://www.dropbox.com/s/xgwxukuj2q9dgbf/ET_grids.zip?dl=0", "./ET_1MGS_Data/ET_grids.zip", mode="wb")
-unzip("./ET_1MGS_data/ET_grids.zip", exdir="./ET_1MGS_data", overwrite=T)
-glist <- list.files(path="./ET_1MGS_data", pattern="tif", full.names=T)
+# download Ethiopia prediction grids (~24.5 Mb) and stack in raster
+download("https://www.dropbox.com/s/onhisrhnr8tfbo5/ET_1MQ_preds.zip?dl=0", "./ET_1MQ_data/ET_1MQ_preds.zip", mode="wb")
+unzip("./ET_1MQ_data/ET_1MQ_preds.zip", exdir="./ET_1MQ_data", overwrite=T)
+glist <- list.files(path="./ET_1MQ_data", pattern="tif", full.names=T)
 grid <- stack(glist)
 
 #+ Data setup --------------------------------------------------------------
-# Project 1M GeoSurvey coords to grid CRS
-geos.proj <- as.data.frame(project(cbind(geos$Lon, geos$Lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
-colnames(geos.proj) <- c("x","y")
-geos <- cbind(geos, geos.proj)
-coordinates(geos) <- ~x+y
-projection(geos) <- projection(grid)
-
 # Project test data to grid CRS
 geosv.proj <- as.data.frame(project(cbind(geosv$Lon, geosv$Lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
 colnames(geosv.proj) <- c("x","y")
@@ -53,189 +35,120 @@ geosv <- cbind(geosv, geosv.proj)
 coordinates(geosv) <- ~x+y
 projection(geosv) <- projection(grid)
 
-# Extract gridded variables to GeoSurvey locations
-gsext <- data.frame(coordinates(geos), geos$CRP, geos$HSP, extract(grid, geos))
-gsext <- na.omit(gsext)
-colnames(gsext)[3:4] <- c("CRP", "HSP")
-# write.csv(gsext, "ET_1MGS.csv", row.names=F)
-
 # Extract gridded variables to test data observations
 gsexv <- data.frame(coordinates(geosv), geosv$CRP, geosv$HSP, extract(grid, geosv))
-gsexv <- na.omit(gsext)
-colnames(gsext)[3:4] <- c("CRP", "HSP")
+gsexv <- na.omit(gsexv)
+colnames(gsexv)[3:4] <- c("CRP", "HSP")
 
-# Assemble dataframes
-# presence/absence of Cropland (CRP, present = Y, absent = N)
-crpdat <- data.frame(gsext$CRP, gsext[,5:28])
-colnames(crpdat)[1] <- "CRP"
+#+ 1MQ classifier performance evaluation ----------------------------------
+# Cropland boosting classifier
+gbmcrp <- subset(gsexv, CRP=="Y", select=c(CRP_gbm))
+gbmcra <- subset(gsexv, CRP=="N", select=c(CRP_gbm))
+gbmcrp.eval <- evaluate(p=gbmcrp[,1], a=gbmcra[,1]) ## calculate ROC's on test set <dismo>
+gbmcrp.eval
+plot(gbmcrp.eval, "ROC")
 
-# presence/absence of Buildings/Settlements (HSP, present = Y, absent = N)
-hspdat <- data.frame(gsext$HSP, gsext[,5:28])
-colnames(hspdat)[1] <- "HSP"
+# Cropland neural network classifier
+nncrp <- subset(gsexv, CRP=="Y", select=c(CRP_nn))
+nncra <- subset(gsexv, CRP=="N", select=c(CRP_nn))
+nncrp.eval <- evaluate(p=nncrp[,1], a=nncra[,1]) ## calculate ROC's on test set <dismo>
+nncrp.eval
+plot(nncrp.eval, "ROC")
 
-#+ Stepwise main effects GLM's <MASS> --------------------------------------
+# Cropland random forest classifier
+rfcrp <- subset(gsexv, CRP=="Y", select=c(CRP_rf))
+rfcra <- subset(gsexv, CRP=="N", select=c(CRP_rf))
+rfcrp.eval <- evaluate(p=rfcrp[,1], a=rfcra[,1]) ## calculate ROC's on test set <dismo>
+rfcrp.eval
+plot(rfcrp.eval, "ROC")
+
+# Cropland 1MQ ensemble classifier
+enscrp <- subset(gsexv, CRP=="Y", select=c(CRP_ens))
+enscra <- subset(gsexv, CRP=="N", select=c(CRP_ens))
+enscrp.eval <- evaluate(p=enscrp[,1], a=enscra[,1]) ## calculate ROC's on test set <dismo>
+enscrp.eval
+plot(enscrp.eval, "ROC")
+enscrp.thld <- threshold(enscrp.eval, "spec_sens") ## TPR+TNR threshold for classification
+CRP_ens_mask <- grid$CRP_ens > enscrp.thld
+plot(CRP_ens_mask, axes = F, legend = F)
+
+# Building/rural settlement boosting classifier
+gbmhsp <- subset(gsexv, HSP=="Y", select=c(RSP_gbm))
+gbmhsa <- subset(gsexv, HSP=="N", select=c(RSP_gbm))
+gbmhsp.eval <- evaluate(p=gbmhsp[,1], a=gbmhsa[,1]) ## calculate ROC's on test set <dismo>
+gbmhsp.eval
+plot(gbmhsp.eval, "ROC")
+
+# Building/rural settlement neural network classifier
+nnhsp <- subset(gsexv, HSP=="Y", select=c(RSP_nn))
+nnhsa <- subset(gsexv, HSP=="N", select=c(RSP_nn))
+nnhsp.eval <- evaluate(p=nnhsp[,1], a=nnhsa[,1]) ## calculate ROC's on test set <dismo>
+nnhsp.eval
+plot(nnhsp.eval, "ROC")
+
+# Building/rural settlement random forest classifier
+rfhsp <- subset(gsexv, HSP=="Y", select=c(RSP_rf))
+rfhsa <- subset(gsexv, HSP=="N", select=c(RSP_rf))
+rfhsp.eval <- evaluate(p=rfhsp[,1], a=rfhsa[,1]) ## calculate ROC's on test set <dismo>
+rfhsp.eval
+plot(rfhsp.eval, "ROC")
+
+# Building/rural settlement 1MQ ensemble classifier
+enshsp <- subset(gsexv, HSP=="Y", select=c(RSP_ens))
+enshsa <- subset(gsexv, HSP=="N", select=c(RSP_ens))
+enshsp.eval <- evaluate(p=enshsp[,1], a=enshsa[,1]) ## calculate ROC's on test set <dismo>
+enshsp.eval
+plot(enshsp.eval, "ROC")
+enshsp.thld <- threshold(enshsp.eval, "spec_sens") ## TPR+TNR threshold for classification
+RSP_ens_mask <- grid$RSP_ens > enshsp.thld
+plot(RSP_ens_mask, axes = F, legend = F)
+
+#+ Local classifier (re)stacking ------------------------------------------
 # 10-fold CV
-step <- trainControl(method = "cv", number = 10)
+lcs <- trainControl(method = "cv", number = 10, classProbs = T)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
-CRP.glm <- train(CRP ~ ., data = crpdat,
-                 family = binomial, 
-                 method = "glmStepAIC",
-                 metric = "Kappa",
-                 trControl = step)
-CRP.glm
-crpglm.pred <- predict(grid, CRP.glm, type = "prob") ## spatial predictions
-
-# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
-HSP.glm <- train(HSP ~ ., data = hspdat,
-                 family=binomial, 
-                 method = "glmStepAIC",
-                 metric = "Kappa",
-                 trControl = step)
-HSP.glm
-hspglm.pred <- predict(grid, HSP.glm, type = "prob") ## spatial predictions
-
-#+ Random forests <randomForest> -------------------------------------------
-# out-of-bag predictions
-oob <- trainControl(method = "oob")
-
-# presence/absence of Cropland (CRP, present = Y, absent = N)
-CRP.rf <- train(CRP ~ ., data = crpdat,
-                method = "rf",
-                metric = "Kappa",
-                trControl = oob)
-CRP.rf
-crprf.pred <- predict(grid, CRP.rf, type = "prob") ## spatial predictions
-
-# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
-HSP.rf <- train(HSP ~ ., data = hspdat,
-                method = "rf",
-                metric = "Kappa",
-                trControl = oob)
-HSP.rf
-hsprf.pred <- predict(grid, HSP.rf, type = "prob") ## spatial predictions
-
-#+ Gradient boosting <gbm> ------------------------------------------
-# CV for training gbm's
-gbm <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
-
-# presence/absence of Cropland (CRP, present = Y, absent = N)
-CRP.gbm <- train(CRP ~ ., data = crpdat,
-                 method = "gbm",
-                 metric = "Kappa",
-                 trControl = gbm)
-CRP.gbm
-crpgbm.pred <- predict(grid, CRP.gbm, type = "prob") ## spatial predictions
-
-# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
-HSP.gbm <- train(HSP ~ ., data = hspdat,
-                 method = "gbm",
-                 metric = "Kappa",
-                 trControl = gbm)
-HSP.gbm
-hspgbm.pred <- predict(grid, HSP.gbm, type = "prob") ## spatial predictions
-
-#+ Neural nets <nnet> ------------------------------------------------------
-# CV for training nnet's
-nn <- trainControl(method = "cv", number = 10)
-
-# presence/absence of Cropland (CRP, present = Y, absent = N)
-CRP.nn <- train(CRP ~ ., data = crpdat,
-                method = "nnet",
-                metric = "Kappa",
-                trControl = nn)
-CRP.nn
-crpnn.pred <- predict(grid, CRP.nn, type = "prob") ## spatial predictions
-
-# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
-HSP.nn <- train(HSP ~ ., data = hspdat,
-                method = "nnet",
-                metric = "Kappa",
-                trControl = nn)
-HSP.nn
-hspnn.pred <- predict(grid, HSP.nn, type = "prob") ## spatial predictions
-
-#+ Plot predictions by GeoSurvey variables ---------------------------------
-# Cropland prediction plots
-crp.preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred)
-names(crp.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
-plot(crp.preds, axes = F)
-
-# Settlement prediction plots
-hsp.preds <- stack(1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
-names(hsp.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
-plot(hsp.preds, axes = F)
-
-#+ Ensemble predictions <glm>, <rf>, <gbm>, <nnet> -------------------------
-# Ensemble set-up
-pred <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred,
-              1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
-names(pred) <- c("CRPglm","CRPrf","CRPgbm","CRPnn",
-                 "HSPglm","HSPrf","HSPgbm","HSPnn")
-
-# presence/absence of Cropland (CRP, present = Y, absent = N)
-crpens <- data.frame(geosv$CRP, extract(pred, geosv))
-crpens <- na.omit(crpens)
-colnames(crpens)[1] <- "CRP"
-
-# presence/absence of Buildings/Settlements (HSP, present = Y, absent = N)
-hspens <- data.frame(geosv$HSP, extract(pred, geosv))
-hspens <- na.omit(hspens)
-colnames(hspens)[1] <- "HSP"
-
-# Regularized ensemble weighting on the test set <glmnet>
-# 10-fold CV
-ens <- trainControl(method = "cv", number = 10, classProbs = T, summaryFunction = twoClassSummary)
-
-# presence/absence of Cropland (CRP, present = Y, absent = N)
-CRP.ens <- train(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data = crpens,
+CRP.lcs <- train(CRP ~ CRP_gbm + CRP_nn + CRP_rf, data = gsexv,
                  family = "binomial", 
                  method = "glmnet",
-                 metric = "ROC",
-                 trControl = ens)
-CRP.ens
-crp.pred <- predict(CRP.ens, crpens, type="prob")
-crp.test <- cbind(crpens, crp.pred)
-crp <- subset(crp.test, CRP=="Y", select=c(Y))
-cra <- subset(crp.test, CRP=="N", select=c(Y))
-crp.eval <- evaluate(p=crp[,1], a=cra[,1]) ## calculate ROC's on test set <dismo>
-crp.eval
-plot(crp.eval, 'ROC') ## plot ROC curve
-crp.thld <- threshold(crp.eval, 'spec_sens') ## TPR+TNR threshold for classification
-crpens.pred <- predict(pred, CRP.ens, type="prob") ## spatial prediction
-plot(1-crpens.pred, axes = F)
-crpmask <- 1-crpens.pred > crp.thld
-plot(crpmask, axes = F, legend = F)
+                 metric = "Accuracy",
+                 trControl = lcs)
+CRP.lcs
+crp.pred <- predict(CRP.lcs, gsexv, type="prob")
+crp.test <- cbind(gsexv, crp.pred)
+lcscrp <- subset(crp.test, CRP=="Y", select=c(Y))
+lcscra <- subset(crp.test, CRP=="N", select=c(Y))
+lcscrp.eval <- evaluate(p=lcscrp[,1], a=lcscra[,1]) ## calculate ROC's on test set <dismo>
+lcscrp.eval
+plot(lcscrp.eval, "ROC") ## plot ROC curve
+lcscrp.thld <- threshold(crp.eval, 'spec_sens') ## TPR+TNR threshold for classification
+CRP_lcs <- predict(grid, CRP.lcs, type="prob") ## spatial prediction
+plot(1-CRP_lcs, axes = F)
+CRP_lcs_mask <- 1-CRP_lcs > lcscrp.thld
+plot(CRP_lcs_mask, axes = F, legend = F)
 
-# presence/absence of Buildings/Rural Settlements (HSP, present = Y, absent = N)
-HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspens,
+# presence/absence of Buildings/rural settlements (HSP, present = Y, absent = N)
+RSP.lcs <- train(HSP ~ RSP_gbm + RSP_nn + RSP_rf, data = gsexv,
                  family = "binomial", 
                  method = "glmnet",
-                 metric = "ROC",
-                 trControl = ens)
-HSP.ens
-hsp.pred <- predict(HSP.ens, hspens, type="prob")
-hsp.test <- cbind(hspens, hsp.pred)
-hsp <- subset(hsp.test, HSP=="Y", select=c(Y))
-hsa <- subset(hsp.test, HSP=="N", select=c(Y))
-hsp.eval <- evaluate(p=hsp[,1], a=hsa[,1]) ## calculate ROC's on test set <dismo>
-hsp.eval
-plot(hsp.eval, 'ROC') ## plot ROC curve
-hsp.thld <- threshold(hsp.eval, 'spec_sens') ## TPR+TNR threshold for classification
-hspens.pred <- predict(pred, HSP.ens, type="prob") ## spatial prediction
-plot(1-hspens.pred, axes = F)
-hspmask <- 1-hspens.pred > hsp.thld
-plot(hspmask, axes = F, legend = F)
+                 metric = "Accuracy",
+                 trControl = lcs)
+RSP.lcs
+rsp.pred <- predict(RSP.lcs, gsexv, type="prob")
+rsp.test <- cbind(gsexv, rsp.pred)
+lcsrsp <- subset(rsp.test, HSP=="Y", select=c(Y))
+lcsrsa <- subset(rsp.test, HSP=="N", select=c(Y))
+lcsrsp.eval <- evaluate(p=lcsrsp[,1], a=lcsrsa[,1]) ## calculate ROC's on test set <dismo>
+lcsrsp.eval
+plot(lcsrsp.eval, "ROC") ## plot ROC curve
+lcsrsp.thld <- threshold(lcsrsp.eval, 'spec_sens') ## TPR+TNR threshold for classification
+RSP_lcs <- predict(grid, RSP.lcs, type="prob") ## spatial prediction
+plot(1-RSP_lcs, axes = F)
+RSP_lcs_mask <- 1-RSP_lcs > lcsrsp.thld
+plot(RSP_lcs_mask, axes = F, legend = F)
 
 #+ Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in current working directory
-dir.create("ET_1MGS_results", showWarnings=F)
-
-# Export Gtif's to "./ET_results"
-writeRaster(crp.preds, filename="./ET_1MGS_results/ET_1MGS_crpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-writeRaster(hsp.preds, filename="./ET_1MGS_results/ET_1MGS_hspreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-# Ensemble predictions
-enspred <- stack(1-crpens.pred, crpmask, 1-hspens.pred, hspmask)
-writeRaster(enspred, filename="./ET_1MGS_results/ET_1MGS_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-
-
+dir.create("ET_1MQ_results", showWarnings=F)
+LCS_pred <- stack(1-CRP_lcs, CRP_lcs_mask, 1-RSP_lcs, RSP_lcs_mask)
+writeRaster(LCS_pred, filename="./ET_1MQ_results/ET_lcs_pred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
