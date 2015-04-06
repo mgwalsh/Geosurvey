@@ -1,5 +1,5 @@
 #' Evaluation and local stacking of Tanzania 1MQ GeoSurvey cropland and human settlement
-#' predictions with Tanzania GeoSurvey test data.
+#' predictions with additional Tanzania GeoSurvey test data.
 #' M.Walsh, J.Chen & A.Verlinden, April 2015
 
 #+ Required packages
