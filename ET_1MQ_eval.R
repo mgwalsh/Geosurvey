@@ -148,7 +148,6 @@ RSP_lcs_mask <- 1-RSP_lcs > lcsrsp.thld
 plot(RSP_lcs_mask, axes = F, legend = F)
 
 #+ Write spatial predictions -----------------------------------------------
-# Create a "Results" folder in current working directory
 dir.create("ET_1MQ_results", showWarnings=F)
-LCS_pred <- stack(1-CRP_lcs, CRP_lcs_mask, 1-RSP_lcs, RSP_lcs_mask)
+LCS_pred <- stack(CRP_ens_mask, 1-CRP_lcs, CRP_lcs_mask, RSP_ens_mask, 1-RSP_lcs, RSP_lcs_mask)
 writeRaster(LCS_pred, filename="./ET_1MQ_results/ET_lcs_pred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
