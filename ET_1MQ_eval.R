@@ -1,4 +1,4 @@
-#' Evaluation and local stacking of Ethiopia 1M GeoSurvey cropland and human settlement
+#' Evaluation and local stacking of Ethiopia 1MQ GeoSurvey cropland and human settlement
 #' predictions with Ethiopia Geo-Wiki test data.
 #' Original Ethiopia Geo-Wiki data at: http://www.geo-wiki.org/download-data/
 #' M.Walsh & J.Chen April 2015
