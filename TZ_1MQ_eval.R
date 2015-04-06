@@ -1,6 +1,6 @@
 #' Evaluation and local stacking of Tanzania 1MQ GeoSurvey cropland and human settlement
 #' predictions with additional Tanzania GeoSurvey test data.
-#' M.Walsh, J.Chen & A.Verlinden, April 2015
+#' M.Walsh & J.Chen, April 2015
 
 #+ Required packages
 # install.packages(c("downloader","raster","rgdal","dismo","caret","glmnet")), dependencies=TRUE)
