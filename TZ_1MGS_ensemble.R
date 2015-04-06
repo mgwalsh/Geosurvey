@@ -1,4 +1,4 @@
-#' Evaluation and local stacking of Tanzania 1M GeoSurvey cropland and human settlement
+#' Evaluation and local stacking of Tanzania 1MQ GeoSurvey cropland and human settlement
 #' predictions with Tanzania GeoSurvey test data.
 #' M.Walsh, J.Chen & A.Verlinden, April 2015
 
@@ -13,17 +13,17 @@ require(glmnet)
 
 #+ Data downloads ----------------------------------------------------------
 # Create a "Data" folder in your current working directory
-dir.create("TZ_1MGS_data", showWarnings=F)
-dat_dir <- "./TZ_1MGS_data"
+dir.create("TZ_1MQ_data", showWarnings=F)
+dat_dir <- "./TZ_1MQ_data"
 
 # download Tanzania test data
-download("https://www.dropbox.com/s/gfgjnrgllwqt79d/TZ_geos_123114.csv?dl=0", "./TZ_1MGS_data/TZ_geos_123114.csv", mode="wb")
+download("https://www.dropbox.com/s/gfgjnrgllwqt79d/TZ_geos_123114.csv?dl=0", "./TZ_1MQ_data/TZ_geos_123114.csv", mode="wb")
 geosv <- read.table(paste(dat_dir, "/TZ_geos_123114.csv", sep=""), header=T, sep=",")
 
 # download Tanzania prediction grids (~21.1 Mb) and stack in raster
-download("https://www.dropbox.com/s/w8l41t5muc1rr4j/TZ_1MQ_preds.zip?dl=0", "./TZ_1MGS_data/TZ_1MQ_preds.zip", mode="wb")
-unzip("./TZ_1MGS_data/TZ_1MQ_preds.zip", exdir="./TZ_1MGS_data", overwrite=T)
-glist <- list.files(path="./TZ_1MGS_data", pattern="tif", full.names=T)
+download("https://www.dropbox.com/s/w8l41t5muc1rr4j/TZ_1MQ_preds.zip?dl=0", "./TZ_1MQ_data/TZ_1MQ_preds.zip", mode="wb")
+unzip("./TZ_1MQ_data/TZ_1MQ_preds.zip", exdir="./TZ_1MQ_data", overwrite=T)
+glist <- list.files(path="./TZ_1MQ_data", pattern="tif", full.names=T)
 grid <- stack(glist)
 
 #+ Data setup --------------------------------------------------------------
@@ -39,7 +39,7 @@ gsexv <- data.frame(coordinates(geosv), geosv$CRP, geosv$HSP, extract(grid, geos
 gsexv <- na.omit(gsexv)
 colnames(gsexv)[3:4] <- c("CRP", "HSP")
 
-# 1 MGS classifier performance evaluation ---------------------------------
+#+ 1MQ classifier performance evaluation ----------------------------------
 # Cropland boosting classifier
 gbmcrp <- subset(gsexv, CRP=="Y", select=c(CRP_gbm))
 gbmcra <- subset(gsexv, CRP=="N", select=c(CRP_gbm))
@@ -61,7 +61,7 @@ rfcrp.eval <- evaluate(p=rfcrp[,1], a=rfcra[,1]) ## calculate ROC's on test set 
 rfcrp.eval
 plot(rfcrp.eval, "ROC")
 
-# Cropland 1MGS ensemble classifier
+# Cropland 1MQ ensemble classifier
 enscrp <- subset(gsexv, CRP=="Y", select=c(CRP_ens))
 enscra <- subset(gsexv, CRP=="N", select=c(CRP_ens))
 enscrp.eval <- evaluate(p=enscrp[,1], a=enscra[,1]) ## calculate ROC's on test set <dismo>
@@ -92,7 +92,7 @@ rfhsp.eval <- evaluate(p=rfhsp[,1], a=rfhsa[,1]) ## calculate ROC's on test set 
 rfhsp.eval
 plot(rfhsp.eval, "ROC")
 
-# Building/rural settlement 1MGS ensemble classifier
+# Building/rural settlement 1MQ ensemble classifier
 enshsp <- subset(gsexv, HSP=="Y", select=c(RSP_ens))
 enshsa <- subset(gsexv, HSP=="N", select=c(RSP_ens))
 enshsp.eval <- evaluate(p=enshsp[,1], a=enshsa[,1]) ## calculate ROC's on test set <dismo>
@@ -104,13 +104,13 @@ plot(RSP_ens_mask, axes = F, legend = F)
 
 #+ Local classifier (re)stacking ------------------------------------------
 # 10-fold CV
-lcs <- trainControl(method = "cv", number = 10, classProbs = T, summaryFunction = twoClassSummary)
+lcs <- trainControl(method = "cv", number = 10, classProbs = T)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.lcs <- train(CRP ~ CRP_gbm + CRP_nn + CRP_rf, data = gsexv,
                  family = "binomial", 
                  method = "glmnet",
-                 metric = "ROC",
+                 metric = "Accuracy",
                  trControl = lcs)
 CRP.lcs
 crp.pred <- predict(CRP.lcs, gsexv, type="prob")
@@ -130,7 +130,7 @@ plot(CRP_lcs_mask, axes = F, legend = F)
 RSP.lcs <- train(HSP ~ RSP_gbm + RSP_nn + RSP_rf, data = gsexv,
                  family = "binomial", 
                  method = "glmnet",
-                 metric = "ROC",
+                 metric = "Accuracy",
                  trControl = lcs)
 RSP.lcs
 rsp.pred <- predict(RSP.lcs, gsexv, type="prob")
@@ -148,6 +148,6 @@ plot(RSP_lcs_mask, axes = F, legend = F)
 
 #+ Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in current working directory
-dir.create("TZ_1MGS_results", showWarnings=F)
+dir.create("TZ_1MQ_results", showWarnings=F)
 LCS_pred <- stack(1-CRP_lcs, CRP_lcs_mask, 1-RSP_lcs, RSP_lcs_mask)
-writeRaster(LCS_pred, filename="./TZ_1MGS_results/TZ_lcs_pred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(LCS_pred, filename="./TZ_1MQ_results/TZ_lcs_pred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
