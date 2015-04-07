@@ -1,5 +1,5 @@
-#' Evaluation and local stacking of Tanzania 1MQ GeoSurvey cropland and human settlement
-#' predictions with additional Tanzania GeoSurvey test data.
+#' Evaluation and local elastic net stacking of Tanzania 1MQ GeoSurvey cropland and 
+#' human settlement predictions with additional Tanzania GeoSurvey test data.
 #' M.Walsh & J.Chen, April 2015
 
 #+ Required packages
@@ -148,5 +148,7 @@ plot(RSP_lcs_mask, axes = F, legend = F)
 
 #+ Write spatial predictions -----------------------------------------------
 dir.create("TZ_1MQ_results", showWarnings=F)
-LCS_pred <- stack(CRP_ens_mask, 1-CRP_lcs, CRP_lcs_mask, RSP_ens_mask, 1-RSP_lcs, RSP_lcs_mask)
-writeRaster(LCS_pred, filename="./TZ_1MQ_results/TZ_lcs_pred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+CRP_lcs_pred <- stack(CRP_ens_mask, 1-CRP_lcs, CRP_lcs_mask)
+RSP_lcs_pred <- stack(RSP_ens_mask, 1-RSP_lcs, RSP_lcs_mask)
+writeRaster(CRP_lcs_pred, filename="./TZ_1MQ_results/TZ_crp_pred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(RSP_lcs_pred, filename="./TZ_1MQ_results/TZ_rsp_pred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
