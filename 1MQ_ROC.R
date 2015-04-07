@@ -1,4 +1,4 @@
-#' Receiver/Operator Characteristics (ROC) evaluation of Africa-wide 1MQ GeoSurvey
+#' Receiver-Operator Characteristics (ROC) evaluation of Africa-wide 1MQ GeoSurvey
 #' cropland and human settlement predictions with additional GeoSurvey expert test data.
 #' M.Walsh, J.Chen and A.Verlinden, April 2015
 
@@ -14,13 +14,13 @@ require(dismo)
 dir.create("1MQ_data", showWarnings=F)
 dat_dir <- "./1MQ_data"
 
-# download Tanzania test data
+# download 1MQ test data
 download("https://www.dropbox.com/s/pt86fr3ko379f8h/1MQ_validation_data.csv?dl=0", "./1MQ_data/1MQ_validation_data.csv", mode="wb")
 geosv <- read.table(paste(dat_dir, "/1MQ_validation_data.csv", sep=""), header=T, sep=",")
 
-# BIG download of prediction grids (~21.1 Mb) and stack in raster
-download("https://www.dropbox.com/s/w8l41t5muc1rr4j/TZ_1MQ_preds.zip?dl=0", "./1MQ_data/TZ_1MQ_preds.zip", mode="wb")
-unzip("./TZ_1MQ_data/TZ_1MQ_preds.zip", exdir="./1MQ_data", overwrite=T)
+# BIG download of prediction grids (~447 Mb) and stack in raster
+download("https://www.dropbox.com/s/nulz4r3395mh7t5/1MQ_pred_grids.zip?dl=0", "./1MQ_data/1MQ_pred_grids.zip", mode="wb")
+unzip("./1MQ_data/1MQ_pred_grids.zip", exdir="./1MQ_data", overwrite=T)
 glist <- list.files(path="./1MQ_data", pattern="tif", full.names=T)
 grid <- stack(glist)
 
@@ -39,29 +39,29 @@ colnames(gsexv)[3:4] <- c("CRP", "HSP")
 
 #+ 1MQ classifier performance evaluation ----------------------------------
 # Cropland boosting classifier
-gbmcrp <- subset(gsexv, CRP=="Y", select=c(CRP_gbm))
-gbmcra <- subset(gsexv, CRP=="N", select=c(CRP_gbm))
+gbmcrp <- subset(gsexv, CRPc=="Y", select=c(CRP_gbm))
+gbmcra <- subset(gsexv, CRPc=="N", select=c(CRP_gbm))
 gbmcrp.eval <- evaluate(p=gbmcrp[,1], a=gbmcra[,1]) ## calculate ROC's on test set <dismo>
 gbmcrp.eval
 plot(gbmcrp.eval, "ROC")
 
 # Cropland neural network classifier
-nncrp <- subset(gsexv, CRP=="Y", select=c(CRP_nn))
-nncra <- subset(gsexv, CRP=="N", select=c(CRP_nn))
+nncrp <- subset(gsexv, CRPc=="Y", select=c(CRP_nn))
+nncra <- subset(gsexv, CRPc=="N", select=c(CRP_nn))
 nncrp.eval <- evaluate(p=nncrp[,1], a=nncra[,1]) ## calculate ROC's on test set <dismo>
 nncrp.eval
 plot(nncrp.eval, "ROC")
 
 # Cropland random forest classifier
-rfcrp <- subset(gsexv, CRP=="Y", select=c(CRP_rf))
-rfcra <- subset(gsexv, CRP=="N", select=c(CRP_rf))
+rfcrp <- subset(gsexv, CRPc=="Y", select=c(CRP_rf))
+rfcra <- subset(gsexv, CRPc=="N", select=c(CRP_rf))
 rfcrp.eval <- evaluate(p=rfcrp[,1], a=rfcra[,1]) ## calculate ROC's on test set <dismo>
 rfcrp.eval
 plot(rfcrp.eval, "ROC")
 
 # Cropland 1MQ ensemble classifier
-enscrp <- subset(gsexv, CRP=="Y", select=c(CRP_ens))
-enscra <- subset(gsexv, CRP=="N", select=c(CRP_ens))
+enscrp <- subset(gsexv, CRPc=="Y", select=c(CRP_ens))
+enscra <- subset(gsexv, CRPc=="N", select=c(CRP_ens))
 enscrp.eval <- evaluate(p=enscrp[,1], a=enscra[,1]) ## calculate ROC's on test set <dismo>
 enscrp.eval
 plot(enscrp.eval, "ROC")
