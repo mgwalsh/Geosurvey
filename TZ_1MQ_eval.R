@@ -120,11 +120,32 @@ lcscra <- subset(crp.test, CRP=="N", select=c(Y))
 lcscrp.eval <- evaluate(p=lcscrp[,1], a=lcscra[,1]) ## calculate ROC's on test set <dismo>
 lcscrp.eval
 plot(lcscrp.eval, "ROC") ## plot ROC curve
-lcscrp.thld <- threshold(lcscrp.eval, 'spec_sens') ## TPR+TNR threshold for classification
+lcscrp.thld <- threshold(lcscrp.eval, 'spec_sens') ## max(sens+spec) threshold for classification
 CRP_lcs <- predict(grid, CRP.lcs, type="prob") ## spatial prediction
 plot(1-CRP_lcs, axes = F)
 CRP_lcs_mask <- 1-CRP_lcs > lcscrp.thld
 plot(CRP_lcs_mask, axes = F, legend = F)
+
+# Cropland mask likelihood ratios
+crp.cm <- table(crp.test$Y > lcscrp.thld, crp.test$CRP)
+interval <- 0.95
+a <- crp.cm[2, 2] ## tp
+b <- crp.cm[2, 1] ## fp
+c <- crp.cm[1, 2] ## fn
+d <- crp.cm[1, 1] ## tn
+crp.prev <- (a+c)/(a+b+c+d) ## prevalence = pretest probability
+crp.spec <- d/(b+d) ## classifier specificity
+crp.sens <- a/(a+c) ## classifier sensitivity 
+lr.pos <- crp.sens/(1 - crp.spec) ## positive likelihood ratio (LR+)
+sigma2.pos <- (1/a) - (1/(a+c)) + (1/b) - (1/(b+d))
+lower.pos <- lr.pos * exp(-qnorm(1-((1-interval)/2))*sqrt(sigma2.pos)) ## lower LR+ 95% PI
+upper.pos <- lr.pos * exp(qnorm(1-((1-interval)/2))*sqrt(sigma2.pos)) ## upper LR+ 95% PI
+list(lower.pos=lower.pos, lr.pos=lr.pos, upper.pos=upper.pos)
+lr.neg <- (1 - sens)/spec ## negative likelihood ratio (LR-)
+sigma2.neg <- (1/c) - (1/(a+c)) + (1/d) - (1/(b+d))
+lower.neg <- lr.neg * exp(-qnorm(1-((1-interval)/2))*sqrt(sigma2.neg)) ## lower LR- 95% PI
+upper.neg <- lr.neg * exp(qnorm(1-((1-interval)/2))*sqrt(sigma2.neg)) ## upper LR- 95% PI
+list(lower.neg=lower.neg, lr.neg=lr.neg, upper.neg=upper.neg)
 
 # presence/absence of Buildings/rural settlements (HSP, present = Y, absent = N)
 RSP.lcs <- train(HSP ~ RSP_gbm + RSP_nn + RSP_rf, data = gsexv,
@@ -140,7 +161,7 @@ lcsrsa <- subset(rsp.test, HSP=="N", select=c(Y))
 lcsrsp.eval <- evaluate(p=lcsrsp[,1], a=lcsrsa[,1]) ## calculate ROC's on test set <dismo>
 lcsrsp.eval
 plot(lcsrsp.eval, "ROC") ## plot ROC curve
-lcsrsp.thld <- threshold(lcsrsp.eval, 'spec_sens') ## TPR+TNR threshold for classification
+lcsrsp.thld <- threshold(lcsrsp.eval, 'spec_sens') ## max(sens+spec) threshold for classification
 RSP_lcs <- predict(grid, RSP.lcs, type="prob") ## spatial prediction
 plot(1-RSP_lcs, axes = F)
 RSP_lcs_mask <- 1-RSP_lcs > lcsrsp.thld
