@@ -1,14 +1,13 @@
-#' Ensemble predictions of Tanzania GeoSurvey cropland,
-#' woody vegetation cover and human settlement observations. 
-#' M. Walsh, November 2014
+#' Ensemble predictions of Tanzania GeoSurvey cropland,woody vegetation cover,
+#' and rural settlement observations. 
+#' M. Walsh, April 2014
 
 # Required packages
-# install.packages(c("downloader","raster","rgdal","caret","MASS","randomForest","gbm","nnet","glmnet","dismo")), dependencies=TRUE)
+# install.packages(c("downloader","raster","rgdal","caret","randomForest","gbm","nnet","glmnet","dismo")), dependencies=TRUE)
 require(downloader)
 require(raster)
 require(rgdal)
 require(caret)
-require(MASS)
 require(randomForest)
 require(gbm)
 require(nnet)
@@ -25,7 +24,7 @@ download("https://www.dropbox.com/s/339k17oic3n3ju6/TZ_geos_012015.csv?dl=0", ".
 geos <- read.table(paste(dat_dir, "/TZ_geos_012015.csv", sep=""), header=T, sep=",")
 geos <- na.omit(geos)
 
-# download Tanzania Gtifs (~27.6 Mb) and stack in raster
+# download Tanzania Gtifs (~46.4 Mb) and stack in raster
 download("https://www.dropbox.com/s/otiqe78s0kf1z1s/TZ_grids.zip?dl=0", "./TZ_data/TZ_grids.zip", mode="wb")
 unzip("./TZ_data/TZ_grids.zip", exdir="./TZ_data", overwrite=T)
 glist <- list.files(path="./TZ_data", pattern="tif", full.names=T)
@@ -65,50 +64,19 @@ set.seed(seed)
 
 #+ Split data into train and test sets ------------------------------------
 # Cropland train/test split
-crpIndex <- createDataPartition(crpdat$CRP, p = 0.75, list = FALSE, times = 1)
+crpIndex <- createDataPartition(crpdat$CRP, p = 2/3, list = FALSE, times = 1)
 crpTrain <- crpdat[ crpIndex,]
 crpTest  <- crpdat[-crpIndex,]
 
 # Woody cover train/test split
-wcpIndex <- createDataPartition(wcpdat$WCP, p = 0.75, list = FALSE, times = 1)
+wcpIndex <- createDataPartition(wcpdat$WCP, p = 2/3, list = FALSE, times = 1)
 wcpTrain <- wcpdat[ wcpIndex,]
 wcpTest  <- wcpdat[-wcpIndex,]
 
 # Settlement train/test split
-hspIndex <- createDataPartition(hspdat$HSP, p = 0.75, list = FALSE, times = 1)
+hspIndex <- createDataPartition(hspdat$HSP, p = 2/3, list = FALSE, times = 1)
 hspTrain <- hspdat[ hspIndex,]
 hspTest  <- hspdat[-hspIndex,]
-
-#+ Stepwise main effects GLM's <MASS> --------------------------------------
-# 10-fold CV
-step <- trainControl(method = "cv", number = 10)
-
-# presence/absence of Cropland (CRP, present = Y, absent = N)
-CRP.glm <- train(CRP ~ ., data = crpTrain,
-                 family = binomial, 
-                 method = "glmStepAIC",
-                 trControl = step)
-crpglm.test <- predict(CRP.glm, crpTest) ## predict test-set
-confusionMatrix(crpglm.test, crpTest$CRP, "Y") ## print validation summaries
-crpglm.pred <- predict(grid, CRP.glm, type = "prob") ## spatial predictions
-
-# presence/absence of Woody Vegetation Cover >60% (WCP, present = Y, absent = N)
-WCP.glm <- train(WCP ~ ., data = wcpTrain,
-                 family=binomial, 
-                 method = "glmStepAIC",
-                 trControl = step)
-wcpglm.test <- predict(WCP.glm, wcpTest) ## predict test-set
-confusionMatrix(wcpglm.test, wcpTest$WCP, "Y") ## print validation summaries
-wcpglm.pred <- predict(grid, WCP.glm, type = "prob") ## spatial predictions
-
-# presence/absence of Buildings/Human Settlements (HSP, present = Y, absent = N)
-HSP.glm <- train(HSP ~ ., data = hspTrain,
-                 family=binomial, 
-                 method = "glmStepAIC",
-                 trControl = step)
-hspglm.test <- predict(HSP.glm, hspTest) ## predict test-set
-confusionMatrix(hspglm.test, hspTest$HSP, "Y") ## print validation summaries
-hspglm.pred <- predict(grid, HSP.glm, type = "prob") ## spatial predictions
 
 #+ Random forests <randomForest> -------------------------------------------
 # out-of-bag predictions
@@ -196,28 +164,28 @@ hspnn.pred <- predict(grid, HSP.nn, type = "prob") ## spatial predictions
 
 #+ Plot predictions by GeoSurvey variables ---------------------------------
 # Cropland prediction plots
-crp.preds <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred)
-names(crp.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
+crp.preds <- stack(1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred)
+names(crp.preds) <- c("randomForest","gbm","nnet")
 plot(crp.preds, axes = F)
 
 # Woody vegetation cover >60% prediction plots
-wcp.preds <- stack(1-wcpglm.pred, 1-wcprf.pred, 1-wcpgbm.pred, 1-wcpnn.pred)
-names(wcp.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
+wcp.preds <- stack(1-wcprf.pred, 1-wcpgbm.pred, 1-wcpnn.pred)
+names(wcp.preds) <- c("randomForest","gbm","nnet")
 plot(wcp.preds, axes = F)
 
-# Settlement prediction plots
-hsp.preds <- stack(1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
-names(hsp.preds) <- c("glmStepAIC","randomForest","gbm","nnet")
+# Rural settlement prediction plots
+hsp.preds <- stack(1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
+names(hsp.preds) <- c("randomForest","gbm","nnet")
 plot(hsp.preds, axes = F)
 
-#+ Ensemble predictions <glm>, <rf>, <gbm>, <nnet> --------------------------
+#+ Ensemble predictions <rf>, <gbm>, <nnet> -------------------------------
 # Ensemble set-up
-pred <- stack(1-crpglm.pred, 1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred,
-              1-wcpglm.pred, 1-wcprf.pred, 1-wcpgbm.pred, 1-wcpnn.pred,
-              1-hspglm.pred, 1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
-names(pred) <- c("CRPglm","CRPrf","CRPgbm","CRPnn",
-                 "WCPglm","WCPrf","WCPgbm","WCPnn",
-                 "HSPglm","HSPrf","HSPgbm","HSPnn")
+pred <- stack(1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred,
+              1-wcprf.pred, 1-wcpgbm.pred, 1-wcpnn.pred,
+              1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
+names(pred) <- c("CRPrf","CRPgbm","CRPnn",
+                 "WCPrf","WCPgbm","WCPnn",
+                 "HSPrf","HSPgbm","HSPnn")
 geospred <- extract(pred, geos)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
@@ -240,7 +208,7 @@ hspensTest <- hspens[-hspIndex,] ## replicate previous test set
 ens <- trainControl(method = "cv", number = 10)
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
-CRP.ens <- train(CRP ~ CRPglm + CRPrf + CRPgbm + CRPnn, data = crpensTest,
+CRP.ens <- train(CRP ~ CRPrf + CRPgbm + CRPnn, data = crpensTest,
                  family = "binomial", 
                  method = "glmnet",
                  trControl = ens)
@@ -258,7 +226,7 @@ crpmask <- 1-crpens.pred > crp.thld
 plot(crpmask, axes = F, legend = F)
 
 # presence/absence of Woody Vegetation Cover >60% (WCP, present = Y, absent = N)
-WCP.ens <- train(WCP ~ WCPglm + WCPrf + WCPgbm + WCPnn, data = wcpensTest,
+WCP.ens <- train(WCP ~ WCPrf + WCPgbm + WCPnn, data = wcpensTest,
                  family = "binomial", 
                  method = "glmnet",
                  trControl = ens)
@@ -276,7 +244,7 @@ wcpmask <- 1-wcpens.pred > wcp.thld
 plot(wcpmask, axes = F, legend = F)
 
 # presence/absence of Buildings/Rural Settlements (HSP, present = Y, absent = N)
-HSP.ens <- train(HSP ~ HSPglm + HSPrf + HSPgbm + HSPnn, data = hspensTest,
+HSP.ens <- train(HSP ~ HSPrf + HSPgbm + HSPnn, data = hspensTest,
                  family = "binomial", 
                  method = "glmnet",
                  trControl = ens)
