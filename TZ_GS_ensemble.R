@@ -1,4 +1,4 @@
-#' Ensemble predictions of Tanzania GeoSurvey cropland,woody vegetation cover,
+#' Ensemble predictions of Tanzania GeoSurvey cropland, woody vegetation cover,
 #' and rural settlement observations. 
 #' M. Walsh, April 2014
 
