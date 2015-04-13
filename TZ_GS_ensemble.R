@@ -162,22 +162,6 @@ hspnn.test <- predict(HSP.nn, hspTest) ## predict test-set
 confusionMatrix(hspnn.test, hspTest$HSP, "Y") ## print validation summaries
 hspnn.pred <- predict(grid, HSP.nn, type = "prob") ## spatial predictions
 
-#+ Plot predictions by GeoSurvey variables ---------------------------------
-# Cropland prediction plots
-crp.preds <- stack(1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred)
-names(crp.preds) <- c("randomForest","gbm","nnet")
-plot(crp.preds, axes = F)
-
-# Woody vegetation cover >60% prediction plots
-wcp.preds <- stack(1-wcprf.pred, 1-wcpgbm.pred, 1-wcpnn.pred)
-names(wcp.preds) <- c("randomForest","gbm","nnet")
-plot(wcp.preds, axes = F)
-
-# Rural settlement prediction plots
-hsp.preds <- stack(1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred)
-names(hsp.preds) <- c("randomForest","gbm","nnet")
-plot(hsp.preds, axes = F)
-
 #+ Ensemble predictions <rf>, <gbm>, <nnet> -------------------------------
 # Ensemble set-up
 pred <- stack(1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred,
@@ -261,6 +245,22 @@ plot(1-hspens.pred, axes=F)
 hspmask <- 1-hspens.pred > hsp.thld
 plot(hspmask, axes = F, legend = F)
 
+#+ Plot predictions by GeoSurvey variables ---------------------------------
+# Cropland prediction plots
+crp.preds <- stack(1-crprf.pred, 1-crpgbm.pred, 1-crpnn.pred, 1-crpens.pred)
+names(crp.preds) <- c("randomForest","gbm","nnet","Ensemble")
+plot(crp.preds, axes = F)
+
+# Woody vegetation cover >60% prediction plots
+wcp.preds <- stack(1-wcprf.pred, 1-wcpgbm.pred, 1-wcpnn.pred, 1-wcpens.pred)
+names(wcp.preds) <- c("randomForest","gbm","nnet","Ensemble")
+plot(wcp.preds, axes = F)
+
+# Rural settlement prediction plots
+hsp.preds <- stack(1-hsprf.pred, 1-hspgbm.pred, 1-hspnn.pred, 1-hspens.pred)
+names(hsp.preds) <- c("randomForest","gbm","nnet","Ensemble")
+plot(hsp.preds, axes = F)
+
 #+ Write spatial predictions -----------------------------------------------
 # Create a "Results" folder in current working directory
 dir.create("TZ_results", showWarnings=F)
@@ -269,6 +269,3 @@ dir.create("TZ_results", showWarnings=F)
 writeRaster(crp.preds, filename="./TZ_results/TZ_crpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 writeRaster(wcp.preds, filename="./TZ_results/TZ_wcpreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 writeRaster(hsp.preds, filename="./TZ_results/TZ_hspreds.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
-# Ensemble predictions
-enspred <- stack(1-crpens.pred, crpmask, 1-wcpens.pred, wcpmask, 1-hspens.pred, hspmask)
-writeRaster(enspred, filename="./TZ_results/TZ_enspred.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
