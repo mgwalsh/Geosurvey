@@ -20,7 +20,7 @@ dat_dir <- "./TZ_1MQ_data"
 download("https://www.dropbox.com/s/gfgjnrgllwqt79d/TZ_geos_123114.csv?dl=0", "./TZ_1MQ_data/TZ_geos_123114.csv", mode="wb")
 geosv <- read.table(paste(dat_dir, "/TZ_geos_123114.csv", sep=""), header=T, sep=",")
 
-# download Tanzania prediction grids (~21.1 Mb) and stack in raster
+# download Tanzania 1MQ prediction grids (~21.1 Mb) and stack in raster
 download("https://www.dropbox.com/s/w8l41t5muc1rr4j/TZ_1MQ_preds.zip?dl=0", "./TZ_1MQ_data/TZ_1MQ_preds.zip", mode="wb")
 unzip("./TZ_1MQ_data/TZ_1MQ_preds.zip", exdir="./TZ_1MQ_data", overwrite=T)
 glist <- list.files(path="./TZ_1MQ_data", pattern="tif", full.names=T)
