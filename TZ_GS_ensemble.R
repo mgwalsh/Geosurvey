@@ -14,14 +14,14 @@ require(nnet)
 require(glmnet)
 require(dismo)
 
-#+ Data downloads ----------------------------------------------------------
+# Data downloads -----------------------------------------------------------
 # Create a "Data" folder in your current working directory
 dir.create("TZ_data", showWarnings=F)
-dat_dir <- "./TZ_data"
+setwd("./TZ_data")
 
 # download GeoSurvey data
-download("https://www.dropbox.com/s/339k17oic3n3ju6/TZ_geos_012015.csv?dl=0", "./TZ_data/TZ_geos_012015.csv", mode="wb")
-geos <- read.table(paste(dat_dir, "/TZ_geos_012015.csv", sep=""), header=T, sep=",")
+download("", mode="wb")
+geos <- read.table(paste(dat_dir, "/", sep=""), header=T, sep=",")
 geos <- na.omit(geos)
 
 # download Tanzania Gtifs (~46.4 Mb) and stack in raster
@@ -30,7 +30,7 @@ unzip("./TZ_data/TZ_grids.zip", exdir="./TZ_data", overwrite=T)
 glist <- list.files(path="./TZ_data", pattern="tif", full.names=T)
 grid <- stack(glist)
 
-#+ Data setup --------------------------------------------------------------
+# Data setup ---------------------------------------------------------------
 # Project GeoSurvey coords to grid CRS
 geos.proj <- as.data.frame(project(cbind(geos$Lon, geos$Lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
 colnames(geos.proj) <- c("x","y")
@@ -62,7 +62,7 @@ hspdat <- na.omit(hspdat)
 seed <- 1385321
 set.seed(seed)
 
-#+ Split data into train and test sets ------------------------------------
+# Split data into train and test sets -------------------------------------
 # Cropland train/test split
 crpIndex <- createDataPartition(crpdat$CRP, p = 2/3, list = FALSE, times = 1)
 crpTrain <- crpdat[ crpIndex,]
@@ -189,7 +189,7 @@ hspensTest <- hspens[-hspIndex,] ## replicate previous test set
 
 # Regularized ensemble weighting on the test set <glmnet>
 # 10-fold CV
-ens <- trainControl(method = "cv", number = 10)
+ens <- trainControl(method = "cv")
 
 # presence/absence of Cropland (CRP, present = Y, absent = N)
 CRP.ens <- train(CRP ~ CRPrf + CRPgbm + CRPnn, data = crpensTest,
