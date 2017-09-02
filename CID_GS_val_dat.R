@@ -7,6 +7,7 @@
 
 require(downloader)
 require(alluvial)
+require(circlize)
 
 # Data setup --------------------------------------------------------------
 # Create a data folder in  your current working directory
@@ -20,8 +21,25 @@ gscid <- read.table("CID.csv", header=T, sep=",")
 gscrp <- as.data.frame(table(gscid$CID, gscid$CP, gscid$BP, gscid$WP))
 colnames(gscrp) <- c("Country","CP","BP","WP","Freq")
 
-# <alluvial> diagram ------------------------------------------------------
-alluvial(gscrp[,c(2:4,1)], freq=gscrp$Freq, border=NA,
+# Alluvial diagram --------------------------------------------------------
+alluvial(gscrp[,c(1,2:4)], freq=gscrp$Freq, border=NA,
          hide = gscrp$Freq < quantile(gscrp$Freq, 0.25),
          col=ifelse(gscrp$CP == "Yes", "red", "gray"))
+
+# Chord diagrams ----------------------------------------------------------
+grid.col <- c(Yes="red", No="gray", NN="gray", NY="gray",YN="gray", YY="gray")
+
+et <- gscid[which(gscid$CID=='ET'), ]
+etcrp <- as.data.frame(table(et$CP, et$System))
+chordDiagram(etcrp, grid.col = grid.col,
+             annotationTrack = "grid", annotationTrackHeight = 0.15)
+
+tz <- gscid[which(gscid$CID=='TZ'), ]
+tzcrp <- as.data.frame(table(tz$CP, tz$System))
+chordDiagram(tzcrp, grid.col = grid.col, annotationTrack = "grid", preAllocateTracks = list(track.height = 0.1))
+
+gh <- gscid[which(gscid$CID=='GH'), ]
+ghcrp <- as.data.frame(table(gh$CP, gh$System))
+chordDiagram(ghcrp, grid.col = grid.col, annotationTrack = "grid", preAllocateTracks = list(track.height = 0.1))
+
 
