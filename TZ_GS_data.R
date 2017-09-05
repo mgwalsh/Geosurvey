@@ -37,9 +37,6 @@ projection(geos) <- projection(grids)
 # extract gridded variables at GeoSurvey locations
 geosgrid <- extract(grids, geos)
 
-# Extract gridded variables at GeoSurvey locations
-geosgrid <- extract(grids, geos)
-
 # Assemble dataframes
 # presence/absence of Buildings (BP, present = Y, absent = N)
 BP <- geos$BP
