@@ -20,7 +20,7 @@ download("https://www.dropbox.com/s/5k4awl2se6s982y/TZ_geos_082317.csv.zip?raw=1
 unzip("TZ_geos_082317.csv.zip", overwrite=T)
 geos <- read.table("TZ_geos_082317.csv", header=T, sep=",")
 
-# download Tanzania Gtifs and stack in raster (500+ Mb download)
+# download Tanzania Gtifs and stack in raster (note this is a big 500+ Mb download)
 download("https://www.dropbox.com/s/16ifi3ucqxcaf5j/TZ_GRIDS250m.zip?raw=1", "TZ_GRIDS250m.zip", mode="wb")
 unzip("TZ_GRIDS250m.zip", overwrite=T)
 glist <- list.files(pattern="tif", full.names=T)
@@ -51,7 +51,7 @@ CP <- geos$CP
 cpdat <- cbind.data.frame(CP, geosgrid)
 cpdat <- na.omit(cpdat)
 
-# presence/absence of Woody Vegetation Cover >60% (WCP, present = Y, absent = N)
+# presence/absence of Woody Vegetation Cover >60% (WP, present = Y, absent = N)
 WP <- geos$WP
 wpdat <- cbind.data.frame(WP, geosgrid)
 wpdat <- na.omit(wpdat)
