@@ -28,7 +28,7 @@ grids <- stack(glist)
 
 # Data setup ---------------------------------------------------------------
 # project GeoSurvey coords to grid CRS
-geos.proj <- as.data.frame(project(cbind(geos$Lon, geos$Lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
+geos.proj <- as.data.frame(project(cbind(geos$lon, geos$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
 colnames(geos.proj) <- c("x","y")
 geos <- cbind(geos, geos.proj)
 coordinates(geos) <- ~x+y
