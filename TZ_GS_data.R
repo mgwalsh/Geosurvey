@@ -40,17 +40,17 @@ geosgrid <- extract(grids, geos)
 # Assemble dataframes
 # presence/absence of Buildings (BP, present = Y, absent = N)
 BP <- geos$BP
-bpdat <- cbind.data.frame(BP, geosgrid)
+bpdat <- as.data.frame(cbind(BP, geosgrid))
 bpdat <- na.omit(bpdat)
 
 # presence/absence of Cropland (CP, present = Y, absent = N)
 CP <- geos$CP
-cpdat <- cbind.data.frame(CP, geosgrid)
+cpdat <- as.data.frame(cbind(CP, geosgrid))
 cpdat <- na.omit(cpdat)
 
 # presence/absence of Woody Vegetation Cover >60% (WP, present = Y, absent = N)
 WP <- geos$WP
-wpdat <- cbind.data.frame(WP, geosgrid)
+wpdat <- as.data.frame(cbind(WP, geosgrid))
 wpdat <- na.omit(wpdat)
 
 # Split data into train and test sets -------------------------------------
