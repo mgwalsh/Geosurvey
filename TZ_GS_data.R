@@ -20,8 +20,8 @@ download("https://www.dropbox.com/s/5k4awl2se6s982y/TZ_geos_082317.csv.zip?raw=1
 unzip("TZ_geos_082317.csv.zip", overwrite=T)
 geos <- read.table("TZ_geos_082317.csv", header=T, sep=",")
 
-# download Tanzania Gtifs and stack in raster (note this is a big 500+ Mb download)
-download("https://www.dropbox.com/s/3yoak99gqo1dbfy/TZ_250m_2017.zip?raw=1", "TZ_250m_2017.zip", mode="wb")
+# download Tanzania Gtifs and stack in raster (note this is a big 550+ Mb download)
+download("https://www.dropbox.com/s/pshrtvjf7navegu/TZ_250m_2017.zip?raw=1", "TZ_250m_2017.zip", mode="wb")
 unzip("TZ_250m_2017.zip", overwrite=T)
 glist <- list.files(pattern="tif", full.names=T)
 grids <- stack(glist)
