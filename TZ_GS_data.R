@@ -42,16 +42,19 @@ geosgrid <- extract(grids, geos)
 BP <- geos$BP
 bpdat <- as.data.frame(cbind(BP, geosgrid))
 bpdat <- na.omit(bpdat)
+write.csv(bpdat, "BP.csv", row.names = FALSE)
 
 # presence/absence of Cropland (CP, present = Y, absent = N)
 CP <- geos$CP
 cpdat <- as.data.frame(cbind(CP, geosgrid))
 cpdat <- na.omit(cpdat)
+write.csv(cpdat, "CP.csv", row.names = FALSE)
 
 # presence/absence of Woody Vegetation Cover >60% (WP, present = Y, absent = N)
 WP <- geos$WP
 wpdat <- as.data.frame(cbind(WP, geosgrid))
 wpdat <- na.omit(wpdat)
+write.csv(wpdat, "WP.csv", row.names = FALSE)
 
 # Split data into train and test sets -------------------------------------
 # set train/test set randomization seed
