@@ -55,7 +55,7 @@ colnames(GH_geof) <- c("BP","CP","WP","Freq")
 GH_geof
 
 # <alluvial> diagrams -----------------------------------------------------
-alluvial(TZ_geof[,1:3], freq=TZ_geof$Freq, border=NA, col=ifelse(geof$BP == "Y", "red", "gray"))
-alluvial(ET_geof[,1:3], freq=ET_geof$Freq, border=NA, col=ifelse(geof$BP == "Y", "red", "gray"))
-alluvial(NG_geof[,1:3], freq=NG_geof$Freq, border=NA, col=ifelse(geof$BP == "Y", "red", "gray"))
-alluvial(GH_geof[,1:3], freq=GH_geof$Freq, border=NA, col=ifelse(geof$BP == "Y", "red", "gray"))
+alluvial(TZ_geof[,1:3], freq=TZ_geof$Freq, border=NA, col=ifelse(TZ_geof$BP == "Y", "red", "gray"))
+alluvial(ET_geof[,1:3], freq=ET_geof$Freq, border=NA, col=ifelse(ET_geof$BP == "Y", "red", "gray"))
+alluvial(NG_geof[,1:3], freq=NG_geof$Freq, border=NA, col=ifelse(NG_geof$BP == "Y", "red", "gray"))
+alluvial(GH_geof[,1:3], freq=GH_geof$Freq, border=NA, col=ifelse(GH_geof$BP == "Y", "red", "gray"))
