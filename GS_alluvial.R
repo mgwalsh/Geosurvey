@@ -60,3 +60,4 @@ alluvial(TZ_geof[,1:3], freq=TZ_geof$Freq, border=NA, col=ifelse(TZ_geof$BP == "
 alluvial(ET_geof[,1:3], freq=ET_geof$Freq, border=NA, col=ifelse(ET_geof$BP == "Y", "red", "gray"))
 alluvial(NG_geof[,1:3], freq=NG_geof$Freq, border=NA, col=ifelse(NG_geof$BP == "Y", "red", "gray"))
 alluvial(GH_geof[,1:3], freq=GH_geof$Freq, border=NA, col=ifelse(GH_geof$BP == "Y", "red", "gray"))
+dev.off()
