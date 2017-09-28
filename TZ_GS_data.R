@@ -41,3 +41,4 @@ gsdat <- gsdat[!duplicated(gsdat), ] ## removes any duplicates
 
 # Write output file -------------------------------------------------------
 write.csv(gsdat, "gsdat.csv", row.names = FALSE)
+
