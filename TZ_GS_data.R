@@ -36,7 +36,8 @@ projection(geos) <- projection(grids)
 # extract gridded variables at GeoSurvey locations
 geosgrid <- extract(grids, geos)
 gsdat <- as.data.frame(cbind(geos, geosgrid)) 
-gsdat <- na.omit(gsdat)
+gsdat <- na.omit(gsdat) ## includes only complete cases/rows
+gsdat <- gsdat[!duplicated(gsdat), ] ## remove any duplicates 
 
 # Write output file -------------------------------------------------------
 write.csv(gsdat, "gsdat.csv", row.names = FALSE)
