@@ -2,12 +2,11 @@
 # M. Walsh, September 2017
 
 # Required packages
-# install.packages(c("downloader","rgdal","raster","caret")), dependencies=TRUE)
+# install.packages(c("downloader","rgdal","raster")), dependencies=TRUE)
 suppressPackageStartupMessages({
   require(downloader)
   require(rgdal)
   require(raster)
-  require(caret)
 })
 
 # Data downloads -----------------------------------------------------------
@@ -38,4 +37,6 @@ projection(geos) <- projection(grids)
 geosgrid <- extract(grids, geos)
 gsdat <- as.data.frame(cbind(geos, geosgrid)) 
 gsdat <- na.omit(gsdat)
+
+# Write output file -------------------------------------------------------
 write.csv(gsdat, "gsdat.csv", row.names = FALSE)
