@@ -36,42 +36,6 @@ projection(geos) <- projection(grids)
 
 # extract gridded variables at GeoSurvey locations
 geosgrid <- extract(grids, geos)
-
-# assemble dataframes
-# presence/absence of Buildings (BP, present = Y, absent = N)
-BP <- geos$BP
-bpdat <- as.data.frame(cbind(BP, geosgrid))
-bpdat <- na.omit(bpdat)
-write.csv(bpdat, "BP.csv", row.names = FALSE)
-
-# presence/absence of Cropland (CP, present = Y, absent = N)
-CP <- geos$CP
-cpdat <- as.data.frame(cbind(CP, geosgrid))
-cpdat <- na.omit(cpdat)
-write.csv(cpdat, "CP.csv", row.names = FALSE)
-
-# presence/absence of Woody Vegetation Cover >60% (WP, present = Y, absent = N)
-WP <- geos$WP
-wpdat <- as.data.frame(cbind(WP, geosgrid))
-wpdat <- na.omit(wpdat)
-write.csv(wpdat, "WP.csv", row.names = FALSE)
-
-# Split data into train and test sets -------------------------------------
-# set train/test set randomization seed
-seed <- 1385321
-set.seed(seed)
-
-# Buildings train/test split
-bpIndex <- createDataPartition(bpdat$BP, p = 2/3, list = FALSE, times = 1)
-bp_cal <- bpdat[ bpIndex,]
-bp_val <- bpdat[-bpIndex,]
-
-# Cropland train/test split
-cpIndex <- createDataPartition(cpdat$CP, p = 2/3, list = FALSE, times = 1)
-cp_cal <- cpdat[ cpIndex,]
-cp_val <- cpdat[-cpIndex,]
-
-# Woody cover train/test split
-wpIndex <- createDataPartition(wpdat$WP, p = 2/3, list = FALSE, times = 1)
-wp_cal <- wpdat[ wpIndex,]
-wp_val <- wpdat[-wpIndex,]
+gsdat <- as.data.frame(cbind(geos, geosgrid)) 
+gsdat <- na.omit(gsdat)
+write.csv(gsdat, "gsdat.csv", row.names = FALSE)
