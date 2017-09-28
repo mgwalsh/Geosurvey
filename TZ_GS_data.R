@@ -37,7 +37,7 @@ projection(geos) <- projection(grids)
 # extract gridded variables at GeoSurvey locations
 geosgrid <- extract(grids, geos)
 
-# Assemble dataframes
+# assemble dataframes
 # presence/absence of Buildings (BP, present = Y, absent = N)
 BP <- geos$BP
 bpdat <- as.data.frame(cbind(BP, geosgrid))
@@ -63,15 +63,15 @@ set.seed(seed)
 
 # Buildings train/test split
 bpIndex <- createDataPartition(bpdat$BP, p = 2/3, list = FALSE, times = 1)
-bpTrain <- bpdat[ bpIndex,]
-bpTest  <- bpdat[-bpIndex,]
+bp_cal <- bpdat[ bpIndex,]
+bp_val <- bpdat[-bpIndex,]
 
 # Cropland train/test split
 cpIndex <- createDataPartition(cpdat$CP, p = 2/3, list = FALSE, times = 1)
-cpTrain <- cpdat[ cpIndex,]
-cpTest  <- cpdat[-cpIndex,]
+cp_cal <- cpdat[ cpIndex,]
+cp_val <- cpdat[-cpIndex,]
 
 # Woody cover train/test split
 wpIndex <- createDataPartition(wpdat$WP, p = 2/3, list = FALSE, times = 1)
-wpTrain <- wpdat[ wpIndex,]
-wpTest  <- wpdat[-wpIndex,]
+wp_cal <- wpdat[ wpIndex,]
+wp_val <- wpdat[-wpIndex,]
