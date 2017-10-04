@@ -33,7 +33,6 @@ cp_val <- gs_val$CP ## validation set
 
 # Raster features
 gf_cal <- gs_cal[,7:36] ## grid covariates
-gf_val <- gs_val[,7:36] ## validation set
 
 # Random forest <randomForest> --------------------------------------------
 require(randomForest)
@@ -153,13 +152,12 @@ names(preds) <- c("rf","gb", "nn","rr")
 plot(preds, axes=F)
 
 # extract model predictions
-coordinates(gs_cal) <- ~x+y
-projection(gs_cal) <- projection(preds)
-gspred <- extract(preds, gs_cal)
-gs_cal <- as.data.frame(cbind(gs_cal, gspred))
-gl_cal <- gs_cal$CP ## subset labels
-gf_cal <- gs_cal[,37:40] ## subset calibration grid predictions
-write.csv(gspred, "cppred.csv", row.names = F)
+coordinates(gs_val) <- ~x+y
+projection(gs_val) <- projection(preds)
+gspred <- extract(preds, gs_val)
+gspred <- as.data.frame(cbind(gs_val, gspred))
+cp_val <- gspred$CP ## subset validation labels
+gf_val <- gspred[,37:40] ## subset validation features
 
 # Model stacking ----------------------------------------------------------
 # start doParallel to parallelize model fitting
@@ -172,7 +170,7 @@ tc <- trainControl(method = "repeatedcv", repeats = 5, classProbs = TRUE,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
-CP.st <- train(gf_cal, gl_cal,
+CP.st <- train(gf_val, cp_val,
                method = "glmnet",
                family = "binomial",
                metric = "ROC",
