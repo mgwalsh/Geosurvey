@@ -27,11 +27,10 @@ gsIndex <- createDataPartition(gsdat$CP, p = 4/5, list = FALSE, times = 1)
 gs_cal <- gsdat[ gsIndex,]
 gs_val <- gsdat[-gsIndex,]
 
-# GeoSurvey labels
+# GeoSurvey calibration labels
 cp_cal <- gs_cal$CP ## Croplands present? (Y/N)
-cp_val <- gs_val$CP ## validation set
 
-# Raster features
+# Raster calibration features
 gf_cal <- gs_cal[,7:36] ## grid covariates
 
 # Random forest <randomForest> --------------------------------------------
@@ -156,6 +155,8 @@ coordinates(gs_val) <- ~x+y
 projection(gs_val) <- projection(preds)
 gspred <- extract(preds, gs_val)
 gspred <- as.data.frame(cbind(gs_val, gspred))
+
+# stacking model validation labels and features
 cp_val <- gspred$CP ## subset validation labels
 gf_val <- gspred[,37:40] ## subset validation features
 
@@ -185,4 +186,7 @@ plot(1-cpst.pred, axes=F)
 
 stopCluster(mc)
 
-
+# Write prediction files --------------------------------------------------
+cppreds <- stack(preds, 1-cpst.pred)
+names(cppreds) <- c("cprf","cpgb","cpnn","cprr","cpst")
+writeRaster(cppreds, filename="TZ_cppreds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
