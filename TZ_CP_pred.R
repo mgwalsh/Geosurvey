@@ -194,7 +194,6 @@ cpa <- subset(cp_val, cp_val=="N", select=c(Y))
 cp_eval <- evaluate(p=cpp[,1], a=cpa[,1]) ## calculate ROC's on test set
 cp_eval
 plot(cp_eval, 'ROC') ## plot ROC curve
-cp_thld <- threshold(cp_eval, 'spec_sens') ## TPR+TNR threshold for classification
 
 # Write prediction files --------------------------------------------------
 cppreds <- stack(preds, 1-cpst.pred)
