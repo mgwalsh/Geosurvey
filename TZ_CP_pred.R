@@ -1,4 +1,4 @@
-# Ensemble predictions of Tanzania cropland observations
+# Stacked predictions of Tanzania cropland observations
 # M. Walsh, September 2017
 
 # Required packages
