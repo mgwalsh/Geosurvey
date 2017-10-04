@@ -29,11 +29,11 @@ gs_val <- gsdat[-gsIndex,]
 
 # GeoSurvey labels
 cp_cal <- gs_cal$CP ## Croplands present? (Y/N)
-cp_val <- gs_val$CP
+cp_val <- gs_val$CP ## validation set
 
 # Raster features
-gf_cal <- gs_cal[,7:36]
-gf_val <- gs_val[,7:36]
+gf_cal <- gs_cal[,7:36] ## grid covariates
+gf_val <- gs_val[,7:36] ## validation set
 
 # Random forest <randomForest> --------------------------------------------
 require(randomForest)
@@ -147,28 +147,32 @@ cprr.pred <- predict(grids, CP.rr, type = "prob") ## spatial predictions
 
 stopCluster(mc)
 
-
 # Model stacking setup ----------------------------------------------------
 preds <- stack(1-cprf.pred, 1-cpgb.pred, 1-cpnn.pred, 1-cprr.pred)
-names(preds) <- c("cprf","cpgb", "cpnn","cprr")
+names(preds) <- c("rf","gb", "nn","rr")
+plot(preds, axes=F)
+
+# extract model predictions
 coordinates(gs_cal) <- ~x+y
 projection(gs_cal) <- projection(preds)
-gspre <- extract(preds, gs_cal)
+gspred <- extract(preds, gs_cal)
+gs_cal <- as.data.frame(cbind(gs_cal, gspred))
+gl_cal <- gs_cal$CP ## subset labels
+gf_cal <- gs_cal[,37:40] ## subset calibration grid predictions
+write.csv(gspred, "cppred.csv", row.names = F)
 
 # Model stacking ----------------------------------------------------------
-require(glmnet)
-
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # control setup
 set.seed(1385321)
-tc <- trainControl(method = "repeatedcv", repeats = 5, classProbs = TRUE, summaryFunction = twoClassSummary,
-                   allowParallel = T)
+tc <- trainControl(method = "repeatedcv", repeats = 5, classProbs = TRUE, 
+                   summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
-CP.st <- train(gf_val, cp_val,
+CP.st <- train(gf_cal, gl_cal,
                method = "glmnet",
                family = "binomial",
                metric = "ROC",
@@ -178,7 +182,7 @@ CP.st <- train(gf_val, cp_val,
 print(CP.st)
 confusionMatrix(CP.st)
 plot(varImp(CP.st))
-cpst.pred <- predict(grids, CP.st, type = "prob") ## spatial predictions
+cpst.pred <- predict(preds, CP.st, type = "prob") ## spatial predictions
 plot(1-cpst.pred, axes=F)
 
 stopCluster(mc)
