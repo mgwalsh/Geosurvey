@@ -19,7 +19,7 @@ download("https://www.dropbox.com/s/57kuxbkm5sv092a/TZ_geos_2017.csv.zip?raw=1",
 unzip("TZ_geos_2017.csv.zip", overwrite=T)
 geos <- read.table("TZ_geos_2017.csv", header=T, sep=",")
 
-# download Tanzania Gtifs and stack in raster (note this is a big 550+ Mb download)
+# download Tanzania Gtifs and stack in raster (note this is a big 750+ Mb download)
 download("https://www.dropbox.com/s/pshrtvjf7navegu/TZ_250m_2017.zip?raw=1", "TZ_250m_2017.zip", mode="wb")
 unzip("TZ_250m_2017.zip", overwrite=T)
 glist <- list.files(pattern="tif", full.names=T)
@@ -41,4 +41,3 @@ gsdat <- gsdat[!duplicated(gsdat), ] ## removes any duplicates
 
 # Write output file -------------------------------------------------------
 write.csv(gsdat, "gsdat.csv", row.names = FALSE)
-
