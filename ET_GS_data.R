@@ -14,7 +14,7 @@ suppressPackageStartupMessages({
 dir.create("ET_GS250", showWarnings=F)
 setwd("./ET_GS250")
 
-# download GeoSurvey data
+# download current Ethiopia GeoSurvey data
 download("https://www.dropbox.com/s/mfw02vsrrit674z/ET_geos_2017.csv.zip?raw=1", "ET_geos_2017.csv.zip", mode="wb")
 unzip("ET_geos_2017.csv.zip", overwrite=T)
 geos <- read.table("ET_geos_2017.csv", header=T, sep=",")
