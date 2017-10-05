@@ -40,4 +40,4 @@ gsdat <- na.omit(gsdat) ## includes only complete cases
 gsdat <- gsdat[!duplicated(gsdat), ] ## removes any duplicates 
 
 # Write output file -------------------------------------------------------
-write.csv(gsdat, "gsdat.csv", row.names = FALSE)
+write.csv(gsdat, "TZ_gsdat.csv", row.names = FALSE)
