@@ -150,7 +150,7 @@ preds <- stack(1-cprf.pred, 1-cpgb.pred, 1-cpnn.pred, 1-cprr.pred)
 names(preds) <- c("rf","gb", "nn","rr")
 plot(preds, axes=F)
 
-# extract model predictions
+# extract model predictions at validation locations
 coordinates(gs_val) <- ~x+y
 projection(gs_val) <- projection(preds)
 gspred <- extract(preds, gs_val)
@@ -158,7 +158,7 @@ gspred <- as.data.frame(cbind(gs_val, gspred))
 
 # stacking model validation labels and features
 cp_val <- gspred$CP ## subset validation labels
-gf_val <- gspred[,37:40] ## subset validation features
+gf_val <- gspred[,40:43] ## subset validation features
 
 # Model stacking ----------------------------------------------------------
 # start doParallel to parallelize model fitting
