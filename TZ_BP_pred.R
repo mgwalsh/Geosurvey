@@ -23,7 +23,7 @@ seed <- 1385321
 set.seed(seed)
 
 # split data into calibration and validation sets
-gsIndex <- createDataPartition(gsdat$BP, p = 3/4, list = FALSE, times = 1)
+gsIndex <- createDataPartition(gsdat$BP, p = 4/5, list = FALSE, times = 1)
 gs_cal <- gsdat[ gsIndex,]
 gs_val <- gsdat[-gsIndex,]
 
@@ -76,17 +76,17 @@ tc <- trainControl(method = "cv", classProbs = TRUE, summaryFunction = twoClassS
                    allowParallel = T)
 
 # model training
-CP.gb <- train(gf_cal, cp_cal, 
+BP.gb <- train(gf_cal, cp_cal, 
                method = "gbm", 
                preProc = c("center", "scale"),
                trControl = tc,
                metric = "ROC")
 
 # model outputs & predictions
-print(CP.gb) ## ROC's accross tuning parameters
-plot(varImp(CP.gb)) ## relative variable importance
-confusionMatrix(CP.gb) ## cross-validation performance
-cpgb.pred <- predict(grids, CP.gb, type = "prob") ## spatial predictions
+print(BP.gb) ## ROC's accross tuning parameters
+plot(varImp(BP.gb)) ## relative variable importance
+confusionMatrix(BP.gb) ## cross-validation performance
+bpgb.pred <- predict(grids, BP.gb, type = "prob") ## spatial predictions
 
 stopCluster(mc)
 
@@ -103,17 +103,17 @@ tc <- trainControl(method = "cv", classProbs = TRUE,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
-CP.nn <- train(gf_cal, cp_cal, 
+BP.nn <- train(gf_cal, cp_cal, 
                method = "nnet",
                preProc = c("center","scale"), 
                trControl = tc,
                metric ="ROC")
 
 # model outputs & predictions
-print(CP.nn) ## ROC's accross tuning parameters
-plot(varImp(CP.nn)) ## relative variable importance
-confusionMatrix(CP.nn) ## cross-validation performance
-cpnn.pred <- predict(grids, CP.nn, type = "prob") ## spatial predictions
+print(BP.nn) ## ROC's accross tuning parameters
+plot(varImp(BP.nn)) ## relative variable importance
+confusionMatrix(BP.nn) ## cross-validation performance
+bpnn.pred <- predict(grids, BP.nn, type = "prob") ## spatial predictions
 
 stopCluster(mc)
 
@@ -130,7 +130,7 @@ tc <- trainControl(method = "repeatedcv", number=5, classProbs = TRUE,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
-CP.rr <- train(gf_cal, cp_cal, 
+BP.rr <- train(gf_cal, cp_cal, 
                method = "glmnet",
                family = "binomial",
                preProc = c("center","scale"), 
@@ -138,15 +138,15 @@ CP.rr <- train(gf_cal, cp_cal,
                metric ="ROC")
 
 # model outputs & predictions
-print(CP.rr) ## ROC's accross tuning parameters
-plot(varImp(CP.rr)) ## relative variable importance
-confusionMatrix(CP.rr) ## cross-validation performance
-cprr.pred <- predict(grids, CP.rr, type = "prob") ## spatial predictions
+print(BP.rr) ## ROC's accross tuning parameters
+plot(varImp(BP.rr)) ## relative variable importance
+confusionMatrix(BP.rr) ## cross-validation performance
+bprr.pred <- predict(grids, BP.rr, type = "prob") ## spatial predictions
 
 stopCluster(mc)
 
 # Model stacking setup ----------------------------------------------------
-preds <- stack(1-cprf.pred, 1-cpgb.pred, 1-cpnn.pred, 1-cprr.pred)
+preds <- stack(1-bprf.pred, 1-bpgb.pred, 1-bpnn.pred, 1-bprr.pred)
 names(preds) <- c("rf","gb", "nn","rr")
 plot(preds, axes=F)
 
@@ -157,7 +157,7 @@ gspred <- extract(preds, gs_val)
 gspred <- as.data.frame(cbind(gs_val, gspred))
 
 # stacking model validation labels and features
-cp_val <- gspred$CP ## subset validation labels
+cp_val <- gspred$BP ## subset validation labels
 gf_val <- gspred[,37:40] ## subset validation features
 
 # Model stacking ----------------------------------------------------------
@@ -171,23 +171,23 @@ tc <- trainControl(method = "repeatedcv", repeats = 5, classProbs = TRUE,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
-CP.st <- train(gf_val, cp_val,
+BP.st <- train(gf_val, cp_val,
                method = "glmnet",
                family = "binomial",
                metric = "ROC",
                trControl = tc)
 
 # model outputs & predictions
-print(CP.st)
-confusionMatrix(CP.st)
-plot(varImp(CP.st))
-cpst.pred <- predict(preds, CP.st, type = "prob") ## spatial predictions
-plot(1-cpst.pred, axes=F)
+print(BP.st)
+confusionMatrix(BP.st)
+plot(varImp(BP.st))
+bpst.pred <- predict(preds, BP.st, type = "prob") ## spatial predictions
+plot(1-bpst.pred, axes=F)
 
 stopCluster(mc)
 
 # Receiver-operator characteristics ---------------------------------------
-cp_pre <- predict(CP.st, gf_val, type="prob")
+cp_pre <- predict(BP.st, gf_val, type="prob")
 cp_val <- cbind(cp_val, cp_pre)
 cpp <- subset(cp_val, cp_val=="Y", select=c(Y))
 cpa <- subset(cp_val, cp_val=="N", select=c(Y))
@@ -196,6 +196,6 @@ cp_eval
 plot(cp_eval, 'ROC') ## plot ROC curve
 
 # Write prediction files --------------------------------------------------
-cppreds <- stack(preds, 1-cpst.pred)
-names(cppreds) <- c("cprf","cpgb","cpnn","cprr","cpst")
-writeRaster(cppreds, filename="~/Results/TZ_bppreds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+cppreds <- stack(preds, 1-bpst.pred)
+names(cppreds) <- c("bprf","bpgb","bpnn","bprr","bpst")
+writeRaster(cppreds, filename="./Results/TZ_bppreds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
