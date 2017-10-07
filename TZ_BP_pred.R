@@ -1,4 +1,4 @@
-# Stacked predictions of Tanzania presence of buildings observations
+# Stacked predictions of Tanzania presence/absence of buildings observations
 # M. Walsh, October 2017
 
 # Required packages
