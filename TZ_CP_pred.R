@@ -198,4 +198,5 @@ plot(cp_eval, 'ROC') ## plot ROC curve
 # Write prediction files --------------------------------------------------
 cppreds <- stack(preds, 1-cpst.pred)
 names(cppreds) <- c("cprf","cpgb","cpnn","cprr","cpst")
-writeRaster(cppreds, filename="~/Results/TZ_cppreds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+dir.create("Results", showWarnings=F)
+writeRaster(cppreds, filename="./Results/TZ_cppreds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
