@@ -126,7 +126,7 @@ registerDoParallel(mc)
 
 # control setup
 set.seed(1385321)
-tc <- trainControl(method = "repeatedcv", number=5, classProbs = TRUE,
+tc <- trainControl(method = "repeatedcv", repeats=5, classProbs = TRUE,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
@@ -198,5 +198,4 @@ plot(cp_eval, 'ROC') ## plot ROC curve
 # Write prediction files --------------------------------------------------
 bppreds <- stack(preds, 1-bpst.pred)
 names(bppreds) <- c("bprf","bpgb","bpnn","bprr","bpst")
-dir.create("Results", showWarnings=F)
 writeRaster(bppreds, filename="./Results/TZ_bppreds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
