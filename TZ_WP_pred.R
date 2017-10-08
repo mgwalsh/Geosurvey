@@ -192,7 +192,7 @@ cp_val <- cbind(cp_val, cp_pre)
 cpp <- subset(cp_val, cp_val=="Y", select=c(Y))
 cpa <- subset(cp_val, cp_val=="N", select=c(Y))
 cp_eval <- evaluate(p=cpp[,1], a=cpa[,1]) ## calculate ROC's on test set
-cp_eval
+threshold(cp_eval)
 plot(cp_eval, 'ROC') ## plot ROC curve
 
 # Write prediction files --------------------------------------------------
