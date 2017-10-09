@@ -191,11 +191,16 @@ cp_pre <- predict(BP.st, gf_val, type="prob")
 cp_val <- cbind(cp_val, cp_pre)
 cpp <- subset(cp_val, cp_val=="Y", select=c(Y))
 cpa <- subset(cp_val, cp_val=="N", select=c(Y))
-cp_eval <- evaluate(p=cpp[,1], a=cpa[,1]) ## calculate ROC's on test set
-threshold(cp_eval)
+cp_eval <- evaluate(p=cpp[,1], a=cpa[,1]) ## calculate ROC on test set
 plot(cp_eval, 'ROC') ## plot ROC curve
 
+# Generate cropland mask --------------------------------------------------
+t <- threshold(cp_eval) ## calculate thresholds based on ROC
+r <- matrix(c(0, t[,2], 0, t[,2], 1, 1), ncol=3, byrow=TRUE) ## set threshold value <spec_sens>
+mask <- reclassify(1-bpst.pred, r) ## reclassify stacked predictions
+plot(mask, axes=F)
+
 # Write prediction files --------------------------------------------------
-bppreds <- stack(preds, 1-bpst.pred)
-names(bppreds) <- c("bprf","bpgb","bpnn","bprr","bpst")
+bppreds <- stack(preds, 1-bpst.pred, mask)
+names(bppreds) <- c("bprf","bpgb","bpnn","bprr","bpst","bpmk")
 writeRaster(bppreds, filename="./Results/ET_bppreds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
