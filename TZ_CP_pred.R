@@ -196,11 +196,11 @@ plot(cp_eval, 'ROC') ## plot ROC curve
 
 # Generate cropland mask --------------------------------------------------
 t <- threshold(cp_eval) ## calculate thresholds based on ROC
-r <- matrix(c(0, t[,2], 0, t[,2], 1, 1), ncol=3, byrow=TRUE) ## set threshold value
+r <- matrix(c(0, t[,2], 0, t[,2], 1, 1), ncol=3, byrow=TRUE) ## set threshold value <spec_sens>
 mask <- reclassify(1-cpst.pred, r) ## reclassify stacked predictions
 plot(mask, axes=F)
 
 # Write prediction files --------------------------------------------------
-cppreds <- stack(preds, 1-cpst.pred)
-names(cppreds) <- c("cprf","cpgb","cpnn","cprr","cpst")
+cppreds <- stack(preds, 1-cpst.pred, mask)
+names(cppreds) <- c("cprf","cpgb","cpnn","cprr","cpst","cpmk")
 writeRaster(cppreds, filename="./Results/TZ_cppreds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
