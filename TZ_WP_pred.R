@@ -31,7 +31,7 @@ gs_val <- gsdat[-gsIndex,]
 cp_cal <- gs_cal$WP ## Woody vegetation cover >60%? (Y/N)
 
 # Raster calibration features
-gf_cal <- gs_cal[,7:36] ## grid features
+gf_cal <- gs_cal[,7:37] ## grid features
 
 # Random forest <randomForest> --------------------------------------------
 require(randomForest)
@@ -158,7 +158,7 @@ gspred <- as.data.frame(cbind(gs_val, gspred))
 
 # stacking model validation labels and features
 cp_val <- gspred$WP ## subset validation labels
-gf_val <- gspred[,37:40] ## subset validation features
+gf_val <- gspred[,38:41] ## subset validation features
 
 # Model stacking ----------------------------------------------------------
 # start doParallel to parallelize model fitting
