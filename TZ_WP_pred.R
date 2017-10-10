@@ -201,6 +201,6 @@ mask <- reclassify(1-wpst.pred, r) ## reclassify stacked predictions
 plot(mask, axes=F)
 
 # Write prediction files --------------------------------------------------
-wppreds <- stack(preds, 1-wpst.pred)
+wppreds <- stack(preds, 1-wpst.pred, mask)
 names(wppreds) <- c("wprf","wpgb","wpnn","wprr","wpst","wpmk")
 writeRaster(wppreds, filename="./Results/TZ_wppreds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
