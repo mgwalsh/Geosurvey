@@ -20,8 +20,8 @@ unzip("TZ_geos_2017.csv.zip", overwrite=T)
 TZ_geos <- read.table("TZ_geos_2017.csv", header=T, sep=",")
 TZ_geos <- TZ_geos[complete.cases(TZ_geos), ]
 
-TZ_geof <- as.data.frame(table(TZ_geos$CP, TZ_geos$WP, TZ_geos$BP))
-colnames(TZ_geof) <- c("CP","WP","BP","Freq")
+TZ_geof <- as.data.frame(table(TZ_geos$BP, TZ_geos$CP, TZ_geos$WP))
+colnames(TZ_geof) <- c("BP","CP","WP","Freq")
 TZ_geof
 
 # Ethiopia
@@ -30,8 +30,8 @@ unzip("ET_geos_2017.csv.zip", overwrite=T)
 ET_geos <- read.table("ET_geos_2017.csv", header=T, sep=",")
 ET_geos <- ET_geos[complete.cases(ET_geos), ]
 
-ET_geof <- as.data.frame(table(ET_geos$CP, ET_geos$WP, ET_geos$BP))
-colnames(ET_geof) <- c("CP","WP","BP","Freq")
+ET_geof <- as.data.frame(table(ET_geos$BP, ET_geos$CP, ET_geos$WP))
+colnames(ET_geof) <- c("BP","CP","WP","Freq")
 ET_geof
 
 # Nigeria
@@ -40,8 +40,8 @@ unzip("NG_geos_2017.csv.zip", overwrite=T)
 NG_geos <- read.table("NG_geos_2017.csv", header=T, sep=",")
 NG_geos <- NG_geos[complete.cases(NG_geos), ]
 
-NG_geof <- as.data.frame(table(NG_geos$CP, NG_geos$WP, NG_geos$BP))
-colnames(NG_geof) <- c("CP","WP","BP","Freq")
+NG_geof <- as.data.frame(table(NG_geos$BP, NG_geos$CP, NG_geos$WP))
+colnames(NG_geof) <- c("BP","CP","WP","Freq")
 NG_geof
 
 # Ghana
@@ -50,8 +50,8 @@ unzip("GH_geos_2017.csv.zip", overwrite=T)
 GH_geos <- read.table("GH_geos_2017.csv", header=T, sep=",")
 GH_geos <- GH_geos[complete.cases(GH_geos), ]
 
-GH_geof <- as.data.frame(table(GH_geos$CP, GH_geos$WP, GH_geos$BP))
-colnames(GH_geof) <- c("CP","WP","BP","Freq")
+GH_geof <- as.data.frame(table(GH_geos$BP, GH_geos$CP, GH_geos$WP))
+colnames(GH_geof) <- c("BP","CP","WP","Freq")
 GH_geof
 
 # <alluvial> diagrams -----------------------------------------------------
