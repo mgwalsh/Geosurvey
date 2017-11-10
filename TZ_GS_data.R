@@ -38,8 +38,15 @@ geosgrid <- extract(grids, geos)
 gsdat <- as.data.frame(cbind(geos, geosgrid)) 
 gsdat <- na.omit(gsdat) ## includes only complete cases
 gsdat <- gsdat[!duplicated(gsdat), ] ## removes any duplicates 
-gsdat$user <- sub("@.*", "", as.character(gsdat$observer))
+gsdat$user <- sub("@.*", "", as.character(gsdat$observer)) ## shortens observer ID's
 
 # Write output file -------------------------------------------------------
 dir.create("Results", showWarnings=F)
 write.csv(gsdat, "./Results/TZ_gsdat.csv", row.names = FALSE)
+
+# Contributions -----------------------------------------------------------
+require(wordcloud)
+gscon <- as.data.frame(table(gsdat$user))
+set.seed(12365813)
+wordcloud(gscon$Var1, freq=gscon$Freq, scale=c(3,0.1), random.order=T)
+
