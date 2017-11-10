@@ -38,6 +38,7 @@ geosgrid <- extract(grids, geos)
 gsdat <- as.data.frame(cbind(geos, geosgrid)) 
 gsdat <- na.omit(gsdat) ## includes only complete cases
 gsdat <- gsdat[!duplicated(gsdat), ] ## removes any duplicates 
+gsdat$user <- sub("@.*", "", as.character(gsdat$observer))
 
 # Write output file -------------------------------------------------------
 dir.create("Results", showWarnings=F)
