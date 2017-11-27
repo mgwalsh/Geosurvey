@@ -158,7 +158,7 @@ gspred <- as.data.frame(cbind(gs_val, gspred))
 
 # stacking model validation labels and features
 cp_val <- gspred$CP ## subset validation labels
-gf_val <- gspred[,38:41] ## subset validation features
+gf_val <- gspred[,47:50] ## subset validation features
 
 # Model stacking ----------------------------------------------------------
 # start doParallel to parallelize model fitting
