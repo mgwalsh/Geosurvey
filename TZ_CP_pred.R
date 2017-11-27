@@ -31,7 +31,7 @@ gs_val <- gsdat[-gsIndex,]
 cp_cal <- gs_cal$CP ## Croplands present? (Y/N)
 
 # Raster calibration features
-gf_cal <- gs_cal[,7:37] ## grid covariates
+gf_cal <- gs_cal[,7:45] ## grid covariates
 
 # Random forest <randomForest> --------------------------------------------
 require(randomForest)
