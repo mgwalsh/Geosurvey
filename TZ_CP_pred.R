@@ -223,4 +223,4 @@ w <- leaflet() %>%
 w ## plot widget 
 
 # save widget
-saveWidget(w, 'TZ_CP_prob.html', selfcontained = FALSE)
+saveWidget(w, 'TZ_CP_prob.html', selfcontained = T)
