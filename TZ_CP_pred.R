@@ -221,4 +221,6 @@ w <- leaflet() %>%
       addRasterImage(pred, colors = pal, opacity = 0.5) %>%
       addLegend(pal = pal, values = values(pred), title = "Cropland prob")
 w ## plot widget 
-saveWidget(w, 'TZ_CP_prob.html', selfcontained = TRUE)
+
+# save widget
+saveWidget(w, 'TZ_CP_prob.html', selfcontained = FALSE)
