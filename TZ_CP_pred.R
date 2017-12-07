@@ -215,7 +215,8 @@ pred <- 1-cpst.pred ## GeoSurvey ensemble probability
 pal <- colorBin("Greens", domain = 0:1) 
 
 # render map
-leaflet() %>% 
-  addTiles() %>% # default basemap: OSM
-  addRasterImage(pred, colors = pal, opacity = 0.5) %>%
-  addLegend(pal = pal, values = values(pred), title = "Cropland prob")
+m <- leaflet() %>% 
+      addTiles() %>% # default basemap: OSM
+      addRasterImage(pred, colors = pal, opacity = 0.5) %>%
+      addLegend(pal = pal, values = values(pred), title = "Cropland prob")
+m
