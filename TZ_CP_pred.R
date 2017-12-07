@@ -208,6 +208,7 @@ writeRaster(cppreds, filename="./Results/TZ_cppreds_2017.tif", datatype="FLT4S",
 # Prediction map widget ---------------------------------------------------
 require(leaflet)
 
+# ensemble prediction map 
 pred <- 1-cpst.pred ## GeoSurvey ensemble probability
 
 # set color pallet
