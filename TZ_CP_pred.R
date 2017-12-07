@@ -31,7 +31,7 @@ gs_val <- gsdat[-gsIndex,]
 cp_cal <- gs_cal$CP ## Croplands present? (Y/N)
 
 # Raster calibration features
-gf_cal <- gs_cal[,7:45] ## grid covariates
+gf_cal <- gs_cal[,7:44] ## grid covariates
 
 # Random forest <randomForest> --------------------------------------------
 require(randomForest)
@@ -158,7 +158,7 @@ gspred <- as.data.frame(cbind(gs_val, gspred))
 
 # stacking model validation labels and features
 cp_val <- gspred$CP ## subset validation labels
-gf_val <- gspred[,47:50] ## subset validation features
+gf_val <- gspred[,46:49] ## subset validation features
 
 # Model stacking ----------------------------------------------------------
 # start doParallel to parallelize model fitting
