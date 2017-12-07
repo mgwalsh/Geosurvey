@@ -205,12 +205,14 @@ cppreds <- stack(preds, 1-cpst.pred, mask)
 names(cppreds) <- c("cprf","cpgb","cpnn","cprr","cpst","cpmk")
 writeRaster(cppreds, filename="./Results/TZ_cppreds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
-# Map widget --------------------------------------------------------------
+# Prediction map widget ---------------------------------------------------
 require(leaflet)
-pal <- colorNumeric(c("#0C2C84", "#41B6C4", "#FFFFCC"), values(mask),
-                    na.color = "transparent")
+
+# set color pallet
+pal <- colorBin("Greens", domain = 0:1) 
+
 # render map
 leaflet() %>% 
-  addTiles() %>%
-  addRasterImage(mask, colors = pal, opacity = 0.4) %>%
-  addLegend(pal = pal, values = values(mask), title = "Cropland mask")
+  addTiles() %>% # default basemap: OSM
+  addRasterImage(mask, colors = pal, opacity = 0.6) %>%
+  addLegend(pal = pal, values = values(mask), title = "Cropland prob")
