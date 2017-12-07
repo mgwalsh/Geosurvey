@@ -208,11 +208,13 @@ writeRaster(cppreds, filename="./Results/TZ_cppreds_2017.tif", datatype="FLT4S",
 # Prediction map widget ---------------------------------------------------
 require(leaflet)
 
+pred <- 1-cpst.pred ## GeoSurvey ensemble probability
+
 # set color pallet
 pal <- colorBin("Greens", domain = 0:1) 
 
 # render map
 leaflet() %>% 
   addTiles() %>% # default basemap: OSM
-  addRasterImage(mask, colors = pal, opacity = 0.6) %>%
-  addLegend(pal = pal, values = values(mask), title = "Cropland prob")
+  addRasterImage(pred, colors = pal, opacity = 0.6) %>%
+  addLegend(pal = pal, values = values(pred), title = "Cropland prob")
