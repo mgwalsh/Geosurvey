@@ -204,3 +204,13 @@ plot(mask, axes=F)
 cppreds <- stack(preds, 1-cpst.pred, mask)
 names(cppreds) <- c("cprf","cpgb","cpnn","cprr","cpst","cpmk")
 writeRaster(cppreds, filename="./Results/TZ_cppreds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+
+# Map widget --------------------------------------------------------------
+require(leaflet)
+pal <- colorNumeric(c("#0C2C84", "#41B6C4", "#FFFFCC"), values(mask),
+                    na.color = "transparent")
+# render map
+leaflet() %>% 
+  addTiles() %>%
+  addRasterImage(mask, colors = pal, opacity = 0.4) %>%
+  addLegend(pal = pal, values = values(mask), title = "Cropland mask")
