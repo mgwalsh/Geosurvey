@@ -217,10 +217,10 @@ pal <- colorBin("Greens", domain = 0:1)
 
 # render map
 w <- leaflet() %>% 
-      addTiles() %>% # default basemap: OSM
+      addProviderTiles(providers$OpenStreetMap.HOT) %>%
       addRasterImage(pred, colors = pal, opacity = 0.5) %>%
       addLegend(pal = pal, values = values(pred), title = "Cropland prob")
 w ## plot widget 
 
 # save widget
-saveWidget(w, 'TZ_CP_prob.html', selfcontained = T)
+saveWidget(w, 'TZ_CP_prob.html', selfcontained = F)
