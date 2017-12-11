@@ -44,6 +44,19 @@ gsdat$user <- sub("@.*", "", as.character(gsdat$observer)) ## shortens observer 
 dir.create("Results", showWarnings=F)
 write.csv(gsdat, "./Results/TZ_gsdat.csv", row.names = FALSE)
 
+# Geosurvey map widget ----------------------------------------------------
+require(leaflet)
+require(htmlwidgets)
+
+# render map
+w <- leaflet() %>% 
+  addProviderTiles(providers$OpenStreetMap.HOT) %>%
+  addCircleMarkers(gsdat$lon, gsdat$lat, clusterOptions = markerClusterOptions())
+w ## plot widget 
+
+# save widget
+saveWidget(w, 'TZ_GS.html', selfcontained = F)
+
 # Contributions -----------------------------------------------------------
 require(wordcloud)
 gscon <- as.data.frame(table(gsdat$user))
