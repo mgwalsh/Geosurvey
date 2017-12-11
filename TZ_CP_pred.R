@@ -219,7 +219,8 @@ pal <- colorBin("Greens", domain = 0:1)
 w <- leaflet() %>% 
       addProviderTiles(providers$OpenStreetMap.HOT) %>%
       addRasterImage(pred, colors = pal, opacity = 0.4) %>%
-      addLegend(pal = pal, values = values(pred), title = "Cropland prob")
+      addLegend(pal = pal, values = values(pred), title = "Cropland prob") %>%
+      addCircleMarkers(gsdat$lon, gsdat$lat, clusterOptions = markerClusterOptions())
 w ## plot widget 
 
 # save widget
