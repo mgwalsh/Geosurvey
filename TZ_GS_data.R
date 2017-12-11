@@ -55,11 +55,10 @@ w <- leaflet() %>%
 w ## plot widget 
 
 # save widget
-saveWidget(w, 'TZ_GS.html', selfcontained = F)
+saveWidget(w, 'TZ_GS.html', selfcontained = T)
 
 # Contributions -----------------------------------------------------------
 require(wordcloud)
 gscon <- as.data.frame(table(gsdat$user))
 set.seed(12365813)
 wordcloud(gscon$Var1, freq=gscon$Freq, scale=c(3,0.1), random.order=T)
-
