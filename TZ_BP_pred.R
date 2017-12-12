@@ -204,3 +204,23 @@ plot(mask, axes=F)
 bppreds <- stack(preds, 1-bpst.pred, mask)
 names(bppreds) <- c("bprf","bpgb","bpnn","bprr","bpst","bpmk")
 writeRaster(bppreds, filename="./Results/TZ_bppreds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+
+# Prediction map widget ---------------------------------------------------
+require(leaflet)
+require(htmlwidgets)
+
+# ensemble prediction map 
+pred <- 1-bpst.pred ## GeoSurvey ensemble probability
+
+# set color pallet
+pal <- colorBin("Reds", domain = 0:1) 
+
+# render map
+w <- leaflet() %>% 
+  addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
+  addRasterImage(pred, colors = pal, opacity = 0.3) %>%
+  addLegend(pal = pal, values = values(pred), title = "Building prob")
+w ## plot widget 
+
+# save widget
+saveWidget(w, 'TZ_BP_prob.html', selfcontained = T)
