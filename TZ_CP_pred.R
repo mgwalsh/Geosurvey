@@ -217,7 +217,7 @@ pal <- colorBin("Greens", domain = 0:1)
 
 # render map
 w <- leaflet() %>% 
-      addProviderTiles(providers$OpenStreetMap.BlackAndWhite) %>%
+      addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
       addRasterImage(pred, colors = pal, opacity = 0.3) %>%
       addLegend(pal = pal, values = values(pred), title = "Cropland prob")
 w ## plot widget 
