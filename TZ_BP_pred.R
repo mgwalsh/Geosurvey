@@ -218,7 +218,7 @@ pal <- colorBin("Reds", domain = 0:1)
 # render map
 w <- leaflet() %>% 
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
-  addRasterImage(pred, colors = pal, opacity = 0.3) %>%
+  addRasterImage(pred, colors = pal, opacity = 0.5) %>%
   addLegend(pal = pal, values = values(pred), title = "Building prob")
 w ## plot widget 
 
