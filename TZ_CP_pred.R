@@ -220,8 +220,8 @@ plot(cp_eall, 'ROC') ## plot ROC curve
 t <- threshold(cp_eval) ## calculate thresholds based on validation-set ROC
 r <- matrix(c(0, t[,2], 0, t[,2], 1, 1), ncol=3, byrow = T) ## set threshold value <spec_sens>
 cp_all$mask <- ifelse(cp_all$Y > t[,2], "Y", "N") ## validation-set based classification
-table(cp_all$cp_all, cp_all$mask) # classification table
-mask <- reclassify(1-cpst.pred, r) ## classify stacked spatial predictions
+table(cp_all$cp_all, cp_all$mask) # confusion/classification table
+mask <- reclassify(1-cpst.pred, r) ## classify stacked spatial predictions to produce mask
 plot(mask, axes=F)
 
 # Write prediction files --------------------------------------------------
