@@ -212,12 +212,12 @@ cp_pre <- predict(CP.st, gf_all, type="prob")
 cp_all <- cbind(cp_all, cp_pre)
 cpp <- subset(cp_all, cp_all=="Y", select=c(Y))
 cpa <- subset(cp_all, cp_all=="N", select=c(Y))
-cp_eall <- evaluate(p=cpp[,1], a=cpa[,1]) ## calculate ROC on test set
+cp_eall <- evaluate(p=cpp[,1], a=cpa[,1]) ## calculate ROC on complete set
 cp_eall
 plot(cp_eall, 'ROC') ## plot ROC curve
 
 # Generate cropland mask --------------------------------------------------
-t <- threshold(cp_eall) ## calculate thresholds based on complete-set ROC
+t <- threshold(cp_eall) ## calculate thresholds based on the complete-set ROC
 r <- matrix(c(0, t[,2], 0, t[,2], 1, 1), ncol=3, byrow = T) ## set threshold value <spec_sens>
 mask <- reclassify(1-cpst.pred, r) ## reclassify stacked predictions
 plot(mask, axes=F)
