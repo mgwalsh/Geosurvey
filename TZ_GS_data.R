@@ -44,13 +44,13 @@ gsdat$user <- sub("@.*", "", as.character(gsdat$observer)) ## shortens observer 
 dir.create("Results", showWarnings=F)
 write.csv(gsdat, "./Results/TZ_gsdat.csv", row.names = FALSE)
 
-# Geosurvey map widget ----------------------------------------------------
+# GeoSurvey map widget ----------------------------------------------------
 require(leaflet)
 require(htmlwidgets)
 
 # render map
 w <- leaflet() %>% 
-  addProviderTiles(providers$OpenStreetMap.HOT) %>%
+  addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
   addCircleMarkers(gsdat$lon, gsdat$lat, clusterOptions = markerClusterOptions())
 w ## plot widget 
 
