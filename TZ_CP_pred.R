@@ -217,11 +217,11 @@ cp_eall
 plot(cp_eall, 'ROC') ## plot ROC curve
 
 # Generate cropland mask --------------------------------------------------
-t <- threshold(cp_eall) ## calculate thresholds based on the complete-set ROC
+t <- threshold(cp_eval) ## calculate thresholds based on validation-set ROC
 r <- matrix(c(0, t[,2], 0, t[,2], 1, 1), ncol=3, byrow = T) ## set threshold value <spec_sens>
-cp_all$mask <- ifelse(cp_all$Y > t[,2], "Y", "N") ## validation-set classification
+cp_all$mask <- ifelse(cp_all$Y > t[,2], "Y", "N") ## validation-set based classification
 table(cp_all$cp_all, cp_all$mask) # classification table
-mask <- reclassify(1-cpst.pred, r) ## reclassify stacked predictions
+mask <- reclassify(1-cpst.pred, r) ## classify stacked spatial predictions
 plot(mask, axes=F)
 
 # Write prediction files --------------------------------------------------
