@@ -2,10 +2,15 @@
 # M. Walsh, September 2017
 
 # Required packages
-# install.packages(c("devtools","caret","plyr","doParallel")), dependencies=TRUE)
+# install.packages(c("devtools","caret","MASS","randomForest","gbm","nnet","glmnet","plyr","doParallel","dismo")), dependencies=TRUE)
 suppressPackageStartupMessages({
   require(devtools)
   require(caret)
+  require(MASS)
+  require(randomForest)
+  require(gbm)
+  require(nnet)
+  require(glmnet)
   require(plyr)
   require(doParallel)
   require(dismo)
@@ -33,9 +38,36 @@ cp_cal <- gs_cal$CP ## Croplands present? (Y/N)
 # Raster calibration features
 gf_cal <- gs_cal[,7:44] ## grid covariates
 
-# Random forest <randomForest> --------------------------------------------
-require(randomForest)
+# Central place theory model <glm> -----------------------------------------
+# select central place variables
+gf_cpv <- gs_cal[,13:18] ## central-place covariates
 
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+set.seed(1385321)
+tc <- trainControl(method = "repeatedcv", repeats=5, classProbs = T,
+                   summaryFunction = twoClassSummary, allowParallel = T)
+
+# model training
+CP.gl <- train(gf_cpv, cp_cal, 
+               method = "glm",
+               family = "binomial",
+               preProc = c("center","scale"), 
+               trControl = tc,
+               metric ="ROC")
+
+# model outputs & predictions
+print(CP.gl) ## ROC's accross cross-validation
+plot(varImp(CP.gl)) ## relative variable importance
+confusionMatrix(CP.gl) ## cross-validation performance
+cpgl.pred <- predict(grids, CP.gl, type = "prob") ## spatial predictions
+
+stopCluster(mc)
+
+# Random forest <randomForest> --------------------------------------------
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -64,8 +96,6 @@ cprf.pred <- predict(grids, CP.rf, type = "prob") ## spatial predictions
 stopCluster(mc)
 
 # Generalized boosting <gbm> ----------------------------------------------
-require(gbm)
-
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -91,8 +121,6 @@ cpgb.pred <- predict(grids, CP.gb, type = "prob") ## spatial predictions
 stopCluster(mc)
 
 # Neural network <nnet> ---------------------------------------------------
-require(nnet)
-
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -117,37 +145,9 @@ cpnn.pred <- predict(grids, CP.nn, type = "prob") ## spatial predictions
 
 stopCluster(mc)
 
-# Regularized regression <glmnet> -----------------------------------------
-require(glmnet)
-
-# start doParallel to parallelize model fitting
-mc <- makeCluster(detectCores())
-registerDoParallel(mc)
-
-# control setup
-set.seed(1385321)
-tc <- trainControl(method = "repeatedcv", repeats=5, classProbs = TRUE,
-                   summaryFunction = twoClassSummary, allowParallel = T)
-
-# model training
-CP.rr <- train(gf_cal, cp_cal, 
-               method = "glmnet",
-               family = "binomial",
-               preProc = c("center","scale"), 
-               trControl = tc,
-               metric ="ROC")
-
-# model outputs & predictions
-print(CP.rr) ## ROC's accross tuning parameters
-plot(varImp(CP.rr)) ## relative variable importance
-confusionMatrix(CP.rr) ## cross-validation performance
-cprr.pred <- predict(grids, CP.rr, type = "prob") ## spatial predictions
-
-stopCluster(mc)
-
 # Model stacking setup ----------------------------------------------------
-preds <- stack(1-cprf.pred, 1-cpgb.pred, 1-cpnn.pred, 1-cprr.pred)
-names(preds) <- c("rf","gb", "nn","rr")
+preds <- stack(1-cpgl.pred, 1-cprf.pred, 1-cpgb.pred, 1-cpnn.pred)
+names(preds) <- c("gl","rf", "gb","nn")
 plot(preds, axes=F)
 
 # extract model predictions
