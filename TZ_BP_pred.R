@@ -33,6 +33,35 @@ cp_cal <- gs_cal$BP ## Buildings present? (Y/N)
 # Raster calibration features
 gf_cal <- gs_cal[,7:44] ## grid features
 
+# Central place theory model <glm> -----------------------------------------
+# select central place variables
+gf_cpv <- gs_cal[,13:18] ## central-place covariates
+
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+set.seed(1385321)
+tc <- trainControl(method = "repeatedcv", repeats=5, classProbs = T,
+                   summaryFunction = twoClassSummary, allowParallel = T)
+
+# model training
+BP.gl <- train(gf_cpv, cp_cal, 
+               method = "glm",
+               family = "binomial",
+               preProc = c("center","scale"), 
+               trControl = tc,
+               metric ="ROC")
+
+# model outputs & predictions
+print(CP.gl) ## ROC's accross cross-validation
+plot(varImp(CP.gl)) ## relative variable importance
+confusionMatrix(CP.gl) ## cross-validation performance
+cpgl.pred <- predict(grids, CP.gl, type = "prob") ## spatial predictions
+
+stopCluster(mc)
+
 # Random forest <randomForest> --------------------------------------------
 require(randomForest)
 
@@ -117,37 +146,9 @@ bpnn.pred <- predict(grids, BP.nn, type = "prob") ## spatial predictions
 
 stopCluster(mc)
 
-# Regularized regression <glmnet> -----------------------------------------
-require(glmnet)
-
-# start doParallel to parallelize model fitting
-mc <- makeCluster(detectCores())
-registerDoParallel(mc)
-
-# control setup
-set.seed(1385321)
-tc <- trainControl(method = "repeatedcv", repeats=5, classProbs = TRUE,
-                   summaryFunction = twoClassSummary, allowParallel = T)
-
-# model training
-BP.rr <- train(gf_cal, cp_cal, 
-               method = "glmnet",
-               family = "binomial",
-               preProc = c("center","scale"), 
-               trControl = tc,
-               metric ="ROC")
-
-# model outputs & predictions
-print(BP.rr) ## ROC's accross tuning parameters
-plot(varImp(BP.rr)) ## relative variable importance
-confusionMatrix(BP.rr) ## cross-validation performance
-bprr.pred <- predict(grids, BP.rr, type = "prob") ## spatial predictions
-
-stopCluster(mc)
-
 # Model stacking setup ----------------------------------------------------
 preds <- stack(1-bprf.pred, 1-bpgb.pred, 1-bpnn.pred, 1-bprr.pred)
-names(preds) <- c("rf","gb", "nn","rr")
+names(preds) <- c("gl","gb", "nn","rr")
 plot(preds, axes=F)
 
 # extract model predictions
