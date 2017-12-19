@@ -60,10 +60,10 @@ BP.gl <- train(gf_cpv, cp_cal,
                metric ="ROC")
 
 # model outputs & predictions
-print(CP.gl) ## ROC's accross cross-validation
-plot(varImp(CP.gl)) ## relative variable importance
-confusionMatrix(CP.gl) ## cross-validation performance
-cpgl.pred <- predict(grids, CP.gl, type = "prob") ## spatial predictions
+print(BP.gl) ## ROC's accross cross-validation
+plot(varImp(BP.gl)) ## relative variable importance
+confusionMatrix(BP.gl) ## cross-validation performance
+bpgl.pred <- predict(grids, BP.gl, type = "prob") ## spatial predictions
 
 stopCluster(mc)
 
