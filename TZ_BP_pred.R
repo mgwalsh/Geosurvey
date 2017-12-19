@@ -40,7 +40,7 @@ gf_cal <- gs_cal[,7:44] ## grid features
 
 # Central place theory model <glm> -----------------------------------------
 # select central place variables
-gf_cpv <- gs_cal[,13:18] ## central-place covariates
+gf_cpv <- gs_cal[c(10:19,20,22)] ## central-place covariates
 
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
@@ -146,8 +146,8 @@ bpnn.pred <- predict(grids, BP.nn, type = "prob") ## spatial predictions
 stopCluster(mc)
 
 # Model stacking setup ----------------------------------------------------
-preds <- stack(1-bprf.pred, 1-bpgb.pred, 1-bpnn.pred, 1-bprr.pred)
-names(preds) <- c("gl","gb", "nn","rr")
+preds <- stack(1-bpgl.pred, 1-bprf.pred, 1-bpgb.pred, 1-bpnn.pred)
+names(preds) <- c("gl","rf", "gb","nn")
 plot(preds, axes=F)
 
 # extract model predictions
