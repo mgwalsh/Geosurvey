@@ -2,10 +2,15 @@
 # M. Walsh, October 2017
 
 # Required packages
-# install.packages(c("devtools","caret","plyr","doParallel")), dependencies=TRUE)
+# install.packages(c("devtools","caret","MASS","randomForest","gbm","nnet","glmnet","plyr","doParallel","dismo")), dependencies=TRUE)
 suppressPackageStartupMessages({
   require(devtools)
   require(caret)
+  require(MASS)
+  require(randomForest)
+  require(gbm)
+  require(nnet)
+  require(glmnet)
   require(plyr)
   require(doParallel)
   require(dismo)
@@ -63,8 +68,6 @@ cpgl.pred <- predict(grids, CP.gl, type = "prob") ## spatial predictions
 stopCluster(mc)
 
 # Random forest <randomForest> --------------------------------------------
-require(randomForest)
-
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -93,8 +96,6 @@ bprf.pred <- predict(grids, BP.rf, type = "prob") ## spatial predictions
 stopCluster(mc)
 
 # Generalized boosting <gbm> ----------------------------------------------
-require(gbm)
-
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -120,8 +121,6 @@ bpgb.pred <- predict(grids, BP.gb, type = "prob") ## spatial predictions
 stopCluster(mc)
 
 # Neural network <nnet> ---------------------------------------------------
-require(nnet)
-
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
