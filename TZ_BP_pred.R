@@ -1,8 +1,8 @@
-# Stacked predictions of Tanzania presence/absence of buildings observations
+# Stacked predictions of Tanzania presence/absence of building observations
 # M. Walsh, October 2017
 
 # Required packages
-# install.packages(c("devtools","caret","MASS","randomForest","gbm","nnet","glmnet","plyr","doParallel","dismo")), dependencies=TRUE)
+# install.packages(c("devtools","caret","MASS","randomForest","gbm","nnet","glmnet","plyr","doParallel","dismo")), dependencies=T)
 suppressPackageStartupMessages({
   require(devtools)
   require(caret)
@@ -28,14 +28,14 @@ seed <- 1385321
 set.seed(seed)
 
 # split data into calibration and validation sets
-gsIndex <- createDataPartition(gsdat$BP, p = 4/5, list = FALSE, times = 1)
+gsIndex <- createDataPartition(gsdat$BP, p = 4/5, list = F, times = 1)
 gs_cal <- gsdat[ gsIndex,]
 gs_val <- gsdat[-gsIndex,]
 
 # GeoSurvey calibration labels
 cp_cal <- gs_cal$BP ## Buildings present? (Y/N)
 
-# Raster calibration features
+# raster calibration features
 gf_cal <- gs_cal[,7:44] ## grid features
 
 # Central place theory model <glm> -----------------------------------------
@@ -74,7 +74,7 @@ registerDoParallel(mc)
 
 # control setup
 set.seed(1385321)
-tc <- trainControl(method = "cv", classProbs = TRUE,
+tc <- trainControl(method = "cv", classProbs = T,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
@@ -102,7 +102,7 @@ registerDoParallel(mc)
 
 # control setup
 set.seed(1385321)
-tc <- trainControl(method = "cv", classProbs = TRUE, summaryFunction = twoClassSummary,
+tc <- trainControl(method = "cv", classProbs = T, summaryFunction = twoClassSummary,
                    allowParallel = T)
 
 # model training
@@ -127,7 +127,7 @@ registerDoParallel(mc)
 
 # control setup
 set.seed(1385321)
-tc <- trainControl(method = "cv", classProbs = TRUE,
+tc <- trainControl(method = "cv", classProbs = T,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
@@ -167,7 +167,7 @@ registerDoParallel(mc)
 
 # control setup
 set.seed(1385321)
-tc <- trainControl(method = "repeatedcv", repeats = 5, classProbs = TRUE, 
+tc <- trainControl(method = "repeatedcv", repeats = 5, classProbs = T, 
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
@@ -217,7 +217,7 @@ plot(cp_eall, 'ROC') ## plot ROC curve
 
 # Generate building mask --------------------------------------------------
 t <- threshold(cp_eval) ## calculate thresholds based on ROC
-r <- matrix(c(0, t[,2], 0, t[,2], 1, 1), ncol=3, byrow=TRUE) ## set threshold value <spec_sens>
+r <- matrix(c(0, t[,2], 0, t[,2], 1, 1), ncol=3, byrow = T) ## set threshold value <spec_sens>
 mask <- reclassify(1-bpst.pred, r) ## reclassify stacked predictions
 plot(mask, axes=F)
 
