@@ -7,6 +7,8 @@ suppressPackageStartupMessages({
   require(downloader)
   require(rgdal)
   require(raster)
+  require(leaflet)
+  require(htmlwidgets)
 })
 
 # Data downloads -----------------------------------------------------------
@@ -45,9 +47,6 @@ dir.create("Results", showWarnings = F)
 write.csv(gsdat, "./Results/TZ_gsdat.csv", row.names = F)
 
 # GeoSurvey map widget ----------------------------------------------------
-require(leaflet)
-require(htmlwidgets)
-
 # render map
 w <- leaflet() %>% 
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
