@@ -36,12 +36,12 @@ crpsgrid <- extract(grids, crps)
 crps <- as.data.frame(crps)
 crps <- cbind.data.frame(crps, crpsgrid)
 crps <- unique(na.omit(crps)) ## includes only unique & complete records
-crps <- crps[ which(crps$MAP > 0),] ## includes only records where CHIRPS data is not NA's
+crps <- crps[ which(crps$MAP > 0 & crps$NPPa > 0),] ## includes MODIS/CHIRPS data is not NA
 
 # Quantile regressions ----------------------------------------------------
 # Long-term Average Net Primary Productivity (NPP, kg/ha yr)
 # 2000-2016 MODIS MOD17A3 data (ftp://africagrids.net/500m/MOD17A3H)
-NPPa <- rq(I(NPPa*10000)~CP+WP+CP*WP+CP*MAP+WP*MAP, tau=c(0.05,0.5,0.95), data=crps)
+NPPa <- rq(I(NPPa*10000)~CP+WP+CP*MAP+WP*MAP, tau=c(0.05,0.5,0.95), data=crps)
 print(NPPa)
 
 # Rain Use Efficiency (NPPa/MAP)
