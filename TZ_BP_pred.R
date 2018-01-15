@@ -24,7 +24,7 @@ suppressPackageStartupMessages({
 rm(list=setdiff(ls(), c("gsdat","grids","glist"))) ## scrub extraneous objects in memory
 
 # set calibration/validation set randomization seed
-seed <- 1385321
+seed <- 12358
 set.seed(seed)
 
 # split data into calibration and validation sets
