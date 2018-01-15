@@ -52,17 +52,42 @@ tc <- trainControl(method = "repeatedcv", repeats=5, classProbs = T,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
-BP.gl <- train(gf_cpv, cp_cal, 
-               method = "glmStepAIC",
-               family = "binomial",
-               preProc = c("center","scale"), 
-               trControl = tc,
-               metric ="ROC")
+BP1.gl <- train(gf_cpv, cp_cal, 
+                method = "glmStepAIC",
+                family = "binomial",
+                preProc = c("center","scale"), 
+                trControl = tc,
+                metric ="ROC")
 
 # model outputs & predictions
-summary(BP.gl)
-print(BP.gl) ## ROC's accross cross-validation
-bpgl.pred <- predict(grids, BP.gl, type = "prob") ## spatial predictions
+summary(BP1.gl)
+print(BP1.gl) ## ROC's accross cross-validation
+bpg1.pred <- predict(grids, BP1.gl, type = "prob") ## spatial predictions
+
+stopCluster(mc)
+
+# GLM with all covariates -------------------------------------------------
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+set.seed(1385321)
+tc <- trainControl(method = "repeatedcv", repeats=5, classProbs = T,
+                   summaryFunction = twoClassSummary, allowParallel = T)
+
+# model training
+BP2.gl <- train(gf_cal, cp_cal, 
+                method = "glmStepAIC",
+                family = "binomial",
+                preProc = c("center","scale"), 
+                trControl = tc,
+                metric ="ROC")
+
+# model outputs & predictions
+summary(BP2.gl)
+print(BP2.gl) ## ROC's accross cross-validation
+bpg2.pred <- predict(grids, BP2.gl, type = "prob") ## spatial predictions
 
 stopCluster(mc)
 
