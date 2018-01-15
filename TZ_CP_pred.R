@@ -24,7 +24,7 @@ suppressPackageStartupMessages({
 rm(list=setdiff(ls(), c("gsdat","grids","glist"))) ## scrub extraneous objects in memory
 
 # set calibration/validation set randomization seed
-seed <- 1385321
+seed <- 123581
 set.seed(seed)
 
 # split data into calibration and validation sets
@@ -36,11 +36,11 @@ gs_val <- gsdat[-gsIndex,]
 cp_cal <- gs_cal$CP ## Croplands present? (Y/N)
 
 # Raster calibration features
-gf_cal <- gs_cal[,7:44] ## grid covariates
+gf_cal <- gs_cal[,10:47] ## grid covariates
 
 # Central place theory model <glm> -----------------------------------------
 # select central place variables
-gf_cpv <- gs_cal[,13:18] ## central-place covariates
+gf_cpv <- gs_cal[c(13:22,41)] ## central-place covariates & slope
 
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
@@ -53,7 +53,7 @@ tc <- trainControl(method = "repeatedcv", repeats=5, classProbs = T,
 
 # model training
 CP.gl <- train(gf_cpv, cp_cal, 
-               method = "glm",
+               method = "glmStepAIC",
                family = "binomial",
                preProc = c("center","scale"), 
                trControl = tc,
