@@ -36,11 +36,11 @@ gs_val <- gsdat[-gsIndex,]
 cp_cal <- gs_cal$BP ## Buildings present? (Y/N)
 
 # raster calibration features
-gf_cal <- gs_cal[,7:44] ## grid features
+gf_cal <- gs_cal[,10:47] ## grid covariates
 
 # Central place theory model <glm> -----------------------------------------
 # select central place variables
-gf_cpv <- gs_cal[c(10,13:17)] ## central-place covariates
+gf_cpv <- gs_cal[c(13:22,41)] ## central-place covariates & slope
 
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
@@ -63,7 +63,6 @@ BP.gl <- train(gf_cpv, cp_cal,
 summary(BP.gl)
 print(BP.gl) ## ROC's accross cross-validation
 plot(varImp(BP.gl)) ## relative variable importance
-confusionMatrix(BP.gl) ## cross-validation performance
 bpgl.pred <- predict(grids, BP.gl, type = "prob") ## spatial predictions
 
 stopCluster(mc)
