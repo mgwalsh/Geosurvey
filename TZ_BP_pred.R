@@ -114,7 +114,6 @@ BP.rf <- train(gf_cal, cp_cal,
 # model outputs & predictions
 print(BP.rf) ## ROC's accross tuning parameters
 plot(varImp(BP.rf)) ## relative variable importance
-confusionMatrix(BP.rf) ## cross-validation performance
 bprf.pred <- predict(grids, BP.rf, type = "prob") ## spatial predictions
 
 stopCluster(mc)
@@ -139,7 +138,6 @@ BP.gb <- train(gf_cal, cp_cal,
 # model outputs & predictions
 print(BP.gb) ## ROC's accross tuning parameters
 plot(varImp(BP.gb)) ## relative variable importance
-confusionMatrix(BP.gb) ## cross-validation performance
 bpgb.pred <- predict(grids, BP.gb, type = "prob") ## spatial predictions
 
 stopCluster(mc)
@@ -164,15 +162,14 @@ BP.nn <- train(gf_cal, cp_cal,
 # model outputs & predictions
 print(BP.nn) ## ROC's accross tuning parameters
 plot(varImp(BP.nn)) ## relative variable importance
-confusionMatrix(BP.nn) ## cross-validation performance
 bpnn.pred <- predict(grids, BP.nn, type = "prob") ## spatial predictions
 
 stopCluster(mc)
 
 # Model stacking setup ----------------------------------------------------
-preds <- stack(1-bpgl.pred, 1-bprf.pred, 1-bpgb.pred, 1-bpnn.pred)
-names(preds) <- c("gl","rf", "gb","nn")
-plot(preds, axes=F)
+preds <- stack(1-bpg1.pred, 1-bpg2.pred, 1-bprf.pred, 1-bpgb.pred, 1-bpnn.pred)
+names(preds) <- c("gl1","gl2","rf", "gb","nn")
+plot(preds, axes = F)
 
 # extract model predictions
 coordinates(gs_val) <- ~x+y
@@ -182,7 +179,7 @@ gspred <- as.data.frame(cbind(gs_val, gspred))
 
 # stacking model validation labels and features
 cp_val <- gspred$BP ## subset validation labels
-gf_val <- gspred[,46:49] ## subset validation features
+gf_val <- gspred[,49:53] ## subset validation features
 
 # Model stacking ----------------------------------------------------------
 # start doParallel to parallelize model fitting
@@ -191,7 +188,7 @@ registerDoParallel(mc)
 
 # control setup
 set.seed(1385321)
-tc <- trainControl(method = "repeatedcv", repeats = 5, classProbs = T, 
+tc <- trainControl(method = "cv", classProbs = T, 
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
@@ -228,7 +225,7 @@ write.csv(gsdat, "./Results/TZ_BP_pred.csv", row.names = F) ## write dataframe
 
 # stacking model labels and features
 cp_all <- gspred$BP ## subset validation labels
-gf_all <- gspred[,46:49] ## subset validation features
+gf_all <- gspred[,49:53] ## subset validation features
 
 # ROC calculation
 cp_pre <- predict(BP.st, gf_all, type="prob")
