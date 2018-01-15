@@ -48,7 +48,7 @@ registerDoParallel(mc)
 
 # control setup
 set.seed(1385321)
-tc <- trainControl(method = "repeatedcv", repeats=5, classProbs = T,
+tc <- trainControl(method = "cv", classProbs = T,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
@@ -73,7 +73,7 @@ registerDoParallel(mc)
 
 # control setup
 set.seed(1385321)
-tc <- trainControl(method = "repeatedcv", repeats=5, classProbs = T,
+tc <- trainControl(method = "cv", classProbs = T,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
