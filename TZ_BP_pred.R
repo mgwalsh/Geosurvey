@@ -53,7 +53,7 @@ tc <- trainControl(method = "repeatedcv", repeats=5, classProbs = T,
 
 # model training
 BP.gl <- train(gf_cpv, cp_cal, 
-               method = "glm",
+               method = "glmStepAIC",
                family = "binomial",
                preProc = c("center","scale"), 
                trControl = tc,
@@ -62,7 +62,6 @@ BP.gl <- train(gf_cpv, cp_cal,
 # model outputs & predictions
 summary(BP.gl)
 print(BP.gl) ## ROC's accross cross-validation
-plot(varImp(BP.gl)) ## relative variable importance
 bpgl.pred <- predict(grids, BP.gl, type = "prob") ## spatial predictions
 
 stopCluster(mc)
