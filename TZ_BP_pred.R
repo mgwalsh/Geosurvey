@@ -200,10 +200,9 @@ BP.st <- train(gf_val, cp_val,
 
 # model outputs & predictions
 print(BP.st)
-confusionMatrix(BP.st)
 plot(varImp(BP.st))
 bpst.pred <- predict(preds, BP.st, type = "prob") ## spatial predictions
-plot(1-bpst.pred, axes=F)
+plot(1-bpst.pred, axes = F)
 
 stopCluster(mc)
 
@@ -244,7 +243,7 @@ plot(mask, axes=F)
 
 # Write prediction files --------------------------------------------------
 bppreds <- stack(preds, 1-bpst.pred, mask)
-names(bppreds) <- c("bprf","bpgb","bpnn","bprr","bpst","bpmk")
+names(bppreds) <- c("gl1","gl2","rf","gb","nn","st","mk")
 writeRaster(bppreds, filename="./Results/TZ_bppreds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
 # Prediction map widget ---------------------------------------------------
