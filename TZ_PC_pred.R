@@ -36,12 +36,35 @@ gs_val <- gsdat[-gsIndex,]
 cp_cal <- gs_cal$PC ## Cropland & buildings present? (Y/N)
 
 # raster calibration features
+gf_cpv <- gs_cal[c(14:23,42)] ## central-place covariates & slope
 gf_cal <- gs_cal[,11:48] ## grid covariates
 
-# Central place theory model <glm> -----------------------------------------
-# select central place variables
-gf_cpv <- gs_cal[c(14:23,42)] ## central-place covariates & slope
+# Generalized linear models <MASS> ----------------------------------------
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
 
+# Central-place variables only <gl1>
+# control setup
+set.seed(1385321)
+tc <- trainControl(method = "cv", classProbs = T,
+                   summaryFunction = twoClassSummary, allowParallel = T)
+
+# model training
+gl1 <- train(gf_cpv, cp_cal, 
+             method = "glmStepAIC",
+             family = "binomial",
+             preProc = c("center","scale"), 
+             trControl = tc,
+             metric ="ROC")
+
+# model predictions
+summary(gl1)
+print(gl1) ## ROC's accross cross-validation
+gl1.pred <- predict(grids, gl1, type = "prob") ## spatial predictions
+stopCluster(mc)
+
+# All covariates model <gl2>
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -52,21 +75,47 @@ tc <- trainControl(method = "cv", classProbs = T,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
-PC1.gl <- train(gf_cpv, cp_cal, 
-                method = "glmStepAIC",
-                family = "binomial",
-                preProc = c("center","scale"), 
-                trControl = tc,
-                metric ="ROC")
+gl2 <- train(gf_cal, cp_cal, 
+             method = "glmStepAIC",
+             family = "binomial",
+             preProc = c("center","scale"), 
+             trControl = tc,
+             metric ="ROC")
 
-# model outputs & predictions
-summary(PC1.gl)
-print(PC1.gl) ## ROC's accross cross-validation
-pcg1.pred <- predict(grids, PC1.gl, type = "prob") ## spatial predictions
-
+# model predictions
+summary(gl2)
+print(gl2) ## ROC's accross cross-validation
+gl2.pred <- predict(grids, gl2, type = "prob") ## spatial predictions
 stopCluster(mc)
 
-# GLM with all covariates -------------------------------------------------
+# Random Forest models <randomForest> -------------------------------------
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# Central-place variables only <rf1>
+# control setup
+set.seed(1385321)
+tc <- trainControl(method = "cv", classProbs = T,
+                   summaryFunction = twoClassSummary, allowParallel = T)
+tg <- expand.grid(mtry=seq(1, 10, by=1)) ## tuning grid parameters
+
+# model training
+rf1 <- train(gf_cpv, cp_cal,
+             preProc = c("center","scale"),
+             method = "rf",
+             ntree = 501,
+             metric = "ROC",
+             tuneGrid = tg,
+             trControl = tc)
+
+# model predictions
+print(rf1) ## ROC's accross tuning parameters
+plot(varImp(rf1)) ## relative variable importance
+rf1.pred <- predict(grids, rf1, type = "prob") ## spatial predictions
+stopCluster(mc)
+
+# All covariates model <rf2>
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -75,50 +124,48 @@ registerDoParallel(mc)
 set.seed(1385321)
 tc <- trainControl(method = "cv", classProbs = T,
                    summaryFunction = twoClassSummary, allowParallel = T)
+tg <- expand.grid(mtry=seq(1, 10, by=1)) ## tuning grid parameters
 
 # model training
-PC2.gl <- train(gf_cal, cp_cal, 
-                method = "glmStepAIC",
-                family = "binomial",
-                preProc = c("center","scale"), 
-                trControl = tc,
-                metric ="ROC")
+rf2 <- train(gf_cal, cp_cal,
+             preProc = c("center","scale"),
+             method = "rf",
+             ntree = 501,
+             metric = "ROC",
+             tuneGrid = tg,
+             trControl = tc)
 
-# model outputs & predictions
-summary(PC2.gl)
-print(PC2.gl) ## ROC's accross cross-validation
-pcg2.pred <- predict(grids, PC2.gl, type = "prob") ## spatial predictions
-
+# model predictions
+print(rf2) ## ROC's accross tuning parameters
+plot(varImp(rf2)) ## relative variable importance
+rf2.pred <- predict(grids, rf2, type = "prob") ## spatial predictions
 stopCluster(mc)
 
-# Random forest <randomForest> --------------------------------------------
+# Generalized boosting models <gbm> ---------------------------------------
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
+# Central-place variables only <gb1>
 # control setup
 set.seed(1385321)
-tc <- trainControl(method = "cv", classProbs = T,
-                   summaryFunction = twoClassSummary, allowParallel = T)
+tc <- trainControl(method = "cv", classProbs = T, summaryFunction = twoClassSummary,
+                   allowParallel = T)
 
 # model training
-tg <- expand.grid(mtry=seq(1, 10, by=1))
-PC.rf <- train(gf_cal, cp_cal,
-               preProc = c("center","scale"),
-               method = "rf",
-               ntree = 501,
-               metric = "ROC",
-               tuneGrid = tg,
-               trControl = tc)
+gb1 <- train(gf_cpv, cp_cal, 
+             method = "gbm", 
+             preProc = c("center", "scale"),
+             trControl = tc,
+             metric = "ROC")
 
-# model outputs & predictions
-print(PC.rf) ## ROC's accross tuning parameters
-plot(varImp(PC.rf)) ## relative variable importance
-pcrf.pred <- predict(grids, PC.rf, type = "prob") ## spatial predictions
-
+# model predictions
+print(gb1) ## ROC's accross tuning parameters
+plot(varImp(gb1)) ## relative variable importance
+gb1.pred <- predict(grids, gb1, type = "prob") ## spatial predictions
 stopCluster(mc)
 
-# Generalized boosting <gbm> ----------------------------------------------
+# All covariates model <gb2>
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -129,20 +176,20 @@ tc <- trainControl(method = "cv", classProbs = T, summaryFunction = twoClassSumm
                    allowParallel = T)
 
 # model training
-PC.gb <- train(gf_cal, cp_cal, 
-               method = "gbm", 
-               preProc = c("center", "scale"),
-               trControl = tc,
-               metric = "ROC")
+gb2 <- train(gf_cal, cp_cal, 
+             method = "gbm", 
+             preProc = c("center", "scale"),
+             trControl = tc,
+             metric = "ROC")
 
-# model outputs & predictions
-print(PC.gb) ## ROC's accross tuning parameters
-plot(varImp(PC.gb)) ## relative variable importance
-pcgb.pred <- predict(grids, PC.gb, type = "prob") ## spatial predictions
-
+# model predictions
+print(gb2) ## ROC's accross tuning parameters
+plot(varImp(gb2)) ## relative variable importance
+gb2.pred <- predict(grids, gb2, type = "prob") ## spatial predictions
 stopCluster(mc)
 
-# Neural network <nnet> ---------------------------------------------------
+# Neural network models <nnet> --------------------------------------------
+# Central-place variables only <nn1>
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -153,22 +200,44 @@ tc <- trainControl(method = "cv", classProbs = T,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
-PC.nn <- train(gf_cal, cp_cal, 
-               method = "nnet",
-               preProc = c("center","scale"), 
-               trControl = tc,
-               metric ="ROC")
+nn1 <- train(gf_cpv, cp_cal, 
+             method = "nnet",
+             preProc = c("center","scale"), 
+             trControl = tc,
+             metric ="ROC")
 
-# model outputs & predictions
-print(PC.nn) ## ROC's accross tuning parameters
-plot(varImp(PC.nn)) ## relative variable importance
-pcnn.pred <- predict(grids, PC.nn, type = "prob") ## spatial predictions
+# model predictions
+print(nn1) ## ROC's accross tuning parameters
+plot(varImp(nn1)) ## relative variable importance
+nn1.pred <- predict(grids, nn1, type = "prob") ## spatial predictions
+stopCluster(mc)
 
+# All covariates model <nn2>
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+set.seed(1385321)
+tc <- trainControl(method = "cv", classProbs = T,
+                   summaryFunction = twoClassSummary, allowParallel = T)
+
+# model training
+nn2 <- train(gf_cal, cp_cal, 
+             method = "nnet",
+             preProc = c("center","scale"), 
+             trControl = tc,
+             metric ="ROC")
+
+# model predictions
+print(nn2) ## ROC's accross tuning parameters
+plot(varImp(nn2)) ## relative variable importance
+nn2.pred <- predict(grids, nn2, type = "prob") ## spatial predictions
 stopCluster(mc)
 
 # Model stacking setup ----------------------------------------------------
-preds <- stack(1-pcg1.pred, 1-pcg2.pred, 1-pcrf.pred, 1-pcgb.pred, 1-pcnn.pred)
-names(preds) <- c("gl1","gl2","rf", "gb","nn")
+preds <- stack(1-gl1.pred, 1-gl2.pred, 1-rf1.pred, 1-rf2.pred, 1-gb1.pred, 1-gb2.pred, 1-nn1.pred, 1-nn2.pred)
+names(preds) <- c("gl1", "gl2", "rf1", "rf2", "gb1", "gb2", "nn1", "nn2")
 plot(preds, axes = F)
 
 # extract model predictions
