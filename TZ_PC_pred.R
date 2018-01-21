@@ -1,4 +1,4 @@
-# Stacked predictions of Tanzania presence/absence of Buildings in Croplands
+# Stacked predictions of Tanzania presence/absence of Buildings in Croplands Probability (BICP)
 # M. Walsh, January 2018
 
 # Required packages
@@ -309,7 +309,7 @@ pal <- colorBin("Reds", domain = 0:1)
 w <- leaflet() %>% 
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
   addRasterImage(pred, colors = pal, opacity = 0.4) %>%
-  addLegend(pal = pal, values = values(pred), title = "Buildings in Croplands")
+  addLegend(pal = pal, values = values(pred), title = "BICP")
 w ## plot widget 
 
 # save widget
