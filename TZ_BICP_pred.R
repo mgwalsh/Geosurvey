@@ -60,7 +60,7 @@ gl1 <- train(gf_cpv, cp_cal,
              trControl = tc,
              metric ="ROC")
 
-# model predictions
+# <gl1> model predictions
 summary(gl1)
 print(gl1) ## ROC's accross cross-validation
 gl1.pred <- predict(grids, gl1, type = "prob") ## spatial predictions
@@ -84,7 +84,7 @@ gl2 <- train(gf_cal, cp_cal,
              trControl = tc,
              metric ="ROC")
 
-# model predictions
+# <gl2> model predictions
 summary(gl2)
 print(gl2) ## ROC's accross cross-validation
 gl2.pred <- predict(grids, gl2, type = "prob") ## spatial predictions
@@ -111,7 +111,7 @@ rf1 <- train(gf_cpv, cp_cal,
              tuneGrid = tg,
              trControl = tc)
 
-# model predictions
+# <rf1> model predictions
 print(rf1) ## ROC's accross tuning parameters
 plot(varImp(rf1)) ## relative variable importance
 rf1.pred <- predict(grids, rf1, type = "prob") ## spatial predictions
@@ -137,7 +137,7 @@ rf2 <- train(gf_cal, cp_cal,
              tuneGrid = tg,
              trControl = tc)
 
-# model predictions
+# <rf2> model predictions
 print(rf2) ## ROC's accross tuning parameters
 plot(varImp(rf2)) ## relative variable importance
 rf2.pred <- predict(grids, rf2, type = "prob") ## spatial predictions
@@ -161,7 +161,7 @@ gb1 <- train(gf_cpv, cp_cal,
              trControl = tc,
              metric = "ROC")
 
-# model predictions
+# <gb1> model predictions
 print(gb1) ## ROC's accross tuning parameters
 plot(varImp(gb1)) ## relative variable importance
 gb1.pred <- predict(grids, gb1, type = "prob") ## spatial predictions
@@ -184,7 +184,7 @@ gb2 <- train(gf_cal, cp_cal,
              trControl = tc,
              metric = "ROC")
 
-# model predictions
+# <gb2> model predictions
 print(gb2) ## ROC's accross tuning parameters
 plot(varImp(gb2)) ## relative variable importance
 gb2.pred <- predict(grids, gb2, type = "prob") ## spatial predictions
@@ -208,7 +208,7 @@ nn1 <- train(gf_cpv, cp_cal,
              trControl = tc,
              metric ="ROC")
 
-# model predictions
+# <nn1> model predictions
 print(nn1) ## ROC's accross tuning parameters
 plot(varImp(nn1)) ## relative variable importance
 nn1.pred <- predict(grids, nn1, type = "prob") ## spatial predictions
@@ -231,7 +231,7 @@ nn2 <- train(gf_cal, cp_cal,
              trControl = tc,
              metric ="ROC")
 
-# model predictions
+# <nn2> model predictions
 print(nn2) ## ROC's accross tuning parameters
 plot(varImp(nn2)) ## relative variable importance
 nn2.pred <- predict(grids, nn2, type = "prob") ## spatial predictions
@@ -272,7 +272,7 @@ st <- train(gf_val, cp_val,
             metric = "ROC",
             trControl = tc)
 
-# model outputs & predictions
+# <st> model predictions
 print(st)
 plot(varImp(st))
 st.pred <- predict(pred2, st, type = "prob") ## spatial predictions
@@ -308,7 +308,7 @@ pal <- colorBin("Reds", domain = 0:1)
 # render map
 w <- leaflet() %>% 
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
-  addRasterImage(pred, colors = pal, opacity = 0.4) %>%
+  addRasterImage(pred, colors = pal, opacity = 0.5) %>%
   addLegend(pal = pal, values = values(pred), title = "BICP")
 w ## plot widget 
 
