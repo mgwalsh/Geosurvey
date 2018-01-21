@@ -303,12 +303,12 @@ writeRaster(pcpreds, filename="./Results/TZ_pcpreds_2017.tif", datatype="FLT4S",
 pred <- 1-st.pred ## GeoSurvey ensemble probability
 
 # set color palette
-pal <- colorBin("Greens", domain = 0:1) 
+pal <- colorBin("Reds", domain = 0:1) 
 
 # render map
 w <- leaflet() %>% 
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
-  addRasterImage(pred, colors = pal, opacity = 0.5) %>%
+  addRasterImage(pred, colors = pal, opacity = 0.4) %>%
   addLegend(pal = pal, values = values(pred), title = "Priority croplands")
 w ## plot widget 
 
