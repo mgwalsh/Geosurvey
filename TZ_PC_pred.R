@@ -14,6 +14,8 @@ suppressPackageStartupMessages({
   require(plyr)
   require(doParallel)
   require(dismo)
+  require(leaflet)
+  require(htmlwidgets)
 })
 
 # Data setup --------------------------------------------------------------
@@ -236,21 +238,24 @@ nn2.pred <- predict(grids, nn2, type = "prob") ## spatial predictions
 stopCluster(mc)
 
 # Model stacking setup ----------------------------------------------------
-preds <- stack(1-gl1.pred, 1-gl2.pred, 1-rf1.pred, 1-rf2.pred, 1-gb1.pred, 1-gb2.pred, 1-nn1.pred, 1-nn2.pred)
-names(preds) <- c("gl1", "gl2", "rf1", "rf2", "gb1", "gb2", "nn1", "nn2")
-plot(preds, axes = F)
+pred1 <- stack(1-gl1.pred, 1-rf1.pred, 1-gb1.pred, 1-nn1.pred) ## central place predictions
+names(pred1) <- c("gl1","rf1","gb1","nn1")
+plot(pred1, axes = F)
+pred2 <- stack(1-gl2.pred, 1-rf2.pred, 1-gb2.pred, 1-nn2.pred) ## predictions with all covariates
+names(pred2) <- c("gl2","rf2","gb2","nn2")
+plot(pred2, axes = F)
 
 # extract model predictions
 coordinates(gs_val) <- ~x+y
-projection(gs_val) <- projection(preds)
-gspred <- extract(preds, gs_val)
+projection(gs_val) <- projection(pred2)
+gspred <- extract(pred2, gs_val)
 gspred <- as.data.frame(cbind(gs_val, gspred))
 
-# stacking model validation labels and features
-cp_val <- gspred$PC ## subset validation labels
-gf_val <- gspred[,50:54] ## subset validation features
-
 # Model stacking ----------------------------------------------------------
+# stacking model validation labels and features
+cp_val <- gspred$PC ## validation labels
+gf_val <- gspred[,50:53] ## validation features
+
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -261,68 +266,43 @@ tc <- trainControl(method = "cv", classProbs = T,
                    summaryFunction = twoClassSummary, allowParallel = T)
 
 # model training
-PC.st <- train(gf_val, cp_val,
-               method = "glmnet",
-               family = "binomial",
-               metric = "ROC",
-               trControl = tc)
+st <- train(gf_val, cp_val,
+            method = "glmnet",
+            family = "binomial",
+            metric = "ROC",
+            trControl = tc)
 
 # model outputs & predictions
-print(PC.st)
-plot(varImp(PC.st))
-pcst.pred <- predict(preds, PC.st, type = "prob") ## spatial predictions
-plot(1-pcst.pred, axes = F)
-
+print(st)
+plot(varImp(st))
+st.pred <- predict(pred2, st, type = "prob") ## spatial predictions
+plot(1-st.pred, axes = F)
 stopCluster(mc)
 
 # Receiver-operator characteristics ---------------------------------------
-cp_pre <- predict(PC.st, gf_val, type="prob")
+cp_pre <- predict(st, gf_val, type="prob")
 cp_val <- cbind(cp_val, cp_pre)
 cpp <- subset(cp_val, cp_val=="Y", select=c(Y))
 cpa <- subset(cp_val, cp_val=="N", select=c(Y))
 cp_eval <- evaluate(p=cpp[,1], a=cpa[,1]) ## calculate ROC's on test set
 plot(cp_eval, 'ROC') ## plot ROC curve
 
-# complete-set ROC
-# extract model predictions
-coordinates(gsdat) <- ~x+y
-projection(gsdat) <- projection(preds)
-gspred <- extract(preds, gsdat)
-gspred <- as.data.frame(cbind(gsdat, gspred))
-write.csv(gsdat, "./Results/TZ_PC_pred.csv", row.names = F) ## write dataframe
-
-# stacking model labels and features
-cp_all <- gspred$PC ## subset validation labels
-gf_all <- gspred[,50:54] ## subset model predictions
-
-# ROC calculation
-cp_pre <- predict(PC.st, gf_all, type="prob")
-cp_all <- cbind(cp_all, cp_pre)
-cpp <- subset(cp_all, cp_all=="Y", select=c(Y))
-cpa <- subset(cp_all, cp_all=="N", select=c(Y))
-cp_eall <- evaluate(p=cpp[,1], a=cpa[,1]) ## calculate ROC on complete set
-cp_eall
-plot(cp_eall, 'ROC') ## plot ROC curve
-
 # Generate mask -----------------------------------------------------------
 t <- threshold(cp_eval) ## calculate thresholds based on ROC
 r <- matrix(c(0, t[,2], 0, t[,2], 1, 1), ncol=3, byrow = T) ## set threshold value <spec_sens>
-mask <- reclassify(1-pcst.pred, r) ## reclassify stacked predictions
+mask <- reclassify(1-st.pred, r) ## reclassify stacked predictions
 plot(mask, axes=F)
 
 # Write prediction files --------------------------------------------------
-pcpreds <- stack(preds, 1-pcst.pred, mask)
-names(pcpreds) <- c("gl1","gl2","rf","gb","nn","st","mk")
+pcpreds <- stack(pred2, 1-st.pred, mask)
+names(pcpreds) <- c("gl2","rf2","gb2","nn2","st","mk")
 writeRaster(pcpreds, filename="./Results/TZ_pcpreds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
 # Prediction map widget ---------------------------------------------------
-require(leaflet)
-require(htmlwidgets)
-
 # ensemble prediction map 
-pred <- 1-pcst.pred ## GeoSurvey ensemble probability
+pred <- 1-st.pred ## GeoSurvey ensemble probability
 
-# set color pallet
+# set color palette
 pal <- colorBin("Greens", domain = 0:1) 
 
 # render map
