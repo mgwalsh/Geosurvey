@@ -30,12 +30,12 @@ seed <- 12358
 set.seed(seed)
 
 # split data into calibration and validation sets
-gsIndex <- createDataPartition(gsdat$PC, p = 4/5, list = F, times = 1)
+gsIndex <- createDataPartition(gsdat$BIC, p = 4/5, list = F, times = 1)
 gs_cal <- gsdat[ gsIndex,]
 gs_val <- gsdat[-gsIndex,]
 
 # GeoSurvey calibration labels
-cp_cal <- gs_cal$PC ## Cropland & buildings present? (Y/N)
+cp_cal <- gs_cal$BIC ## Buildings in Croplands present? (Y/N)
 
 # raster calibration features
 gf_cpv <- gs_cal[c(14:23,42)] ## central-place covariates & slope
@@ -253,7 +253,7 @@ gspred <- as.data.frame(cbind(gs_val, gspred))
 
 # Model stacking ----------------------------------------------------------
 # stacking model validation labels and features
-cp_val <- gspred$PC ## validation labels
+cp_val <- gspred$BIC ## validation labels
 gf_val <- gspred[,50:53] ## validation features
 
 # start doParallel to parallelize model fitting
@@ -289,7 +289,7 @@ plot(cp_eval, 'ROC') ## plot ROC curve
 
 # Generate mask -----------------------------------------------------------
 t <- threshold(cp_eval) ## calculate thresholds based on ROC
-r <- matrix(c(0, t[,2], 0, t[,2], 1, 1), ncol=3, byrow = T) ## set threshold value <spec_sens>
+r <- matrix(c(0, t[,1], 0, t[,1], 1, 1), ncol=3, byrow = T) ## set threshold value <kappa>
 mask <- reclassify(1-st.pred, r) ## reclassify stacked predictions
 plot(mask, axes=F)
 
