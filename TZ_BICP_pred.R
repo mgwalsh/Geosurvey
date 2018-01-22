@@ -296,7 +296,7 @@ plot(mask, axes=F)
 # Write prediction files --------------------------------------------------
 pcpreds <- stack(pred2, 1-st.pred, mask)
 names(pcpreds) <- c("gl2","rf2","gb2","nn2","st","mk")
-writeRaster(pcpreds, filename="./Results/TZ_pcpreds_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+writeRaster(pcpreds, filename="./Results/TZ_BICP_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 
 # Prediction map widget ---------------------------------------------------
 # ensemble prediction map 
