@@ -40,8 +40,8 @@ coordinates(geos) <- ~lon+lat
 projection(geos) <- projection(shape)
 gadm <- geos %over% shape
 geos <- as.data.frame(geos)
-geos <- cbind(gadm[ ,c(5,7,9)], geos)
-colnames(geos) <- c("State", "LGA", "Observer", "lat", "lon", "BP", "CP", "WP", "BIC")
+geos <- cbind(gadm[ ,c(5,7)], geos)
+colnames(geos) <- c("state", "lga", "time","url","observer", "lat", "lon", "BP", "CP", "WP", "BIC")
 
 # project GeoSurvey coords to grid CRS
 geos.proj <- as.data.frame(project(cbind(geos$lon, geos$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
@@ -55,11 +55,11 @@ geosgrid <- extract(grids, geos)
 gsdat <- as.data.frame(cbind(geos, geosgrid)) 
 gsdat <- na.omit(gsdat) ## includes only complete cases
 gsdat <- gsdat[!duplicated(gsdat), ] ## removes any duplicates 
-gsdat$user <- sub("@.*", "", as.character(gsdat$Observer)) ## shortens observer ID's
+gsdat$user <- sub("@.*", "", as.character(gsdat$observer)) ## shortens observer ID's
 
 # Write output file -------------------------------------------------------
 dir.create("Results", showWarnings = F)
-write.csv(gsdat, "./Results/TZ_gsdat.csv", row.names = F)
+write.csv(gsdat, "./Results/NG_gsdat.csv", row.names = F)
 
 # GeoSurvey map widget ----------------------------------------------------
 # render map
