@@ -38,8 +38,8 @@ gs_val <- gsdat[-gsIndex,]
 cp_cal <- gs_cal$CP ## Croplands present? (Y/N)
 
 # raster calibration features
-gf_cpv <- gs_cal[c(14:23,42)] ## central-place covariates & slope
-gf_cal <- gs_cal[,11:48] ## grid covariates
+gf_cpv <- gs_cal[c(15:24,43)] ## central-place covariates & slope
+gf_cal <- gs_cal[,11:49] ## grid covariates
 
 # Generalized linear models <MASS> ----------------------------------------
 # start doParallel to parallelize model fitting
@@ -253,8 +253,8 @@ gspred <- as.data.frame(cbind(gs_val, gspred))
 
 # Model stacking ----------------------------------------------------------
 # stacking model validation labels and features
-cp_val <- gspred$ ## validation labels
-gf_val <- gspred[,50:53] ## validation features
+cp_val <- gspred$CP ## validation labels
+gf_val <- gspred[,51:54] ## validation features
 
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
