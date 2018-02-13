@@ -291,7 +291,7 @@ plot(cp_eval, 'ROC') ## plot ROC curve
 t <- threshold(cp_eval) ## calculate thresholds based on ROC
 r <- matrix(c(0, t[,1], 0, t[,1], 1, 1), ncol=3, byrow = T) ## set threshold value <kappa>
 mask <- reclassify(1-st.pred, r) ## reclassify stacked predictions
-plot(mask, axes=F)
+plot(mask, axes=F, legend=F)
 
 # Write prediction files --------------------------------------------------
 pcpreds <- stack(pred2, 1-st.pred, mask)
