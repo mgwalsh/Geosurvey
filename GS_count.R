@@ -2,10 +2,9 @@
 # M. Walsh, February 2018
 
 # Required packages
-# install.packages(c("downloader","rgdal","jsonlite")), dependencies=TRUE)
+# install.packages(c("downloader","jsonlite")), dependencies=TRUE)
 suppressPackageStartupMessages({
   require(downloader)
-  require(rgdal)
   require(jsonlite)
 })
 
