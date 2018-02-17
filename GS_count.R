@@ -28,6 +28,7 @@ for(i in 1:nrow(bp)) {
   n[i] <- nrow(t$features)
 }
 n ## vector of number of buildings per quadrat with buildings
+hist(n, main = "", xlab = "no. of buildings per quadrat")
 
 # Write file --------------------------------------------------------------
 bp <- cbind(bp, n)
