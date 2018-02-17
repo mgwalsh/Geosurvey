@@ -1,5 +1,5 @@
 # GeoSurvey building count data setup 
-# M. Walsh, February 2018
+# M. Walsh & J. Chen, February 2018
 
 # Required packages
 # install.packages(c("downloader","jsonlite")), dependencies=TRUE)
