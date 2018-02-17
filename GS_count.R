@@ -8,7 +8,7 @@ suppressPackageStartupMessages({
   require(jsonlite)
 })
 
-# Data downloads -----------------------------------------------------------
+# Data downloads ----------------------------------------------------------
 # set working directory
 dir.create("test", showWarnings=F)
 setwd("./test")
@@ -26,7 +26,7 @@ for(i in 1:nrow(bp)) {
   t <- fromJSON(bp$building_loc[i])
   n[i] <- nrow(t$features)
 }
-n
+n ## vector of number of buildings per quadrat with buildings
 
 # Write file --------------------------------------------------------------
 bp <- cbind(bp, n)
