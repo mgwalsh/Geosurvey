@@ -6,6 +6,7 @@
 suppressPackageStartupMessages({
   require(downloader)
   require(jsonlite)
+  require(leaflet)
 })
 
 # Data downloads ----------------------------------------------------------
@@ -31,3 +32,13 @@ n ## vector of number of buildings per quadrat with buildings
 # Write file --------------------------------------------------------------
 bp <- cbind(bp, n)
 write.csv(bp, "building_count.csv", row.names = F)
+
+# GeoSurvey map widget ----------------------------------------------------
+# render map
+w <- leaflet() %>% 
+  addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
+  addCircleMarkers(geos$Longitude, geos$Latitude, clusterOptions = markerClusterOptions())
+w ## plot widget 
+
+# save widget
+saveWidget(w, 'MW_GS.html', selfcontained = T)
