@@ -24,7 +24,7 @@ bp <- geos[ which(geos$building == "Yes"), ]
 # Count number of buildings per quadrat -----------------------------------
 n <- rep(NA, nrow(bp))
 for(i in 1:nrow(bp)) {
-  t <- fromJSON(bp$building_loc[i])
+  t <-  fromJSON(bp$building_loc[i])
   n[i] <- nrow(t$features)
 }
 n ## vector of number of buildings per quadrat with buildings
