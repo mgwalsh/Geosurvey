@@ -28,7 +28,7 @@ download("https://www.dropbox.com/s/bhefsc8u120uqwp/TZA_adm3.zip?raw=1", "TZA_ad
 unzip("TZA_adm3.zip", overwrite = T)
 shape <- shapefile("TZA_adm3.shp")
 
-# download Tanzania Gtifs and stack in raster (note this is a big 950+ Mb download)
+# download Tanzania Gtifs and stack in raster (note this is a big 850+ Mb download)
 download("https://www.dropbox.com/s/pshrtvjf7navegu/TZ_250m_2017.zip?raw=1", "TZ_250m_2017.zip", mode = "wb")
 unzip("TZ_250m_2017.zip", overwrite = T)
 glist <- list.files(pattern="tif", full.names = T)
