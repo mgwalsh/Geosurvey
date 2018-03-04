@@ -196,6 +196,11 @@ r <- matrix(c(0, t[,1], 0, t[,1], 1, 1), ncol=3, byrow = T) ## set threshold val
 mask <- reclassify(1-st.pred, r) ## reclassify stacked predictions
 plot(mask, axes=F, legend=F)
 
+# Write prediction files --------------------------------------------------
+pcpreds <- stack(pred1, 1-st.pred, mask)
+names(pcpreds) <- c("gl1","rf1","gb1","nn1","st","mk")
+writeRaster(pcpreds, filename="./Results/TZ_BICP_2017.tif", datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
+
 # Prediction map widget ---------------------------------------------------
 # ensemble prediction map 
 pred <- 1-st.pred ## GeoSurvey ensemble probability
