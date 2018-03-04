@@ -1,4 +1,4 @@
-# Initial stacked predictions of Malawi presence/absence of building observations
+# Initial stacked predictions of Malawi presence/absence of buildings
 # M. Walsh, March 2018
 
 # Required packages
