@@ -40,7 +40,7 @@ cp_cal <- gs_cal$BP ## Buildings present? (Y/N)
 
 # Central place theory model <glm> -----------------------------------------
 # select central place variables
-gf_cpv <- gs_cal[c(10:17)] ## central-place covariates & slope
+gf_cpv <- gs_cal[c(10:17)] ## central-place covariates
 
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
