@@ -1,4 +1,4 @@
-# Initial stacked predictions of Malawi presence/absence of buildings
+# Stacked predictions of Malawi presence/absence of buildings
 # M. Walsh, March 2018
 
 # Required packages
@@ -40,7 +40,7 @@ cp_cal <- gs_cal$BP ## Buildings present? (Y/N)
 
 # Central place theory model <glm> -----------------------------------------
 # select central place variables
-gf_cpv <- gs_cal[c(10:18)] ## central-place covariates
+gf_cpv <- gs_cal[c(9:18)] ## central-place covariates
 
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
@@ -157,7 +157,7 @@ gspred <- as.data.frame(cbind(gs_val, gspred))
 # Model stacking ----------------------------------------------------------
 # stacking model validation labels and features
 cp_val <- gspred$BP ## validation labels
-gf_val <- gspred[,20:23] ## validation features
+gf_val <- gspred[,19:22] ## validation features
 
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
